@@ -23,14 +23,20 @@ const KEY_RIGHT = 'D'.charCodeAt(0);
 const KEY_DOWN = 'Z'.charCodeAt(0);
 const KEY_UP = 32; // Space, moves up
 
+interface CameraSettings {
+  fovDgr: number;
+  zNear: number;
+  zFar: number;
+}
+
 export class CameraFPS {
   private angles = [0, 0]; // angles like in polar coords
-  private position = [0, 0, 10]; // xyz
+  private position = [0, 0, 2]; // xyz
   private pressedKeys = new Array(128); // keycode => bool
   private mouseState = new MouseState();
   private rotateSpeed = 0;
 
-  constructor (canvas: HTMLCanvasElement) {
+  constructor (canvas: HTMLCanvasElement, public settings: CameraSettings) {
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
@@ -93,13 +99,10 @@ export class CameraFPS {
     return result;
   }
 
-  getProjectionMatrix (fovDgr: number, viewportWidth: number, viewportHeight: number) {
-    const fovRad = toRadians(fovDgr);
+  getProjectionMatrix (viewportWidth: number, viewportHeight: number) {
+    const {fovDgr, zNear, zFar} = this.settings;
     const aspectRatio = viewportWidth / viewportHeight;
-    const zNear = 0.01;
-    const zFar = 1000;
-
-    return perspective([] as any, fovRad, aspectRatio, zNear, zFar);
+    return perspective([] as any, toRadians(fovDgr), aspectRatio, zNear, zFar);
   }
 
   getPosition () {
