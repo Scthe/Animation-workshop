@@ -21,7 +21,7 @@ export class GlState {
 
   constructor (
     public gl: Webgl,
-    public canvas: HTMLCanvasElement,
+    private canvas: HTMLCanvasElement,
     public camera: CameraFPS,
     public lampShader: Shader,
     public lampObject: ObjectGeometry
@@ -33,6 +33,13 @@ export class GlState {
   setDrawState (nextParams: DrawParameters) {
     applyDrawParams(this.gl, nextParams, this.drawParams);
     this.drawParams = nextParams;
+  }
+
+  getViewport () {
+    return {
+      width: this.canvas.width,
+      height: this.canvas.height,
+    };
   }
 
 }

@@ -10,6 +10,9 @@ const CAMERA_ROTATE_SPEED = 0.025 / 6;
 const init = async () => {
   const glState = await createGlState(CANVAS_EL_ID, GLTF_URL);
 
+  glState.gl.clearColor(0.5, 0.5, 0.5, 0.9);
+  glState.gl.clearDepth(1.0);
+
   let timeOld = 0;
 
   const onDraw = (time: number) => {
@@ -24,6 +27,8 @@ const init = async () => {
 
     camera.update(animState.deltaTime, CAMERA_MOVE_SPEED, CAMERA_ROTATE_SPEED);
 
+    // draw
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     doDraw(animState, glState);
 
     // fin

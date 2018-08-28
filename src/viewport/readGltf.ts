@@ -1,4 +1,4 @@
-import { GltfLoader, GltfAsset } from 'gltf-loader-ts';
+import {GltfLoader, GltfAsset} from 'gltf-loader-ts';
 import {Shader, Vao, VaoAttrInit} from '../gl-utils';
 import {ObjectGeometry} from './GlState';
 
@@ -15,22 +15,25 @@ interface ShaderCollection {
   lampShader: Shader;
 }
 
-const convertBuffer_U16_To_F32 = (buffer: Uint8Array) => {
-  // bone indices are ints (actually unsigned shorts = 5123). Webgl shaders
-  // do no accept ints/shorts. We have to convert all to floats.
-  // e.g. for 72 vertices there are (72[vertices] * 4[boneInfluence/vertex] = 284[boneInfluence])
+type TypedArrayConvertMapFn = (n: number) => number;
+
+/**
+  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray
+  *
+  * Bone indices are ints (actually unsigned shorts = 5123). Webgl shaders
+  * do no accept ints/shorts. We have to convert all to floats.
+  * e.g. for 72 vertices there are (72[vertices] * 4[boneInfluence/vertex] = 284[boneInfluence])
+  */
+const convertBufferUnderlayingType = (buffer: Uint8Array, SourceType: Function, TargetType: Function,
+  mapFn?: TypedArrayConvertMapFn
+) => {
+  mapFn = mapFn ? mapFn : (e: number) => e;
 
   // First reinterpret raw bytes as Uint16
-  // console.log(`buffer:raw (byteLength=${buffer.byteLength}, byteOffset=${buffer.byteOffset}, length=${buffer.length}) `, buffer.buffer);
-  const dataBoneIdsAsUint16 = new Uint16Array(buffer.buffer, buffer.byteOffset, buffer.length / BYTES.SHORT);
-  // console.log('buffer:i : ', dataBoneIdsAsUint16);
+  const dataBoneIdsAsUint16 = new (SourceType as any)(buffer.buffer, buffer.byteOffset, buffer.length / BYTES.SHORT);
 
   // map each of Uint16 to float
-  // add half to correct (maybe?) rounding errors e.g. (1:u32) -> (0.99:f32) -> (0:u32)
-  const dataBoneIdsAsF32 = Float32Array.from(dataBoneIdsAsUint16, (n: number) => n + 0.5);
-  // console.log('buffer:f : ', dataBoneIdsAsF32);
-
-  return dataBoneIdsAsF32;
+  return (TargetType as any).from(dataBoneIdsAsUint16, mapFn);
 };
 
 const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number) => {
@@ -42,7 +45,7 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
     case gl.FLOAT: // 5126
       return rawData; // will be accepted no problem
     case gl.UNSIGNED_SHORT: // 5123
-      return convertBuffer_U16_To_F32(rawData);
+      return convertBufferUnderlayingType(rawData, Uint16Array, Float32Array, (e: number) => e + 0.5); // add half to correct (maybe?) rounding errors e.g. (1:u32) -> (0.99:f32) -> (0:u32)
     case gl.BYTE: // 5120
     case gl.UNSIGNED_BYTE: // 5121
     case gl.SHORT: // 5122
@@ -54,6 +57,29 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
         'Expected gl.FLOAT or gl.UNSIGNED_SHORT. This should not happen, as',
         'asset is part of repo' ].join(' ');
   }
+};
+
+const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: number) => {
+  const gltf = asset.gltf;
+  const accessor = gltf.accessors[indicesAccesorId];
+  const dataRaw = await asset.bufferViewData(accessor.bufferView);
+
+  // create webgl buffer
+  const indexBufferGlId = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferGlId);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, dataRaw, gl.STATIC_DRAW);
+  if (accessor.componentType !== gl.UNSIGNED_BYTE) {
+    throw `Unsupported index buffer component type (${accessor.componentType})`;
+  }
+
+  // const idxCnt = accessor.count;
+  // console.log(`indices(${idxCnt}), triangles (${idxCnt/3}), quads(${idxCnt/6}), cubes(${idxCnt/6/6}) not known #vertices, cause indexing + raw data`);
+
+  return {
+    type: gl.UNSIGNED_BYTE,
+    buffer: indexBufferGlId,
+    triangleCnt: accessor.count / 3,
+  };
 };
 
 // TODO use accessor-attribute => shader-attribute map (POSITION => a_Position)
@@ -70,12 +96,11 @@ const readLampObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
     // console.log(`Attr ${attr} (idx: ${attributes[attr]})`);
   // }
 
-
-  // `data` can be bound via `gl.BindBuffer`,
   const dataPos = await getAttributeData(gl, asset, attributes.POSITION);
   const dataWeights = await getAttributeData(gl, asset, attributes.WEIGHTS_0);
   const dataBoneIds = await getAttributeData(gl, asset, attributes.JOINTS_0);
   // const dataNormal = await getAttributeData(gl, asset, attributes.NORMAL);
+
   console.log([
     'vertices',
     '= ' + (dataPos.length / BYTES.FLOAT / 3),     // vec3 === 3 * (F32=5126)
@@ -92,17 +117,9 @@ const readLampObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
   ]);
 
   // indices
-  const indicesAccesor = gltf.accessors[mesh.indices];
-  const dataIndices = await asset.bufferViewData(indicesAccesor.bufferView);
-  const indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  // TODO this convert is weird. it will map (U8 -> U16),
-  // but we prob. want to reinterpret ([U8, U8] -> U16)
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(dataIndices), gl.STATIC_DRAW);
+  const indexBuffer = await createIndexBuffer(gl, asset, mesh.indices);
 
-  // const idxCnt = indicesAccesor.count;
-  // console.log(`indices(${idxCnt}), triangles (${idxCnt/3}), quads(${idxCnt/6}), cubes(${idxCnt/6/6}) not known #vertices, cause indexing + raw data`);
-  return new ObjectGeometry(vao, gl.UNSIGNED_SHORT, indexBuffer, indicesAccesor.count / 3);
+  return new ObjectGeometry(vao, indexBuffer.type, indexBuffer.buffer, indexBuffer.triangleCnt);
 };
 
 export const readGltf = async (gl: Webgl, gltfUrl: string, shaders: ShaderCollection) => {
