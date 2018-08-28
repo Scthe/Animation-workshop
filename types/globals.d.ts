@@ -1,0 +1,2 @@
+interface Webgl extends WebGLRenderingContext {
+}
