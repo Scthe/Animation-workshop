@@ -12,6 +12,11 @@ import {AnimState} from './doDraw';
 import {Armature} from './GlState';
 import {toRadians} from '../gl-utils';
 
+// http://ogldev.atspace.co.uk/www/tutorial38/tutorial38.html
+// https://www.reddit.com/r/opengl/comments/4pu7hq/question_about_skeletal_animations/
+// https://youtu.be/F-kcaonjHf8?t=3m23s
+// 'bind' always refers to bind pose (e.g. T-pose)
+
 interface BoneTransformsCfg {
   animState: AnimState;
   bones: Armature;
@@ -46,9 +51,10 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const bone = bones[boneId];
   const result = mat4_Create();
 
-  // identity(result); // simple :)
   let rotation = bone.rotation;
   if (boneId === 1) {
+    // TEST: given boneLocalRotation, compose it with other rotation
+    // (normally, You would replace instead of composing)
     rotation = quat_Create();
     rotateX(rotation, bone.rotation, toRadians(animState.frameId % 360));
   }
@@ -63,17 +69,24 @@ const calculateBoneTransforms = (cfg: BoneTransformsCfg, boneId: number, parentT
 
   // matrices order (reversed multiplication order cause opengl):
   // 1. inverseBindMatrix - bring vertices to bone's local space
-  // 2. animationTransform - current transfrom to replace bindMatrix
+  //      In other words transformation: bindPosition->(0,0,0).
+  //      In implementation, combination of boneBindMatrix and parent's boneBindMatrix.
+  // 2. animationTransform - current transfrom to REPLACE bindMatrix with.
+  //      if identity is given here, bone will land at (0,0,0) with no rotation.
+  //      'true' identity is achieved if bind matrix is given here.
+  //      In other words, this matrix must move from (0,0,0) to final bone
+  //      position/rotaton/scale, where final means e.g. shoulder position
   // 3. parentTransfrom - this acts as local->global space transformation
+  //      Look up how we calculated inverseBindMatrix
   const animationTransform = getAnimationTransform(cfg, boneId);
   const globalTransform = mat4_Create();
   transforms[boneId] = mat4_Create();
   multiply(globalTransform, parentTransfrom, animationTransform);
   multiply(transforms[boneId], globalTransform, bone.inverseBindMatrix);
 
-  if (boneId < bones.length - 1) { // TODO use children field
-    calculateBoneTransforms(cfg, boneId + 1, globalTransform);
-  }
+  bone.children.forEach(childIdx => {
+    calculateBoneTransforms(cfg, childIdx, globalTransform);
+  });
 };
 
 

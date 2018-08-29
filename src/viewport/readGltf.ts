@@ -130,7 +130,6 @@ const DEFAULT_ROTATION = quat_Create(0, 1, 0, 0);
 const DEFAULT_SCALE = vec3_Create(1, 1, 1);
 
 const readArmature = async (gl: Webgl, asset: GltfAsset) => {
-  console.log(`--- readArmature ---`);
   const gltf = asset.gltf;
 
   const skin = gltf.skins[0];
@@ -140,24 +139,38 @@ const readArmature = async (gl: Webgl, asset: GltfAsset) => {
   let bufferOffset = 0;
   const bones: Bone[] = [];
 
+  const getBoneIdxForNodeId = (nodeId: number) => {
+    // search skin.joints for the one that same nodeId
+    const reducer = (acc: number, boneNodeId: number, idx: number) =>
+      boneNodeId === nodeId ? idx : acc;
+    return skin.joints.reduce(reducer, undefined as number);
+  };
+
+
   skin.joints.forEach((nodeId: number) => {
     const node = gltf.nodes[nodeId];
     const invBindMat = new Float32Array(dataRaw.buffer, dataRaw.byteOffset + bufferOffset, MAT4_ELEMENTS);
-    const children: number[] = []; // TODO
+
+    const children: number[] = [];
+    if (node.children) {
+      node.children.forEach(nodeId => {
+        const boneIdx = getBoneIdxForNodeId(nodeId);
+        if (boneIdx !== undefined) { children.push(boneIdx); }
+      });
+    }
+    // console.log('Child bone =>', children);
 
     const tra = node.translation ? vec3_Create.apply(null, node.translation) : DEFAULT_TRANSLATION;
     const rot = node.rotation ? quat_Create.apply(null, node.rotation) : DEFAULT_ROTATION;
     const scale = node.scale ? vec3_Create.apply(null, node.scale) : DEFAULT_SCALE;
 
     const bone = new Bone(node.name, invBindMat, children, tra, rot, scale);
-    console.log({bone});
+    // console.log({bone});
     bones.push(bone);
 
     bufferOffset += MAT4_ELEMENTS * BYTES.FLOAT;
   });
 
-
-  console.log(`--- END readArmature ---`);
   return bones;
 };
 

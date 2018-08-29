@@ -5,7 +5,7 @@ precision mediump float;
 
 
 attribute vec3 a_Position;
-attribute vec4 a_BoneIDs; // TODO this should be int
+attribute vec4 a_BoneIDs;
 attribute vec4 a_Weights; // always (1,0,0,0), cause only 1 bone influences ATM
 
 uniform mat4 g_Pmatrix;
