@@ -6,25 +6,42 @@ import {
 } from '../gl-utils';
 import {CameraFPS} from './camera-fps';
 import {readGltf} from './readGltf';
+import {mat4} from 'gl-mat4';
+import {vec3} from 'gl-vec3';
+import {quat} from 'gl-quat';
 
 export class ObjectGeometry {
   constructor(
-    public vao: Vao,
-    public indicesGlType: GLenum, // e.g. gl.UNSIGNED_SHORT
-    public indexBuffer: WebGLBuffer,
-    public triangleCnt: number
+    public readonly vao: Vao,
+    public readonly indicesGlType: GLenum, // e.g. gl.UNSIGNED_SHORT
+    public readonly indexBuffer: WebGLBuffer,
+    public readonly triangleCnt: number
   ) { }
 }
+
+export class Bone {
+  constructor (
+    public readonly name: string,
+    public readonly inverseBindMatrix: mat4,
+    public readonly children: number[],
+    public readonly translation: vec3,
+    public readonly rotation: quat,
+    public readonly scale: vec3
+  ) { }
+}
+
+export type Armature = Bone[];
 
 export class GlState {
   private drawParams: DrawParameters;
 
   constructor (
-    public gl: Webgl,
+    public readonly gl: Webgl,
     private canvas: HTMLCanvasElement,
-    public camera: CameraFPS,
-    public lampShader: Shader,
-    public lampObject: ObjectGeometry
+    public readonly camera: CameraFPS,
+    public readonly lampShader: Shader,
+    public readonly lampObject: ObjectGeometry,
+    public readonly lampArmature: Armature
   ) {
     this.drawParams = new DrawParameters();
     applyDrawParams(gl, this.drawParams, undefined, true);
@@ -58,13 +75,12 @@ export const createGlState = async (canvasId: string, gltfUrl: string) => {
     require('shaders/lampShader.vert.glsl'),
     require('shaders/lampShader.frag.glsl'));
 
-  const {lampObject} = await readGltf(gl, gltfUrl, {
+  const {lampObject, lampArmature} = await readGltf(gl, gltfUrl, {
     lampShader: lampShader,
   });
 
   return new GlState(
     gl, canvas, camera,
-    lampShader,
-    lampObject,
+    lampShader, lampObject, lampArmature
   );
 };

@@ -21,8 +21,8 @@ void main() {
    // vColor = vec3(1,0,0);
    // vColor = vec3(a_Weights.xyz);
    vColor = vec3(a_BoneIDs.xyz) / 3.0;
+   // vColor = vec3(0.8);
 
-   /*
    vec4 localPos = vec4(0.0);
    vec4 localNormal = vec4(0.0);
 
@@ -36,5 +36,4 @@ void main() {
 
    mat4 mvp = g_Pmatrix * g_Vmatrix * g_Mmatrix;
    gl_Position = mvp * localPos;
-   */
 }

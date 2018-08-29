@@ -1,6 +1,8 @@
 import {GltfLoader, GltfAsset} from 'gltf-loader-ts';
 import {Shader, Vao, VaoAttrInit} from '../gl-utils';
-import {ObjectGeometry} from './GlState';
+import {ObjectGeometry, Bone} from './GlState';
+import {fromValues as vec3_Create} from 'gl-vec3';
+import {fromValues as quat_Create} from 'gl-quat';
 
 const LAMP_MESH_NAME = 'Cube';
 
@@ -82,12 +84,12 @@ const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: 
   };
 };
 
-// TODO use accessor-attribute => shader-attribute map (POSITION => a_Position)
+/** TODO use accessor-attribute => shader-attribute map (POSITION => a_Position) */
 const readLampObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
   const gltf = asset.gltf;
   const meshDesc = gltf.meshes.filter(e => e.name === LAMP_MESH_NAME)[0];
   if (!meshDesc) { throw `Could not find lamp object (looked for ${LAMP_MESH_NAME})`; }
-  console.log(`mesh ${meshDesc.name}`, meshDesc);
+  // console.log(`mesh ${meshDesc.name}`, meshDesc);
 
   // each attribute refers to accessors
   const mesh = meshDesc.primitives[0]; // might as well
@@ -101,13 +103,13 @@ const readLampObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
   const dataBoneIds = await getAttributeData(gl, asset, attributes.JOINTS_0);
   // const dataNormal = await getAttributeData(gl, asset, attributes.NORMAL);
 
-  console.log([
+  /*console.log([
     'vertices',
     '= ' + (dataPos.length / BYTES.FLOAT / 3),     // vec3 === 3 * (F32=5126)
     '= ' + (dataBoneIds.length / BYTES.SHORT / 4), // svec4 === 4 * (U16=5123) // TODO this is in U16, not U8, will not match rest
     '= ' + (dataWeights.length / BYTES.FLOAT / 4), // vec4  === 4 * (F32=5126)
     // '= ' + (dataNormal.length / BYTES.FLOAT / 3),  // vec3 === 3 * (F32=5126)
-  ].join(' '));
+  ].join(' '));*/
 
   // create vao
   const vao = new Vao(gl, shader, [
@@ -122,6 +124,44 @@ const readLampObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
   return new ObjectGeometry(vao, indexBuffer.type, indexBuffer.buffer, indexBuffer.triangleCnt);
 };
 
+const MAT4_ELEMENTS = 16;
+const DEFAULT_TRANSLATION = vec3_Create(0, 0, 0);
+const DEFAULT_ROTATION = quat_Create(0, 1, 0, 0);
+const DEFAULT_SCALE = vec3_Create(1, 1, 1);
+
+const readArmature = async (gl: Webgl, asset: GltfAsset) => {
+  console.log(`--- readArmature ---`);
+  const gltf = asset.gltf;
+
+  const skin = gltf.skins[0];
+  // console.log({skin});
+  const dataRaw = await asset.bufferViewData(skin.inverseBindMatrices);
+
+  let bufferOffset = 0;
+  const bones: Bone[] = [];
+
+  skin.joints.forEach((nodeId: number) => {
+    const node = gltf.nodes[nodeId];
+    const invBindMat = new Float32Array(dataRaw.buffer, dataRaw.byteOffset + bufferOffset, MAT4_ELEMENTS);
+    const children: number[] = []; // TODO
+
+    const tra = node.translation ? vec3_Create.apply(null, node.translation) : DEFAULT_TRANSLATION;
+    const rot = node.rotation ? quat_Create.apply(null, node.rotation) : DEFAULT_ROTATION;
+    const scale = node.scale ? vec3_Create.apply(null, node.scale) : DEFAULT_SCALE;
+
+    const bone = new Bone(node.name, invBindMat, children, tra, rot, scale);
+    console.log({bone});
+    bones.push(bone);
+
+    bufferOffset += MAT4_ELEMENTS * BYTES.FLOAT;
+  });
+
+
+  console.log(`--- END readArmature ---`);
+  return bones;
+};
+
+
 export const readGltf = async (gl: Webgl, gltfUrl: string, shaders: ShaderCollection) => {
   const {lampShader} = shaders;
 
@@ -132,6 +172,6 @@ export const readGltf = async (gl: Webgl, gltfUrl: string, shaders: ShaderCollec
 
   return {
     lampObject: await readLampObject(gl, lampShader, asset),
-    // lampArmature: ...
+    lampArmature: await readArmature(gl, asset),
   };
 };

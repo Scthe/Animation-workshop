@@ -14,6 +14,7 @@ const init = async () => {
   glState.gl.clearDepth(1.0);
 
   let timeOld = 0;
+  let frameId = 0;
 
   const onDraw = (time: number) => {
     const {gl, camera} = glState;
@@ -21,9 +22,11 @@ const init = async () => {
 
     const animState = {
       deltaTime: time - timeOld,
+      frameId,
       animationFrameId: 0,
     };
     timeOld = time;
+    ++frameId;
 
     camera.update(animState.deltaTime, CAMERA_MOVE_SPEED, CAMERA_ROTATE_SPEED);
 
