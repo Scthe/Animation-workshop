@@ -12,10 +12,16 @@ import {AnimState} from './doDraw';
 import {Armature} from './GlState';
 import {toRadians} from '../gl-utils';
 
-// http://ogldev.atspace.co.uk/www/tutorial38/tutorial38.html
-// https://www.reddit.com/r/opengl/comments/4pu7hq/question_about_skeletal_animations/
-// https://youtu.be/F-kcaonjHf8?t=3m23s
-// 'bind' always refers to bind pose (e.g. T-pose)
+/*
+  In this file we update bone matrices for animation.
+
+  NOTE: 'bind' always refers to bind pose (e.g. T-pose)
+
+  Nice math overviews:
+    * http://ogldev.atspace.co.uk/www/tutorial38/tutorial38.html
+    * https://www.reddit.com/r/opengl/comments/4pu7hq/question_about_skeletal_animations/
+    * https://youtu.be/F-kcaonjHf8?t=3m23s
+*/
 
 interface BoneTransformsCfg {
   animState: AnimState;
@@ -63,7 +69,7 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   return result;
 };
 
-const calculateBoneTransforms = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: mat4) => {
+const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: mat4) => {
   const {animState, bones, transforms} = cfg;
   const bone = bones[boneId];
 
@@ -85,17 +91,11 @@ const calculateBoneTransforms = (cfg: BoneTransformsCfg, boneId: number, parentT
   multiply(transforms[boneId], globalTransform, bone.inverseBindMatrix);
 
   bone.children.forEach(childIdx => {
-    calculateBoneTransforms(cfg, childIdx, globalTransform);
+    calculateBone(cfg, childIdx, globalTransform);
   });
 };
 
-
-
-// 0 - BoneBase
-// 1 - BoneA
-// 2 - BoneB
-
-export const getBoneTransforms = (animState: AnimState, bones: Armature) => {
+export const calculateBoneMatrices = (animState: AnimState, bones: Armature) => {
   const root = mat4_Create();
   identity(root);
 
@@ -106,21 +106,6 @@ export const getBoneTransforms = (animState: AnimState, bones: Armature) => {
     transforms,
   };
 
-  calculateBoneTransforms(cfg, 0, root);
+  calculateBone(cfg, 0, root);
   return transforms;
 };
-
-/*
-export const getBoneTransforms = (frameId: number, nBoneCount: number) => {
-  const mm = mat4_Create();
-  fromTranslation(mm, vec3_Create(0, 0.3, 0));
-
-  const transforms = [];
-  for (let i = 0; i < nBoneCount; i++) {
-    let m = mat4_Create();
-    identity(m);
-    transforms.push(i === 0 ? mm : m);
-  }
-  return transforms;
-};
-*/

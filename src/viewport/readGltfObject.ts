@@ -1,17 +1,8 @@
-import {GltfLoader, GltfAsset} from 'gltf-loader-ts';
-import {Shader, Vao, VaoAttrInit} from '../gl-utils';
-import {ObjectGeometry, Bone} from './GlState';
-import {fromValues as vec3_Create} from 'gl-vec3';
-import {fromValues as quat_Create} from 'gl-quat';
+import {GltfAsset} from 'gltf-loader-ts';
+import {Shader, Vao, VaoAttrInit, BYTES} from '../gl-utils';
+import {ObjectGeometry} from './GlState';
 
 const LAMP_MESH_NAME = 'Cube';
-
-// no. of bytes in each primitive type
-const BYTES = {
-  FLOAT: 4,
-  INT: 4,
-  SHORT: 2
-};
 
 interface ShaderCollection {
   lampShader: Shader;
@@ -85,7 +76,7 @@ const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: 
 };
 
 /** TODO use accessor-attribute => shader-attribute map (POSITION => a_Position) */
-const readLampObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
+export const readObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
   const gltf = asset.gltf;
   const meshDesc = gltf.meshes.filter(e => e.name === LAMP_MESH_NAME)[0];
   if (!meshDesc) { throw `Could not find lamp object (looked for ${LAMP_MESH_NAME})`; }
@@ -122,69 +113,4 @@ const readLampObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
   const indexBuffer = await createIndexBuffer(gl, asset, mesh.indices);
 
   return new ObjectGeometry(vao, indexBuffer.type, indexBuffer.buffer, indexBuffer.triangleCnt);
-};
-
-const MAT4_ELEMENTS = 16;
-const DEFAULT_TRANSLATION = vec3_Create(0, 0, 0);
-const DEFAULT_ROTATION = quat_Create(0, 1, 0, 0);
-const DEFAULT_SCALE = vec3_Create(1, 1, 1);
-
-const readArmature = async (gl: Webgl, asset: GltfAsset) => {
-  const gltf = asset.gltf;
-
-  const skin = gltf.skins[0];
-  // console.log({skin});
-  const dataRaw = await asset.bufferViewData(skin.inverseBindMatrices);
-
-  let bufferOffset = 0;
-  const bones: Bone[] = [];
-
-  const getBoneIdxForNodeId = (nodeId: number) => {
-    // search skin.joints for the one that same nodeId
-    const reducer = (acc: number, boneNodeId: number, idx: number) =>
-      boneNodeId === nodeId ? idx : acc;
-    return skin.joints.reduce(reducer, undefined as number);
-  };
-
-
-  skin.joints.forEach((nodeId: number) => {
-    const node = gltf.nodes[nodeId];
-    const invBindMat = new Float32Array(dataRaw.buffer, dataRaw.byteOffset + bufferOffset, MAT4_ELEMENTS);
-
-    const children: number[] = [];
-    if (node.children) {
-      node.children.forEach(nodeId => {
-        const boneIdx = getBoneIdxForNodeId(nodeId);
-        if (boneIdx !== undefined) { children.push(boneIdx); }
-      });
-    }
-    // console.log('Child bone =>', children);
-
-    const tra = node.translation ? vec3_Create.apply(null, node.translation) : DEFAULT_TRANSLATION;
-    const rot = node.rotation ? quat_Create.apply(null, node.rotation) : DEFAULT_ROTATION;
-    const scale = node.scale ? vec3_Create.apply(null, node.scale) : DEFAULT_SCALE;
-
-    const bone = new Bone(node.name, invBindMat, children, tra, rot, scale);
-    // console.log({bone});
-    bones.push(bone);
-
-    bufferOffset += MAT4_ELEMENTS * BYTES.FLOAT;
-  });
-
-  return bones;
-};
-
-
-export const readGltf = async (gl: Webgl, gltfUrl: string, shaders: ShaderCollection) => {
-  const {lampShader} = shaders;
-
-  const loader = new GltfLoader();
-  const asset = await loader.load(gltfUrl);
-  console.log('asset', asset);
-  console.log('gltf', asset.gltf);
-
-  return {
-    lampObject: await readLampObject(gl, lampShader, asset),
-    lampArmature: await readArmature(gl, asset),
-  };
 };

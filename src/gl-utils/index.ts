@@ -10,6 +10,12 @@ import { mat4 } from 'gl-mat4';
 
 // https://github.com/KhronosGroup/WebGLDeveloperTools/blob/master/src/debug/webgl-debug.js#L492
 
+// no. of bytes in each primitive type
+export const BYTES = {
+  FLOAT: 4,
+  INT: 4,
+  SHORT: 2
+};
 
 // call this in render loop, adjust viewport too!
 // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);

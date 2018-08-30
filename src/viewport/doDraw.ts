@@ -1,7 +1,7 @@
 import {GlState} from './GlState';
 import {setUniforms, DrawParameters, DepthTest, CullingMode, transformPointByMat4} from '../gl-utils';
-import {getBoneTransforms} from './skeleton';
-import {mat4, multiply, create as mat4_Create, identity, fromQuat, invert} from 'gl-mat4';
+import {calculateBoneMatrices} from './calculateBoneMatrices';
+import {mat4, multiply, create as mat4_Create, identity, fromQuat, invert, copy} from 'gl-mat4';
 
 export interface AnimState {
   deltaTime: number; // previous -> this frame
@@ -9,12 +9,6 @@ export interface AnimState {
   frameId: number; // id of current frame
 }
 
-/*
-const identityMatrix = [
-  1, 0, 0, 0,
-  0, 1, 0, 0,
-  0, 0, 1, 0,
-  0, 0, 0, 1];*/
 const identityMatrix = (() => {
   const m = mat4_Create();
   return identity(m);
@@ -38,7 +32,7 @@ const drawLamp = (animState: AnimState, glState: GlState) => {
     'g_Mmatrix': identityMatrix,
   }, true);
 
-  const boneTransforms = getBoneTransforms(animState, armature);
+  const boneTransforms = calculateBoneMatrices(animState, armature);
   boneTransforms.forEach((boneMat: mat4, i: number) => {
     const name = `g_BoneTransforms[${i}]`;
     const location = gl.getUniformLocation(shader.glId, name);
@@ -73,7 +67,7 @@ const getMarkerViewportPositions = (glState: GlState, boneTransforms: mat4[]) =>
     if (!parentBone) {
       identity(bindMat);
     } else {
-      invert(bindMat, parentBone.inverseBindMatrix);
+      copy(bindMat, parentBone.bindMatrix);
     }
     return bindMat;
   };
@@ -81,13 +75,8 @@ const getMarkerViewportPositions = (glState: GlState, boneTransforms: mat4[]) =>
   return boneTransforms.map((boneMat, idx) => {
     const bone = lampArmature[idx];
     const bonePos = bone.translation; // relative to parent
-    const pos = [0, 0, 0]; // TODO ?
+    const pos = [0, 0, 0];
 
-    // const rotMat = mat4_Create();
-    // fromQuat(rotMat, bone.rotation);
-    // transformPointByMat4(pos as any, bonePos, rotMat);
-    // const bindMat = mat4_Create();
-    // invert(bindMat, bone.inverseBindMatrix); // TODO from parent?
     const bindMat = getParentBindMatrix(idx);
     transformPointByMat4(pos as any, bonePos, bindMat);
 
@@ -106,8 +95,6 @@ const VERTICES_PER_MARKER = 6;
 const drawMarkers = (glState: GlState, markerPositions: any[]) => {
   const {gl, markersShader: shader, markersVao: vao} = glState;
   const {width, height} = glState.getViewport();
-
-  // const markerPositions = [[0.2, 0.5], [-0.2, 0.5]];
 
   shader.use(gl);
 
@@ -129,27 +116,15 @@ const drawMarkers = (glState: GlState, markerPositions: any[]) => {
   vao.bind(gl);
   gl.viewport(0.0, 0.0, width, height);
   const vertexCount = VERTICES_PER_MARKER * markerPositions.length;
-  // const vertexCount = VERTICES_PER_MARKER * 2;
   gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
 };
-
-let debug = true;
 
 export const doDraw = (animState: AnimState, glState: GlState) => {
   const boneTransforms = drawLamp(animState, glState);
 
   const markerPositions = getMarkerViewportPositions(glState, boneTransforms);
-
   drawMarkers(glState, markerPositions);
 
-  if (debug) {
-    console.log(`--- markerPositions ---`);
-
-    // console.log(markerPositions);
-    markerPositions.forEach(e => console.log(e));
-    debug = false;
-    console.log(`--- markerPositions ---`);
-  }
 
   // drawBall(animState, scene);
   // drawManipulators(animState, scene);

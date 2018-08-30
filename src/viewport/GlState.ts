@@ -4,8 +4,10 @@ import {
   Vao, VaoAttrInit,
   DrawParameters, applyDrawParams
 } from '../gl-utils';
+import {GltfLoader} from 'gltf-loader-ts';
 import {CameraFPS} from './camera-fps';
-import {readGltf} from './readGltf';
+import {readObject} from './readGltfObject';
+import {readArmature} from './readGltfArmature';
 import {mat4} from 'gl-mat4';
 import {vec3} from 'gl-vec3';
 import {quat} from 'gl-quat';
@@ -22,6 +24,7 @@ export class ObjectGeometry {
 export class Bone {
   constructor (
     public readonly name: string,
+    public readonly bindMatrix: mat4, // used when drawing markers
     public readonly inverseBindMatrix: mat4,
     public readonly children: number[],
     public readonly translation: vec3,
@@ -80,6 +83,7 @@ const createMarkersVao = (gl: Webgl, shader: Shader, size: number) => {
 export const createGlState = async (canvasId: string, gltfUrl: string) => {
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
   const gl = createWebGlContext(canvas, {});
+
   const camera = new CameraFPS(canvas, {
     fovDgr: 90,
     zNear: 0.1,
@@ -93,9 +97,17 @@ export const createGlState = async (canvasId: string, gltfUrl: string) => {
     require('shaders/marker.vert.glsl'),
     require('shaders/lampShader.frag.glsl'));
 
-  const {lampObject, lampArmature} = await readGltf(gl, gltfUrl, {
-    lampShader: lampShader,
-  });
+  // const {lampObject, lampArmature} = await readGltf(gl, gltfUrl, {
+    // lampShader: lampShader,
+  // });
+
+  const loader = new GltfLoader();
+  const asset = await loader.load(gltfUrl);
+  console.log('asset', asset);
+  console.log('gltf', asset.gltf);
+
+  const lampArmature = await readArmature(asset, 'SkeletonTest');
+  const lampObject = await readObject(gl, lampShader, asset);
 
   return new GlState(
     gl, canvas, camera,
