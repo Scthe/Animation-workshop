@@ -1,131 +1,46 @@
 import {GlState} from './GlState';
+import {AnimState, MarkerPosition} from './structs';
 import {setUniforms, DrawParameters, DepthTest, CullingMode, transformPointByMat4} from '../gl-utils';
 import {calculateBoneMatrices} from './calculateBoneMatrices';
 import {mat4, multiply, create as mat4_Create, identity, fromQuat, invert, copy} from 'gl-mat4';
+import {fromValues as vec3_Create} from 'gl-vec3';
+import {drawLamp} from './drawLamp';
+import {getMarkerPositionsFromArmature, drawMarkers} from './drawMarkers';
 
-export interface AnimState {
-  deltaTime: number; // previous -> this frame
-  animationFrameId: number; // frame to render, used for interpolation etc.
-  frameId: number; // id of current frame
-}
+// TODO move from main to here
+// TODO rename to viewport-main.ts
+// TODO organize imports in doDraw
+
+// TODO implement click with LMB, camera move with RMB
 
 const identityMatrix = (() => {
   const m = mat4_Create();
   return identity(m);
 })();
 
-const drawLamp = (animState: AnimState, glState: GlState) => {
-  const {gl, camera, lampShader: shader, lampObject: geo, lampArmature: armature} = glState;
-  const {width, height} = glState.getViewport();
-  if (!geo) { return; }
+const createMarkers = (positions: MarkerPosition[]) => {
+  const armatureMarkers = positions.map(position => ({
+    color: vec3_Create(0, 0, 1),
+    position,
+    renderable: true,
+  }));
 
-  shader.use(gl);
-
-  const dp = new DrawParameters();
-  dp.depth.test = DepthTest.IfLessOrEqual;
-  glState.setDrawState(dp);
-
-
-  setUniforms(gl, shader, {
-    'g_Pmatrix': camera.getProjectionMatrix(width, height),
-    'g_Vmatrix': camera.getViewMatrix(),
-    'g_Mmatrix': identityMatrix,
-  }, true);
-
-  const boneTransforms = calculateBoneMatrices(animState, armature);
-  boneTransforms.forEach((boneMat: mat4, i: number) => {
-    const name = `g_BoneTransforms[${i}]`;
-    const location = gl.getUniformLocation(shader.glId, name);
-    gl.uniformMatrix4fv(location, false, boneMat);
-  });
-
-
-  const {vao, indicesGlType, indexBuffer, triangleCnt} = geo;
-
-  vao.bind(gl);
-  gl.viewport(0.0, 0.0, width, height);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indicesGlType, 0);
-
-  return boneTransforms;
-};
-
-const getMarkerViewportPositions = (glState: GlState, boneTransforms: mat4[]) => {
-  const {lampArmature, camera} = glState;
-  const {width, height} = glState.getViewport();
-  const p = camera.getProjectionMatrix(width, height);
-  const v = camera.getViewMatrix();
-  const m = identityMatrix;
-  const mvp = mat4_Create(), tmp = mat4_Create();
-  multiply(tmp, p, v);
-  multiply(mvp, tmp, m);
-
-  const getParentBindMatrix = (boneIdx: number) => {
-    const bindMat = mat4_Create();
-    const parentBone = lampArmature.filter(b => b.children.indexOf(boneIdx) !== -1)[0];
-
-    if (!parentBone) {
-      identity(bindMat);
-    } else {
-      copy(bindMat, parentBone.bindMatrix);
-    }
-    return bindMat;
+  const testMarker = {
+    color: vec3_Create(0, 1, 0),
+    position: [0.5, 0.5] as any,
+    renderable: true,
   };
 
-  return boneTransforms.map((boneMat, idx) => {
-    const bone = lampArmature[idx];
-    const bonePos = bone.translation; // relative to parent
-    const pos = [0, 0, 0];
-
-    const bindMat = getParentBindMatrix(idx);
-    transformPointByMat4(pos as any, bonePos, bindMat);
-
-    const localPos = [0, 0, 0];
-    const result = [0, 0, 0];
-    transformPointByMat4(localPos as any, pos as any, boneMat);
-    transformPointByMat4(result as any, localPos as any, mvp);
-
-    return [result[0], result[1]];
-  });
-};
-
-
-const VERTICES_PER_MARKER = 6;
-
-const drawMarkers = (glState: GlState, markerPositions: any[]) => {
-  const {gl, markersShader: shader, markersVao: vao} = glState;
-  const {width, height} = glState.getViewport();
-
-  shader.use(gl);
-
-  const dp = new DrawParameters();
-  dp.depth.write = false;
-  dp.depth.test = DepthTest.AlwaysPass;
-  dp.culling = CullingMode.None;
-  glState.setDrawState(dp);
-
-  setUniforms(gl, shader, {
-    'g_Viewport': [width, height],
-  }, true);
-  markerPositions.forEach((value: any, i: number) => {
-    const name = `g_MarkerPositions[${i}]`;
-    const location = gl.getUniformLocation(shader.glId, name);
-    gl.uniform2fv(location, value);
-  });
-
-  vao.bind(gl);
-  gl.viewport(0.0, 0.0, width, height);
-  const vertexCount = VERTICES_PER_MARKER * markerPositions.length;
-  gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+  return [...armatureMarkers, testMarker];
 };
 
 export const doDraw = (animState: AnimState, glState: GlState) => {
-  const boneTransforms = drawLamp(animState, glState);
+  const {lampArmature} = glState;
 
-  const markerPositions = getMarkerViewportPositions(glState, boneTransforms);
-  drawMarkers(glState, markerPositions);
+  const boneTransforms = calculateBoneMatrices(animState, lampArmature);
+  drawLamp(animState, glState, boneTransforms, identityMatrix);
 
-
-  // drawBall(animState, scene);
-  // drawManipulators(animState, scene);
+  const markerPositions = getMarkerPositionsFromArmature(glState, lampArmature, boneTransforms, identityMatrix);
+  const markers = createMarkers(markerPositions);
+  drawMarkers(glState, markers);
 };

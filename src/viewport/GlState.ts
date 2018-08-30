@@ -1,55 +1,68 @@
 import {
   createWebGlContext,
   Shader,
-  Vao, VaoAttrInit,
+  Vao,
   DrawParameters, applyDrawParams
 } from '../gl-utils';
 import {GltfLoader} from 'gltf-loader-ts';
 import {CameraFPS} from './camera-fps';
 import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
-import {mat4} from 'gl-mat4';
-import {vec3} from 'gl-vec3';
-import {quat} from 'gl-quat';
+import {ObjectGeometry, Armature} from './structs';
+import {createMarkersVao} from './drawMarkers';
+import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
 
-export class ObjectGeometry {
-  constructor(
-    public readonly vao: Vao,
-    public readonly indicesGlType: GLenum, // e.g. gl.UNSIGNED_SHORT
-    public readonly indexBuffer: WebGLBuffer,
-    public readonly triangleCnt: number
-  ) { }
-}
+const CAMERA_SETTINGS = {
+  fovDgr: 90,
+  zNear: 0.1,
+  zFar: 100,
+};
 
-export class Bone {
-  constructor (
-    public readonly name: string,
-    public readonly bindMatrix: mat4, // used when drawing markers
-    public readonly inverseBindMatrix: mat4,
-    public readonly children: number[],
-    public readonly translation: vec3,
-    public readonly rotation: quat,
-    public readonly scale: vec3
-  ) { }
-}
-
-export type Armature = Bone[];
+const SHADERS = {
+  LAMP_VERT: require('shaders/lampShader.vert.glsl'),
+  LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
+  MARKER_VERT: require('shaders/marker.vert.glsl')
+};
 
 export class GlState {
-  private drawParams: DrawParameters;
 
-  constructor (
-    public readonly gl: Webgl,
-    private canvas: HTMLCanvasElement,
-    public readonly camera: CameraFPS,
-    public readonly lampShader: Shader,
-    public readonly lampObject: ObjectGeometry,
-    public readonly lampArmature: Armature,
-    public readonly markersShader: Shader, // draw points in 3d
-    public readonly markersVao: Vao
-  ) {
+  public gl: Webgl;
+  private canvas: HTMLCanvasElement;
+  private drawParams: DrawParameters;
+  public camera: CameraFPS;
+  // objects: lamp
+  public lampShader: Shader;
+  public lampObject: ObjectGeometry;
+  public lampArmature: Armature;
+  // objects: dots to indicate object's origins
+  public markersShader: Shader;
+  public markersVao: Vao;
+
+  async init (canvasId: string, gltfUrl: string) {
+    this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    this.gl = createWebGlContext(this.canvas, {});
+    this.camera = new CameraFPS(this.canvas, CAMERA_SETTINGS);
+
     this.drawParams = new DrawParameters();
-    applyDrawParams(gl, this.drawParams, undefined, true);
+    applyDrawParams(this.gl, this.drawParams, undefined, true);
+
+    const loader = new GltfLoader();
+    const asset = await loader.load(gltfUrl);
+    console.log('asset', asset);
+    console.log('gltf', asset.gltf);
+
+    // objects: lamp
+    this.lampShader = new Shader(this.gl, SHADERS.LAMP_VERT, SHADERS.LAMP_FRAG);
+    this.lampArmature = await readArmature(asset, 'SkeletonTest');
+    this.lampObject = await readObject(this.gl, asset, this.lampShader, 'Cube', {
+      'POSITION': 'a_Position',
+      'JOINTS_0': 'a_BoneIDs',
+      'WEIGHTS_0': 'a_Weights',
+    });
+
+    // objects: markers
+    this.markersShader = new Shader(this.gl, SHADERS.MARKER_VERT, SHADERS.LAMP_FRAG);
+    this.markersVao = createMarkersVao(this.gl, this.markersShader);
   }
 
   setDrawState (nextParams: DrawParameters) {
@@ -64,54 +77,16 @@ export class GlState {
     };
   }
 
-}
+  getMVP (modelMatrix: mat4) {
+    const {width, height} = this.getViewport();
 
-const MARKER_VAO_SIZE = 255;
+    const vp = mat4_Create();
+    multiply(vp, this.camera.getProjectionMatrix(width, height), this.camera.getViewMatrix());
 
-const createMarkersVao = (gl: Webgl, shader: Shader, size: number) => {
-  const data = new Float32Array(size);
-  for (let i = 0; i < size; i++) {
-    data[i] = i;
+    const mvp = mat4_Create();
+    multiply(mvp, vp, modelMatrix);
+
+    return mvp;
   }
 
-  return new Vao(gl, shader, [
-    new VaoAttrInit('a_VertexId_f', data, 0, 0),
-  ]);
-};
-
-// init function
-export const createGlState = async (canvasId: string, gltfUrl: string) => {
-  const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-  const gl = createWebGlContext(canvas, {});
-
-  const camera = new CameraFPS(canvas, {
-    fovDgr: 90,
-    zNear: 0.1,
-    zFar: 100,
-  });
-
-  const lampShader = new Shader(gl,
-    require('shaders/lampShader.vert.glsl'),
-    require('shaders/lampShader.frag.glsl'));
-  const markersShader = new Shader(gl,
-    require('shaders/marker.vert.glsl'),
-    require('shaders/lampShader.frag.glsl'));
-
-  // const {lampObject, lampArmature} = await readGltf(gl, gltfUrl, {
-    // lampShader: lampShader,
-  // });
-
-  const loader = new GltfLoader();
-  const asset = await loader.load(gltfUrl);
-  console.log('asset', asset);
-  console.log('gltf', asset.gltf);
-
-  const lampArmature = await readArmature(asset, 'SkeletonTest');
-  const lampObject = await readObject(gl, lampShader, asset);
-
-  return new GlState(
-    gl, canvas, camera,
-    lampShader, lampObject, lampArmature,
-    markersShader, createMarkersVao(gl, markersShader, MARKER_VAO_SIZE)
-  );
-};
+}

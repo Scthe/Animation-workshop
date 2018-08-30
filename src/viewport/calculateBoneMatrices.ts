@@ -8,9 +8,9 @@ import {
 } from 'gl-mat4';
 import { fromValues as vec3_Create, vec3 } from 'gl-vec3';
 import { create as quat_Create, rotateX } from 'gl-quat';
-import {AnimState} from './doDraw';
-import {Armature} from './GlState';
+import {Armature} from './structs';
 import {toRadians} from '../gl-utils';
+import {AnimState} from './structs';
 
 /*
   In this file we update bone matrices for animation.

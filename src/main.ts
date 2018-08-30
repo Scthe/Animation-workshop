@@ -1,5 +1,5 @@
 import {requestAnimFrame, handleResize} from './gl-utils';
-import {createGlState, GlState, ObjectGeometry} from './viewport/GlState';
+import {GlState} from './viewport/GlState';
 import {doDraw} from './viewport/doDraw';
 
 const CANVAS_EL_ID = 'anim-canvas';
@@ -8,7 +8,8 @@ const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
 
 const init = async () => {
-  const glState = await createGlState(CANVAS_EL_ID, GLTF_URL);
+  const glState = new GlState();
+  await glState.init(CANVAS_EL_ID, GLTF_URL);
 
   glState.gl.clearColor(0.5, 0.5, 0.5, 0.9);
   glState.gl.clearDepth(1.0);

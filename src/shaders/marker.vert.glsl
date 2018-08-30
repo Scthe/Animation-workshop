@@ -6,6 +6,7 @@ attribute float a_VertexId_f;
 #define a_VertexID (int(a_VertexId_f))
 
 uniform vec2 g_MarkerPositions[MAX_MARKERS];
+uniform vec3 g_MarkerColors[MAX_MARKERS];
 uniform vec2 g_Viewport;
 
 varying vec3 vColor;
@@ -32,12 +33,12 @@ const int VERTICES_PER_MARKER = 6;
 const float MARKER_RADIUS = 15.0;
 
 void main() {
-   vColor = vec3(0, 1, 0);
-
    int markerId = a_VertexID / VERTICES_PER_MARKER;
    vec2 markerPosition = g_MarkerPositions[markerId];
    vec2 delta = MARKER_RADIUS / g_Viewport;
    vec2 deltaSign = getFullscreenPos();
    vec2 pos = markerPosition + delta * deltaSign;
    gl_Position = vec4(pos, 0.0, 1.0);
+
+   vColor = g_MarkerColors[markerId];
 }

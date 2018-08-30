@@ -1,32 +1,25 @@
 import {GltfAsset} from 'gltf-loader-ts';
 import {Shader, Vao, VaoAttrInit, BYTES} from '../gl-utils';
-import {ObjectGeometry} from './GlState';
-
-const LAMP_MESH_NAME = 'Cube';
-
-interface ShaderCollection {
-  lampShader: Shader;
-}
+import {ObjectGeometry} from './structs';
 
 type TypedArrayConvertMapFn = (n: number) => number;
 
+/*
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray
+ *
+ * Note about bone indices as attributes:
+ *   Bone indices are ints (actually unsigned shorts = gl.UNSIGNED_SHORT = 5123).
+ *   Webgl shaders do no accept ints/shorts. We have to convert all to floats.
+ */
+
 /**
-  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray
-  *
-  * Bone indices are ints (actually unsigned shorts = 5123). Webgl shaders
-  * do no accept ints/shorts. We have to convert all to floats.
-  * e.g. for 72 vertices there are (72[vertices] * 4[boneInfluence/vertex] = 284[boneInfluence])
-  */
-const convertBufferUnderlayingType = (buffer: Uint8Array, SourceType: Function, TargetType: Function,
-  mapFn?: TypedArrayConvertMapFn
-) => {
-  mapFn = mapFn ? mapFn : (e: number) => e;
-
-  // First reinterpret raw bytes as Uint16
-  const dataBoneIdsAsUint16 = new (SourceType as any)(buffer.buffer, buffer.byteOffset, buffer.length / BYTES.SHORT);
-
-  // map each of Uint16 to float
-  return (TargetType as any).from(dataBoneIdsAsUint16, mapFn);
+ * Reinterpret raw data from binary part of gltf. Returned array does not have to have same length!
+ * e.g (256 of u8) make (128 of u16) or (64 of u32) etc.
+ */
+const reinterpretRawBytes = (srcBuffer: Uint8Array, TargetType: Function, targetTypeBytes: number) => {
+  const {buffer, byteOffset, length} = srcBuffer;
+  const newLength = length / targetTypeBytes; // e.g. (256 of u8) make (128 of u16) etc.
+  return new (TargetType as any)(buffer, byteOffset, newLength) as any;
 };
 
 const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number) => {
@@ -37,8 +30,13 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
   switch (accessor.componentType) {
     case gl.FLOAT: // 5126
       return rawData; // will be accepted no problem
-    case gl.UNSIGNED_SHORT: // 5123
-      return convertBufferUnderlayingType(rawData, Uint16Array, Float32Array, (e: number) => e + 0.5); // add half to correct (maybe?) rounding errors e.g. (1:u32) -> (0.99:f32) -> (0:u32)
+
+    case gl.UNSIGNED_SHORT: { // 5123
+      const dataAsU16 = reinterpretRawBytes(rawData, Uint16Array, BYTES.SHORT);
+      // add half to correct (maybe?) rounding errors e.g. (1:u32) -> (0.99:f32) -> (0:u32)
+      return Float32Array.from(dataAsU16, (e: number) => e + 0.5);
+    }
+
     case gl.BYTE: // 5120
     case gl.UNSIGNED_BYTE: // 5121
     case gl.SHORT: // 5122
@@ -53,64 +51,46 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
 };
 
 const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: number) => {
-  const gltf = asset.gltf;
-  const accessor = gltf.accessors[indicesAccesorId];
-  const dataRaw = await asset.bufferViewData(accessor.bufferView);
-
-  // create webgl buffer
-  const indexBufferGlId = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferGlId);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, dataRaw, gl.STATIC_DRAW);
+  const accessor = asset.gltf.accessors[indicesAccesorId];
   if (accessor.componentType !== gl.UNSIGNED_BYTE) {
+    // TODO hardcoded for now to gl.UNSIGNED_BYTE
     throw `Unsupported index buffer component type (${accessor.componentType})`;
   }
 
-  // const idxCnt = accessor.count;
-  // console.log(`indices(${idxCnt}), triangles (${idxCnt/3}), quads(${idxCnt/6}), cubes(${idxCnt/6/6}) not known #vertices, cause indexing + raw data`);
+  const dataRaw = await asset.bufferViewData(accessor.bufferView);
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, dataRaw, gl.STATIC_DRAW);
 
   return {
     type: gl.UNSIGNED_BYTE,
-    buffer: indexBufferGlId,
+    buffer,
     triangleCnt: accessor.count / 3,
   };
 };
 
-/** TODO use accessor-attribute => shader-attribute map (POSITION => a_Position) */
-export const readObject = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
-  const gltf = asset.gltf;
-  const meshDesc = gltf.meshes.filter(e => e.name === LAMP_MESH_NAME)[0];
-  if (!meshDesc) { throw `Could not find lamp object (looked for ${LAMP_MESH_NAME})`; }
-  // console.log(`mesh ${meshDesc.name}`, meshDesc);
+type GltfAttrToShaderAttrMap = {[gltfAttrKey: string]: string};
 
-  // each attribute refers to accessors
+export const readObject = async (gl: Webgl, asset: GltfAsset, shader: Shader, meshName: string, attrMap: GltfAttrToShaderAttrMap) => {
+  const meshDesc = asset.gltf.meshes.filter(e => e.name === meshName)[0];
+  if (!meshDesc) { throw `Could not find lamp object (looked for ${meshName})`; }
+
+  // each attribute refers to accessor
   const mesh = meshDesc.primitives[0]; // might as well
   const attributes = mesh.attributes;
-  // for (let attr in attributes) {
-    // console.log(`Attr ${attr} (idx: ${attributes[attr]})`);
-  // }
+  const attrInitOpts: VaoAttrInit[] = [];
 
-  const dataPos = await getAttributeData(gl, asset, attributes.POSITION);
-  const dataWeights = await getAttributeData(gl, asset, attributes.WEIGHTS_0);
-  const dataBoneIds = await getAttributeData(gl, asset, attributes.JOINTS_0);
-  // const dataNormal = await getAttributeData(gl, asset, attributes.NORMAL);
+  for (let gltfAttrName in attrMap) {
+    if (!(gltfAttrName in attributes)) {
+      throw `Could not find ${meshName}.${gltfAttrName} attribute in glft file`;
+    }
 
-  /*console.log([
-    'vertices',
-    '= ' + (dataPos.length / BYTES.FLOAT / 3),     // vec3 === 3 * (F32=5126)
-    '= ' + (dataBoneIds.length / BYTES.SHORT / 4), // svec4 === 4 * (U16=5123) // TODO this is in U16, not U8, will not match rest
-    '= ' + (dataWeights.length / BYTES.FLOAT / 4), // vec4  === 4 * (F32=5126)
-    // '= ' + (dataNormal.length / BYTES.FLOAT / 3),  // vec3 === 3 * (F32=5126)
-  ].join(' '));*/
+    const shaderAttrName = attrMap[gltfAttrName];
+    const data = await getAttributeData(gl, asset, attributes[gltfAttrName]);
+    attrInitOpts.push(new VaoAttrInit(shaderAttrName, data, 0, 0));
+  }
 
-  // create vao
-  const vao = new Vao(gl, shader, [
-    new VaoAttrInit('a_Position', dataPos, 0, 0),
-    new VaoAttrInit('a_BoneIDs', dataBoneIds, 0, 0),
-    new VaoAttrInit('a_Weights', dataWeights, 0, 0)
-  ]);
-
-  // indices
+  const vao = new Vao(gl, shader, attrInitOpts);
   const indexBuffer = await createIndexBuffer(gl, asset, mesh.indices);
-
   return new ObjectGeometry(vao, indexBuffer.type, indexBuffer.buffer, indexBuffer.triangleCnt);
 };
