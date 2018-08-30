@@ -8,9 +8,10 @@ import {GltfLoader} from 'gltf-loader-ts';
 import {CameraFPS} from './camera-fps';
 import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
-import {ObjectGeometry, Armature} from './structs';
+import {ObjectGeometry, Armature, Marker} from './structs';
 import {createMarkersVao} from './drawMarkers';
 import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
+import {MouseHandler} from './MouseHandler';
 
 const CAMERA_SETTINGS = {
   fovDgr: 90,
@@ -24,12 +25,20 @@ const SHADERS = {
   MARKER_VERT: require('shaders/marker.vert.glsl')
 };
 
+interface LastFrameCache {
+  markers: Marker[]; // mouse handling is async
+}
+
 export class GlState {
 
   public gl: Webgl;
   private canvas: HTMLCanvasElement;
   private drawParams: DrawParameters;
   public camera: CameraFPS;
+  public lastFrameCache: LastFrameCache;
+  // IO
+  private mouseHander: MouseHandler;
+  public pressedKeys: boolean[] = new Array(128); // keycode => bool
   // objects: lamp
   public lampShader: Shader;
   public lampObject: ObjectGeometry;
@@ -41,7 +50,7 @@ export class GlState {
   async init (canvasId: string, gltfUrl: string) {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.gl = createWebGlContext(this.canvas, {});
-    this.camera = new CameraFPS(this.canvas, CAMERA_SETTINGS);
+    this.camera = new CameraFPS(CAMERA_SETTINGS);
 
     this.drawParams = new DrawParameters();
     applyDrawParams(this.gl, this.drawParams, undefined, true);
@@ -63,6 +72,18 @@ export class GlState {
     // objects: markers
     this.markersShader = new Shader(this.gl, SHADERS.MARKER_VERT, SHADERS.LAMP_FRAG);
     this.markersVao = createMarkersVao(this.gl, this.markersShader);
+
+    // cache
+    this.lastFrameCache = { markers: [], };
+
+    // IO
+    this.mouseHander = new MouseHandler(this.canvas, this);
+    window.addEventListener('keydown', event => {
+      this.pressedKeys[event.keyCode] = true;
+    }, false);
+    window.addEventListener('keyup', event => {
+      this.pressedKeys[event.keyCode] = false;
+    }, false);
   }
 
   setDrawState (nextParams: DrawParameters) {

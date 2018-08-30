@@ -7,6 +7,7 @@ attribute float a_VertexId_f;
 
 uniform vec2 g_MarkerPositions[MAX_MARKERS];
 uniform vec3 g_MarkerColors[MAX_MARKERS];
+uniform float g_MarkerRadius[MAX_MARKERS];
 uniform vec2 g_Viewport;
 
 varying vec3 vColor;
@@ -30,12 +31,13 @@ vec2 getFullscreenPos () {
 /////////////////
 
 const int VERTICES_PER_MARKER = 6;
-const float MARKER_RADIUS = 15.0;
 
 void main() {
    int markerId = a_VertexID / VERTICES_PER_MARKER;
    vec2 markerPosition = g_MarkerPositions[markerId];
-   vec2 delta = MARKER_RADIUS / g_Viewport;
+   float markerRadius = g_MarkerRadius[markerId];
+
+   vec2 delta = markerRadius / g_Viewport;
    vec2 deltaSign = getFullscreenPos();
    vec2 pos = markerPosition + delta * deltaSign;
    gl_Position = vec4(pos, 0.0, 1.0);

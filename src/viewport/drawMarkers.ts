@@ -60,6 +60,7 @@ const setMarkerUniforms = (glState: GlState, shader: Shader, markers: Marker[]) 
 
   const markerPositions = loMap(markers, 'position');
   const markerColors = loMap(markers, 'color');
+  const markerRadius = loMap(markers, 'radius');
 
   setUniforms(gl, shader, {
     'g_Viewport': [width, height],
@@ -70,6 +71,8 @@ const setMarkerUniforms = (glState: GlState, shader: Shader, markers: Marker[]) 
     gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), markerPositions[i]);
     const colName = `g_MarkerColors[${i}]`;
     gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), markerColors[i]);
+    const radName = `g_MarkerRadius[${i}]`;
+    gl.uniform1fv(gl.getUniformLocation(shader.glId, radName), [markerRadius[i]]);
   }
 };
 

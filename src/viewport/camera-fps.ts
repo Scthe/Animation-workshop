@@ -10,18 +10,12 @@ import {
 import { fromValues as vec3_Create, vec3 } from 'gl-vec3';
 import { transformPointByMat4, toRadians } from '../gl-utils';
 
-class MouseState {
-  isClicked = false;
-  lastPosition = [0, 0];
-}
-
-const MOUSE_LEFT_BTN_WHICH = 1;
 const KEY_FORWARD = 'W'.charCodeAt(0);
-const KEY_BACK = 'S'.charCodeAt(0);
-const KEY_LEFT = 'A'.charCodeAt(0);
-const KEY_RIGHT = 'D'.charCodeAt(0);
-const KEY_DOWN = 'Z'.charCodeAt(0);
-const KEY_UP = 32; // Space, moves up
+const KEY_BACK    = 'S'.charCodeAt(0);
+const KEY_LEFT    = 'A'.charCodeAt(0);
+const KEY_RIGHT   = 'D'.charCodeAt(0);
+const KEY_DOWN    = 'Z'.charCodeAt(0);
+const KEY_UP      = 32; // Space, moves up
 
 interface CameraSettings {
   fovDgr: number;
@@ -32,28 +26,16 @@ interface CameraSettings {
 export class CameraFPS {
   private angles = [0, 0]; // angles like in polar coords
   private position = [0, 0, 2]; // xyz
-  private pressedKeys = new Array(128); // keycode => bool
-  private mouseState = new MouseState();
   private rotateSpeed = 0;
 
-  constructor (canvas: HTMLCanvasElement, public settings: CameraSettings) {
-    this.onKeyDown = this.onKeyDown.bind(this);
-    this.onKeyUp = this.onKeyUp.bind(this);
-    this.onMouseDown = this.onMouseDown.bind(this);
-    this.onMouseMove = this.onMouseMove.bind(this);
-    this.onMouseUp = this.onMouseUp.bind(this);
-
-    window.addEventListener('keydown', this.onKeyDown, false);
-    window.addEventListener('keyup', this.onKeyUp, false);
-    canvas.addEventListener('mousedown', this.onMouseDown, false);
-    canvas.addEventListener('mousemove', this.onMouseMove, false);
-    canvas.addEventListener('mouseup', this.onMouseUp, false);
+  constructor (public settings: CameraSettings) {
   }
 
-  update (deltaTime: number, moveSpeed: number, rotateSpeed: number) {
-    this.rotateSpeed = rotateSpeed;
+  update (deltaTime: number, moveSpeed: number, rotateSpeed: number, keyState: boolean[]) {
+    this.rotateSpeed = rotateSpeed; // save for future async mouse move
+
     const speed = moveSpeed * deltaTime;
-    const moveDir = this.calculateMovementDirectionFromKeys(speed); // move direction, global
+    const moveDir = this.calculateMovementDirectionFromKeys(keyState, speed);
 
     if (moveDir[0] !== 0 || moveDir[1] !== 0 || moveDir[2] !== 0) {
       let rotationMat = this.getRotationMat();
@@ -67,14 +49,14 @@ export class CameraFPS {
     }
   }
 
-  private calculateMovementDirectionFromKeys (speed: number) {
+  private calculateMovementDirectionFromKeys (keyState: boolean[], speed: number) {
     let moveDir = vec3_Create(0, 0, 0);
-    if (this.pressedKeys[KEY_FORWARD]) { moveDir[2] -= speed; } // z-axis
-    if (this.pressedKeys[KEY_BACK])    { moveDir[2] += speed; }
-    if (this.pressedKeys[KEY_LEFT])    { moveDir[0] -= speed; } // x-axis
-    if (this.pressedKeys[KEY_RIGHT])   { moveDir[0] += speed; }
-    if (this.pressedKeys[KEY_UP])      { moveDir[1] += speed; } // y-axis
-    if (this.pressedKeys[KEY_DOWN])    { moveDir[1] -= speed; }
+    if (keyState[KEY_FORWARD]) { moveDir[2] -= speed; } // z-axis
+    if (keyState[KEY_BACK])    { moveDir[2] += speed; }
+    if (keyState[KEY_LEFT])    { moveDir[0] -= speed; } // x-axis
+    if (keyState[KEY_RIGHT])   { moveDir[0] += speed; }
+    if (keyState[KEY_UP])      { moveDir[1] += speed; } // y-axis
+    if (keyState[KEY_DOWN])    { moveDir[1] -= speed; }
     return moveDir;
   }
 
@@ -110,35 +92,7 @@ export class CameraFPS {
     return vec3_Create(pos[0], pos[1], pos[2]);
   }
 
-  // <editor-fold listeners>
-
-  private onKeyDown (event: KeyboardEvent) {
-    this.pressedKeys[event.keyCode] = true;
-  }
-
-  private onKeyUp (event: KeyboardEvent) {
-    this.pressedKeys[event.keyCode] = false;
-  }
-
-  private onMouseDown (event: MouseEvent ) {
-    if (event.which === MOUSE_LEFT_BTN_WHICH) {
-      this.mouseState.isClicked = true;
-    }
-    this.mouseState.lastPosition[0] = event.pageX;
-    this.mouseState.lastPosition[1] = event.pageY;
-  }
-
-  private onMouseMove (event: MouseEvent) {
-    let mouseState = this.mouseState;
-    if (!mouseState.isClicked) { return; }
-
-    let mouseDelta = [
-      event.pageX - mouseState.lastPosition[0],
-      event.pageY - mouseState.lastPosition[1],
-    ];
-    mouseState.lastPosition[0] = event.pageX;
-    mouseState.lastPosition[1] = event.pageY;
-
+  onMouseMove (mouseDelta: number[]) {
     this.angles[1] += mouseDelta[0] * this.rotateSpeed;
     while (this.angles[1] < 0)
         this.angles[1] += toRadians(360);
@@ -151,11 +105,5 @@ export class CameraFPS {
     while (this.angles[0] > toRadians(90))
         this.angles[0] = toRadians(90);
   }
-
-  private onMouseUp (event: MouseEvent ) {
-    this.mouseState.isClicked = false;
-  }
-
-  // </editor-fold>
 
 }
