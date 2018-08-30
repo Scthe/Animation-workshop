@@ -16,7 +16,7 @@ uniform mat4 g_BoneTransforms[MAX_BONE_COUNT];
 varying vec3 vColor;
 
 void main() {
-   gl_Position = g_Pmatrix * g_Vmatrix * g_Mmatrix * vec4(a_Position, 1.0);
+   // gl_Position = g_Pmatrix * g_Vmatrix * g_Mmatrix * vec4(a_Position, 1.0);
 
    // vColor = vec3(1,0,0);
    // vColor = vec3(a_Weights.xyz);
@@ -35,5 +35,5 @@ void main() {
    }
 
    mat4 mvp = g_Pmatrix * g_Vmatrix * g_Mmatrix;
-   gl_Position = mvp * localPos;
+   gl_Position = mvp * localPos; // TODO divide by w
 }

@@ -4,7 +4,7 @@ import {doDraw} from './viewport/doDraw';
 
 const CANVAS_EL_ID = 'anim-canvas';
 const GLTF_URL = require('assets/LampAnimScene.glb');
-const CAMERA_MOVE_SPEED = 0.02; // depends on scale etc.
+const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
 
 const init = async () => {
@@ -44,4 +44,7 @@ const init = async () => {
 init()
   .then((onDraw: Function) => {
     onDraw(0);
+  })
+  .catch((e: any) => {
+    console.error(`FATAL_ERROR:`, e);
   });

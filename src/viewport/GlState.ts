@@ -1,7 +1,7 @@
 import {
   createWebGlContext,
   Shader,
-  Vao,
+  Vao, VaoAttrInit,
   DrawParameters, applyDrawParams
 } from '../gl-utils';
 import {CameraFPS} from './camera-fps';
@@ -41,7 +41,9 @@ export class GlState {
     public readonly camera: CameraFPS,
     public readonly lampShader: Shader,
     public readonly lampObject: ObjectGeometry,
-    public readonly lampArmature: Armature
+    public readonly lampArmature: Armature,
+    public readonly markersShader: Shader, // draw points in 3d
+    public readonly markersVao: Vao
   ) {
     this.drawParams = new DrawParameters();
     applyDrawParams(gl, this.drawParams, undefined, true);
@@ -61,6 +63,19 @@ export class GlState {
 
 }
 
+const MARKER_VAO_SIZE = 255;
+
+const createMarkersVao = (gl: Webgl, shader: Shader, size: number) => {
+  const data = new Float32Array(size);
+  for (let i = 0; i < size; i++) {
+    data[i] = i;
+  }
+
+  return new Vao(gl, shader, [
+    new VaoAttrInit('a_VertexId_f', data, 0, 0),
+  ]);
+};
+
 // init function
 export const createGlState = async (canvasId: string, gltfUrl: string) => {
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -74,6 +89,9 @@ export const createGlState = async (canvasId: string, gltfUrl: string) => {
   const lampShader = new Shader(gl,
     require('shaders/lampShader.vert.glsl'),
     require('shaders/lampShader.frag.glsl'));
+  const markersShader = new Shader(gl,
+    require('shaders/marker.vert.glsl'),
+    require('shaders/lampShader.frag.glsl'));
 
   const {lampObject, lampArmature} = await readGltf(gl, gltfUrl, {
     lampShader: lampShader,
@@ -81,6 +99,7 @@ export const createGlState = async (canvasId: string, gltfUrl: string) => {
 
   return new GlState(
     gl, canvas, camera,
-    lampShader, lampObject, lampArmature
+    lampShader, lampObject, lampArmature,
+    markersShader, createMarkersVao(gl, markersShader, MARKER_VAO_SIZE)
   );
 };

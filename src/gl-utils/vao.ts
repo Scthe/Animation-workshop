@@ -2,9 +2,12 @@ import {Shader} from './Shader';
 
 interface VaoAttrInfo {
   name: string;
+  glBuffer: WebGLBuffer;
   location: GLint;
   baseType: GLenum; // e.g. gl.FLOAT
-  elCount: number;
+  elCount: number; // e.g. 3 for vec3, 1 for float etc.
+  stride: number;
+  offset: number;
 }
 
 export class VaoAttrInit {
@@ -18,6 +21,7 @@ export class VaoAttrInit {
 
 const deconstructAttrType = (gl: Webgl, type: GLenum) => {
   switch (type) {
+    case gl.FLOAT: return [gl.FLOAT, 1];
     case gl.FLOAT_VEC2: return [gl.FLOAT, 2];
     case gl.FLOAT_VEC3: return [gl.FLOAT, 3];
     case gl.FLOAT_VEC4: return [gl.FLOAT, 4];
@@ -31,22 +35,22 @@ const setAttrFromBuffer = (gl: Webgl, shader: Shader, attr: VaoAttrInit) => {
   let shaderAttr = shader.getAttr(name);
   if (!shaderAttr) { return null; }
 
-  // create buffer
+  // create glBuffer and write
   const glBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, attr.rawData, gl.STATIC_DRAW); // write
+  gl.bufferData(gl.ARRAY_BUFFER, attr.rawData, gl.STATIC_DRAW);
 
   // connect buffer->attribute
-  const location = shaderAttr.location;
   const [baseType, elCount] = deconstructAttrType(gl, shaderAttr.type);
-  gl.vertexAttribPointer(location, elCount, baseType, false, stride, offset);
-  gl.enableVertexAttribArray(location);
 
   return {
-    name: name,
-    location,
+    name,
+    glBuffer,
+    location: shaderAttr.location,
     baseType,
     elCount,
+    stride,
+    offset
   } as VaoAttrInfo;
 };
 
@@ -71,10 +75,20 @@ export class Vao {
 
   isCreated () { return this.isOk; }
 
-  bind (_: Webgl) {}
+  bind (gl: Webgl) {
+    const bindAttr = ((attr: VaoAttrInfo) => {
+      const {glBuffer, location, baseType, elCount, stride, offset} = attr;
+      gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer);
+      gl.vertexAttribPointer(location, elCount, baseType, false, stride, offset);
+      gl.enableVertexAttribArray(location);
+    });
 
-  destroy (_: Webgl) {
+    this.attrs.forEach(bindAttr);
+  }
+
+  destroy (gl: Webgl) {
     this.isOk = false;
+    this.attrs.forEach(a => gl.deleteBuffer(a.glBuffer));
   }
 
 }
