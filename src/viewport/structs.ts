@@ -57,7 +57,7 @@ export type Armature = Bone[];
 /** Animation timing etc. */
 export interface AnimState {
   deltaTime: number; // previous -> this frame
-  animationFrameId: number; // frame to render, used for interpolation etc.
+  // animationFrameId: number; // frame to render, used for interpolation etc.
   frameId: number; // id of current frame
 }
 
