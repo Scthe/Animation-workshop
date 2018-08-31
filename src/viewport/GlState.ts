@@ -24,6 +24,7 @@ const SHADERS = {
   LAMP_VERT: require('shaders/lampShader.vert.glsl'),
   LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
   MARKER_VERT: require('shaders/marker.vert.glsl'),
+  MARKER_FRAG: require('shaders/marker.frag.glsl'),
   GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
 };
 
@@ -75,7 +76,7 @@ export class GlState {
     });
 
     // objects: markers
-    this.markersShader = new Shader(this.gl, SHADERS.MARKER_VERT, SHADERS.LAMP_FRAG);
+    this.markersShader = new Shader(this.gl, SHADERS.MARKER_VERT, SHADERS.MARKER_FRAG);
     this.markersVao = createMarkersVao(this.gl, this.markersShader);
 
     // gizmo

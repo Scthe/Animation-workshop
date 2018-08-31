@@ -1,7 +1,7 @@
 import {
   create as mat4_Create,
   identity,
-  fromTranslation,
+  fromTranslation, fromScaling,
   mat4,
   multiply,
   fromRotationTranslation
@@ -55,7 +55,6 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
 const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const {animState, bones, transforms} = cfg;
   const bone = bones[boneId];
-  const result = mat4_Create();
 
   let rotation = bone.rotation;
   if (boneId === 1) {
@@ -64,8 +63,15 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
     rotation = quat_Create();
     rotateX(rotation, bone.rotation, toRadians(animState.frameId % 360));
   }
-  fromRotationTranslation(result, rotation, bone.translation);
+  const rotTraMat = mat4_Create();
+  fromRotationTranslation(rotTraMat, rotation, bone.translation);
 
+  const scaleMat = mat4_Create(); // scale to prevent z-fighting
+  const s = 0.95;
+  fromScaling(scaleMat, vec3_Create(s, s, s));
+
+  const result = mat4_Create();
+  multiply(result, rotTraMat, scaleMat);
   return result;
 };
 

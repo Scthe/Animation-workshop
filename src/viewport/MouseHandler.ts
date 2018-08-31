@@ -1,5 +1,6 @@
 import {GlState} from './GlState';
 import {Marker} from './structs';
+import {setSelectedObject} from '../UI_State';
 
 const MOUSE_LEFT_BTN = 0; // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
 
@@ -35,6 +36,7 @@ export class MouseHandler {
       } else {
         this.clickedState = ClickedState.Object;
         console.log(`Clicked marker: `, clickedMarker);
+        setSelectedObject(clickedMarker);
       }
     }
     this.lastPosition[0] = event.pageX;

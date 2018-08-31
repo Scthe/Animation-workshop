@@ -74,3 +74,15 @@ export const transformPointByMat4 = (out: vec3, inVec_: vec3, m: mat4) => {
   out[2] = (dot(inVec, col3) + m[14]) / w;
   return out;
 };
+
+export const lerp = (a: number, b: number, time: number) => {
+  return (1 - time) * a + time * b;
+};
+
+export const hexToVec3 = (hex: number) => {
+  // const a = (hex >> 24) & 0xff;
+  const r = (hex >> 16) & 0xff;
+  const g = (hex >>  8) & 0xff;
+  const b = (hex      ) & 0xff;
+  return vec3_Create(r / 255, g / 255, b / 255);
+};
