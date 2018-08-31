@@ -12,6 +12,7 @@ import {ObjectGeometry, Armature, Marker} from './structs';
 import {createMarkersVao} from './drawMarkers';
 import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
 import {MouseHandler} from './MouseHandler';
+import {createGizmoGeo} from './drawGizmos';
 
 const CAMERA_SETTINGS = {
   fovDgr: 90,
@@ -22,7 +23,8 @@ const CAMERA_SETTINGS = {
 const SHADERS = {
   LAMP_VERT: require('shaders/lampShader.vert.glsl'),
   LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
-  MARKER_VERT: require('shaders/marker.vert.glsl')
+  MARKER_VERT: require('shaders/marker.vert.glsl'),
+  GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
 };
 
 interface LastFrameCache {
@@ -46,6 +48,9 @@ export class GlState {
   // objects: dots to indicate object's origins
   public markersShader: Shader;
   public markersVao: Vao;
+  // gizmo
+  public gizmoShader: Shader;
+  public gizmoMoveGeometry: ObjectGeometry;
 
   async init (canvasId: string, gltfUrl: string) {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -57,8 +62,8 @@ export class GlState {
 
     const loader = new GltfLoader();
     const asset = await loader.load(gltfUrl);
-    console.log('asset', asset);
-    console.log('gltf', asset.gltf);
+    // console.log('asset', asset);
+    // console.log('gltf', asset.gltf);
 
     // objects: lamp
     this.lampShader = new Shader(this.gl, SHADERS.LAMP_VERT, SHADERS.LAMP_FRAG);
@@ -72,6 +77,10 @@ export class GlState {
     // objects: markers
     this.markersShader = new Shader(this.gl, SHADERS.MARKER_VERT, SHADERS.LAMP_FRAG);
     this.markersVao = createMarkersVao(this.gl, this.markersShader);
+
+    // gizmo
+    this.gizmoShader = new Shader(this.gl, SHADERS.GIZMO_VERT, SHADERS.LAMP_FRAG);
+    this.gizmoMoveGeometry = await createGizmoGeo(this.gl, this.gizmoShader);
 
     // cache
     this.lastFrameCache = { markers: [], };

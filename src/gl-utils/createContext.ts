@@ -21,7 +21,7 @@ const makeFailHTML = function(msg: string) {
 };
 
 const globalWebGlContext = () => {
-  (window as any).WebGLRenderingContext;
+  return (window as any).WebGLRenderingContext;
 };
 
 const handleCreationError = (canvas: HTMLCanvasElement, msg?: string) => {
@@ -62,5 +62,6 @@ export const createWebGlContext = (canvas: HTMLCanvasElement, optAttribs: WebGLC
       handleCreationError(canvas);
     }
   }
+
   return context;
 };

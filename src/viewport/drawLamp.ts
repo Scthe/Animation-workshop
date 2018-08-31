@@ -23,7 +23,6 @@ const setLampUniforms = (glState: GlState, shader: Shader, modelMatrix: mat4, bo
 
 export const drawLamp = (animState: AnimState, glState: GlState, boneTransforms: mat4[], modelMatrix: mat4) => {
   const {gl, lampShader: shader, lampObject: geo, lampArmature: armature} = glState;
-  const {width, height} = glState.getViewport();
   const {vao, indicesGlType, indexBuffer, triangleCnt} = geo;
 
   const dp = new DrawParameters();
@@ -33,7 +32,6 @@ export const drawLamp = (animState: AnimState, glState: GlState, boneTransforms:
   shader.use(gl);
   setLampUniforms(glState, shader, modelMatrix, boneTransforms);
   vao.bind(gl);
-  gl.viewport(0.0, 0.0, width, height);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
   gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indicesGlType, 0);
 };

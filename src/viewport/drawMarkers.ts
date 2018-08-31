@@ -78,8 +78,6 @@ const setMarkerUniforms = (glState: GlState, shader: Shader, markers: Marker[]) 
 
 export const drawMarkers = (glState: GlState, allMarkers: Marker[]) => {
   const {gl, markersShader: shader, markersVao: vao} = glState;
-  const {width, height} = glState.getViewport();
-
   const markers = allMarkers.filter(m => m.renderable);
   const vertexCount = VERTICES_PER_MARKER * markers.length;
 
@@ -92,6 +90,5 @@ export const drawMarkers = (glState: GlState, allMarkers: Marker[]) => {
   shader.use(gl);
   setMarkerUniforms(glState, shader, markers);
   vao.bind(gl);
-  gl.viewport(0.0, 0.0, width, height);
   gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
 };

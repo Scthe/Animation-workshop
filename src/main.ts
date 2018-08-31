@@ -3,7 +3,7 @@ import {GlState} from './viewport/GlState';
 import {viewportUpdate} from './viewport/main';
 
 const CANVAS_EL_ID = 'anim-canvas';
-const GLTF_URL = require('assets/LampAnimScene.glb');
+const GLTF_URL = require('assets/TestScene.glb');
 
 const init = async () => {
   const glState = new GlState();

@@ -29,6 +29,7 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
   // componentType: 5120 | 5121 | 5122 | 5123 | 5125 | 5126 | number
   switch (accessor.componentType) {
     case gl.FLOAT: // 5126
+      // console.log(`PRINT_REINTERPRET: ${accessor.name}`, reinterpretRawBytes(rawData, Float32Array, BYTES.FLOAT));
       return rawData; // will be accepted no problem
 
     case gl.UNSIGNED_SHORT: { // 5123
@@ -58,6 +59,7 @@ const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: 
   }
 
   const dataRaw = await asset.bufferViewData(accessor.bufferView);
+  // console.log(`INDEX_BUFFER`, dataRaw);
   const buffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, dataRaw, gl.STATIC_DRAW);
