@@ -1,5 +1,4 @@
 import STATIC_GL from './gimme_gl';
-import {clone} from 'lodash';
 
 enum ShaderStage {
   VertexShader = STATIC_GL.VERTEX_SHADER,

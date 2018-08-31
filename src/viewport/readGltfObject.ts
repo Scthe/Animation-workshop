@@ -2,8 +2,6 @@ import {GltfAsset} from 'gltf-loader-ts';
 import {Shader, Vao, VaoAttrInit, BYTES} from '../gl-utils';
 import {ObjectGeometry} from './structs';
 
-type TypedArrayConvertMapFn = (n: number) => number;
-
 /*
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray
  *

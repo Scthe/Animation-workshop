@@ -23,9 +23,9 @@ export class MouseHandler {
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
 
-    canvas.addEventListener('mousedown', this.onMouseDown, false);
-    canvas.addEventListener('mousemove', this.onMouseMove, false);
-    canvas.addEventListener('mouseup', this.onMouseUp, false);
+    this.canvas.addEventListener('mousedown', this.onMouseDown, false);
+    this.canvas.addEventListener('mousemove', this.onMouseMove, false);
+    this.canvas.addEventListener('mouseup', this.onMouseUp, false);
   }
 
   private onMouseDown (event: MouseEvent ) {
@@ -49,11 +49,11 @@ export class MouseHandler {
     // console.log(`Clicked (${clickX}, ${clickY})`);
 
     const toViewportPx = (marker: Marker) => {
-      const {position: posNDC} = marker;
+      const {positionNDC} = marker;
       // convert chain: [-1, 1] => [0, 2] => [0, 1] => [0, w]
       return [
-        (posNDC[0] + 1) / 2 * width,
-        height - (posNDC[1] + 1) / 2 * height
+        (positionNDC[0] + 1) / 2 * width,
+        height - (positionNDC[1] + 1) / 2 * height
       ];
     };
 

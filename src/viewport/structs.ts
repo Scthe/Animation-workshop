@@ -66,8 +66,8 @@ export type MarkerPosition = vec2;
 /** @see drawMarkers.ts for entire file about markers */
 export interface Marker {
   name: string;
-  radius: number; // in Px
+  radius: number;
   color: vec3;
-  position: MarkerPosition; // NOTE: in NDC(!!!): [-1, 1] x [-1, 1]
+  positionNDC: MarkerPosition; // NOTE: in NDC(!!!): [-1, 1] x [-1, 1]
   renderable: boolean;
 }

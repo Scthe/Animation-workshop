@@ -1,7 +1,6 @@
 import {GlState} from './GlState';
 import {AnimState} from './structs';
 import {Shader, setUniforms, DrawParameters, DepthTest} from '../gl-utils';
-import {calculateBoneMatrices} from './calculateBoneMatrices';
 import {mat4} from 'gl-mat4';
 
 const setLampUniforms = (glState: GlState, shader: Shader, modelMatrix: mat4, boneTransforms: mat4[]) => {
@@ -22,7 +21,7 @@ const setLampUniforms = (glState: GlState, shader: Shader, modelMatrix: mat4, bo
 };
 
 export const drawLamp = (animState: AnimState, glState: GlState, boneTransforms: mat4[], modelMatrix: mat4) => {
-  const {gl, lampShader: shader, lampObject: geo, lampArmature: armature} = glState;
+  const {gl, lampShader: shader, lampObject: geo} = glState;
   const {vao, indicesGlType, indexBuffer, triangleCnt} = geo;
 
   const dp = new DrawParameters();

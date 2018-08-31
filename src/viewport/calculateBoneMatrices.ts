@@ -1,13 +1,13 @@
 import {
   create as mat4_Create,
   identity,
-  fromTranslation, fromScaling,
+  fromScaling,
   mat4,
   multiply,
   fromRotationTranslation
 } from 'gl-mat4';
-import { fromValues as vec3_Create, vec3 } from 'gl-vec3';
-import { create as quat_Create, rotateX } from 'gl-quat';
+import {fromValues as vec3_Create} from 'gl-vec3';
+import {create as quat_Create, rotateX} from 'gl-quat';
 import {Armature} from './structs';
 import {toRadians} from '../gl-utils';
 import {AnimState} from './structs';
@@ -53,7 +53,7 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
 }*/
 
 const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
-  const {animState, bones, transforms} = cfg;
+  const {animState, bones} = cfg;
   const bone = bones[boneId];
 
   let rotation = bone.rotation;
@@ -76,7 +76,7 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
 };
 
 const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: mat4) => {
-  const {animState, bones, transforms} = cfg;
+  const {bones, transforms} = cfg;
   const bone = bones[boneId];
 
   // matrices order (reversed multiplication order cause opengl):

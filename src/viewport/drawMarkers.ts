@@ -1,15 +1,31 @@
-import {GlState} from './GlState';
-import {setUniforms, DrawParameters, DepthTest, CullingMode, transformPointByMat4, Shader, Vao, VaoAttrInit} from '../gl-utils';
+import {map as loMap} from 'lodash';
 import {mat4} from 'gl-mat4';
 import {create as vec3_Create} from 'gl-vec3';
 import {fromValues as vec2_Create} from 'gl-vec2';
-import {Marker, MarkerPosition, Armature} from './structs';
-import {map as loMap} from 'lodash';
+import {
+  setUniforms,
+  DrawParameters, DepthTest, CullingMode,
+  transformPointByMat4, lerp, hexToVec3,
+  Shader,
+  Vao, VaoAttrInit
+} from '../gl-utils';
+import {Marker, Armature, AnimState} from './structs';
+import {GlState} from './GlState';
+import {getSelectedObject} from '../UI_State';
+
 
 // Marker:
 // rendered as dot in viewport, indicates e.g. selectable bone or object
 // Used also for gizmo click-handling etc.
 
+const MARKER_RADIUS = 12;
+const MARKER_PULSE_INCREASE = 1.2;
+const MARKER_PULSE_TIME = 30;
+
+const MARKER_COLORS = {
+  BONE: hexToVec3(0xca38cd),
+  OBJECT: hexToVec3(0x59f65f),
+};
 
 //////////
 /// Some init stuff
@@ -32,7 +48,7 @@ export const createMarkersVao = (gl: Webgl, shader: Shader) => {
 /// Actual calculations and drawing
 //////////
 
-export const getMarkerPositionsFromArmature = (glState: GlState, armature: Armature, boneTransforms: mat4[], modelMatrix: mat4) => {
+export const getMarkersFromArmature = (glState: GlState, armature: Armature, boneTransforms: mat4[], modelMatrix: mat4) => {
   const mvp = glState.getMVP(modelMatrix);
 
   return boneTransforms.map((boneMat, idx) => {
@@ -44,23 +60,53 @@ export const getMarkerPositionsFromArmature = (glState: GlState, armature: Armat
     transformPointByMat4(pos, bonePos, bone.getParentBindMatrix(armature));
     const localPos = vec3_Create(); // apply new bone transform
     transformPointByMat4(localPos, pos, boneMat);
-    const result = vec3_Create(); // apply mvp
-    transformPointByMat4(result, localPos, mvp);
 
-    return vec2_Create(result[0], result[1]);
+    // apply mvp
+    const result = vec3_Create();
+    transformPointByMat4(result, localPos, mvp);
+    // TODO apply modelMat only for position 3d for gizmo position?
+
+    return {
+      name: `Bone${idx}`,
+      radius: 0,
+      color: MARKER_COLORS.BONE,
+      positionNDC: vec2_Create(result[0], result[1]),
+      renderable: true,
+    };
   });
 };
 
 
 const VERTICES_PER_MARKER = 6;
 
-const setMarkerUniforms = (glState: GlState, shader: Shader, markers: Marker[]) => {
+const getPulseRadius = (animState: AnimState) => {
+  let pulseTiming = animState.frameId % (2 * MARKER_PULSE_TIME);
+  pulseTiming = pulseTiming < MARKER_PULSE_TIME
+    ? pulseTiming
+    : MARKER_PULSE_TIME - (pulseTiming % MARKER_PULSE_TIME);
+  pulseTiming = pulseTiming / MARKER_PULSE_TIME;
+
+  return MARKER_RADIUS * lerp(1, MARKER_PULSE_INCREASE, pulseTiming);
+};
+
+const isActiveMarker = (marker: Marker) => {
+  const selectedObj = getSelectedObject();
+  const selectedMarkerName = selectedObj ? selectedObj.name : undefined;
+  return selectedMarkerName === marker.name;
+};
+
+const getMarkerSize = (pulseRadius: number) => (marker: Marker) => {
+  return isActiveMarker(marker) ? pulseRadius : MARKER_RADIUS;
+};
+
+const setMarkerUniforms = (animState: AnimState, glState: GlState, shader: Shader, markers: Marker[]) => {
   const {gl} = glState;
   const {width, height} = glState.getViewport();
+  const pulseRadius = getPulseRadius(animState);
 
-  const markerPositions = loMap(markers, 'position');
+  const markerPositions = loMap(markers, 'positionNDC');
   const markerColors = loMap(markers, 'color');
-  const markerRadius = loMap(markers, 'radius');
+  const markerRadius = markers.map(getMarkerSize(pulseRadius));
 
   setUniforms(gl, shader, {
     'g_Viewport': [width, height],
@@ -73,10 +119,12 @@ const setMarkerUniforms = (glState: GlState, shader: Shader, markers: Marker[]) 
     gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), markerColors[i]);
     const radName = `g_MarkerRadius[${i}]`;
     gl.uniform1fv(gl.getUniformLocation(shader.glId, radName), [markerRadius[i]]);
+
+    markers[i].radius = markerRadius[i];
   }
 };
 
-export const drawMarkers = (glState: GlState, allMarkers: Marker[]) => {
+export const drawMarkers = (animState: AnimState, glState: GlState, allMarkers: Marker[]) => {
   const {gl, markersShader: shader, markersVao: vao} = glState;
   const markers = allMarkers.filter(m => m.renderable);
   const vertexCount = VERTICES_PER_MARKER * markers.length;
@@ -88,7 +136,7 @@ export const drawMarkers = (glState: GlState, allMarkers: Marker[]) => {
   glState.setDrawState(dp);
 
   shader.use(gl);
-  setMarkerUniforms(glState, shader, markers);
+  setMarkerUniforms(animState, glState, shader, markers);
   vao.bind(gl);
   gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
 };

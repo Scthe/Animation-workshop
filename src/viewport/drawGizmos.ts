@@ -1,8 +1,7 @@
 import {GltfLoader} from 'gltf-loader-ts';
 import {vec3, fromValues as vec3_Create} from 'gl-vec3';
 import {
-  mat4, create as mat4_Create,
-  identity,
+  create as mat4_Create,
   fromTranslation, fromXRotation, fromZRotation, fromScaling,
   multiply
 } from 'gl-mat4';
@@ -84,16 +83,6 @@ const getGizmoModelMatrix = (glState: GlState, axis: GizmoAxis, opts: GizmoDrawO
   return result;
 };
 
-const setGizmoUniforms = (glState: GlState, shader: Shader, axis: GizmoAxis, modelMatrix: mat4) => {
-  const {gl, camera} = glState;
-  const {width, height} = glState.getViewport();
-
-  setUniforms(gl, shader, {
-    'g_Color': AXIS_COLORS[axis],
-    'g_MVP': glState.getMVP(modelMatrix),
-  }, true);
-};
-
 const drawMoveGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
   const {gl, gizmoShader: shader, gizmoMoveGeometry: geo} = glState;
   const {vao, indicesGlType, indexBuffer, triangleCnt} = geo;
@@ -104,7 +93,10 @@ const drawMoveGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
 
   GizmoAxisList.forEach(axis => {
     const modelMatrix = getGizmoModelMatrix(glState, axis, opts);
-    setGizmoUniforms(glState, shader, axis, modelMatrix);
+    setUniforms(gl, shader, {
+      'g_Color': AXIS_COLORS[axis],
+      'g_MVP': glState.getMVP(modelMatrix),
+    }, true);
     gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indicesGlType, 0);
   });
 };

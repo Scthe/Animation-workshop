@@ -9,7 +9,7 @@
     "start": "webpack-dev-server --port 9000 --inline --progress --profile --colors --watch --content-base src/ --mode development",
     "build": "webpack --config webpack.config.js --mode production",
     "build.prod": "webpack --config webpack.config.js -p",
-    "tslint": "tslint -c tslint.json 'src/**/*.ts'"
+    "tslint": "tslint -p tslint.json \"src/**/*.ts\""
   },
   "devDependencies": {
     "@types/lodash": "^4.14.116",

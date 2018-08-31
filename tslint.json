@@ -96,6 +96,8 @@
             "check-operator",
             "check-separator",
             "check-type"
-        ]
+        ],
+        "no-unused-expression": true,
+        "no-unused-variable": true
     }
 }

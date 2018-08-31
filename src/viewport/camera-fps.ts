@@ -7,8 +7,8 @@ import {
   rotateY,
   perspective
 } from 'gl-mat4';
-import { fromValues as vec3_Create, vec3 } from 'gl-vec3';
-import { transformPointByMat4, toRadians } from '../gl-utils';
+import {fromValues as vec3_Create} from 'gl-vec3';
+import {transformPointByMat4, toRadians} from '../gl-utils';
 
 const KEY_FORWARD = 'W'.charCodeAt(0);
 const KEY_BACK    = 'S'.charCodeAt(0);

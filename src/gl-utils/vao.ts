@@ -38,7 +38,7 @@ const setAttrFromBuffer = (gl: Webgl, shader: Shader, attr: VaoAttrInit) => {
   // create glBuffer and write
   const glBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, attr.rawData, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, rawData, gl.STATIC_DRAW);
 
   // connect buffer->attribute
   const [baseType, elCount] = deconstructAttrType(gl, shaderAttr.type);
