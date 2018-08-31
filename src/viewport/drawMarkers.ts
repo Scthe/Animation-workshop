@@ -18,13 +18,11 @@ import {getSelectedObject} from '../UI_State';
 // rendered as dot in viewport, indicates e.g. selectable bone or object
 // Used also for gizmo click-handling etc.
 
-const MARKER_RADIUS = 12;
-const MARKER_PULSE_INCREASE = 1.2;
-const MARKER_PULSE_TIME = 30;
+const MARKER_RADIUS = 5;
 
 const MARKER_COLORS = {
-  BONE: hexToVec3(0xca38cd),
-  OBJECT: hexToVec3(0x59f65f),
+  BONE: hexToVec3('#823ab9'),
+  OBJECT: hexToVec3('#4fee55'),
 };
 
 //////////
@@ -81,37 +79,16 @@ export const getMarkersFromArmature = (glState: GlState, armature: Armature, bon
 
 const VERTICES_PER_MARKER = 6;
 
-const getPulseRadius = (animState: AnimState) => {
-  let pulseTiming = animState.frameId % (2 * MARKER_PULSE_TIME);
-  pulseTiming = pulseTiming < MARKER_PULSE_TIME
-    ? pulseTiming
-    : MARKER_PULSE_TIME - (pulseTiming % MARKER_PULSE_TIME);
-  pulseTiming = pulseTiming / MARKER_PULSE_TIME;
-
-  return MARKER_RADIUS * lerp(1, MARKER_PULSE_INCREASE, pulseTiming);
-};
-
-const isActiveMarker = (marker: Marker) => {
-  const selectedObj = getSelectedObject();
-  const selectedMarkerName = selectedObj ? selectedObj.name : undefined;
-  return selectedMarkerName === marker.name;
-};
-
-const getMarkerSize = (pulseRadius: number) => (marker: Marker) => {
-  return isActiveMarker(marker) ? pulseRadius : MARKER_RADIUS;
-};
-
 const setMarkerUniforms = (animState: AnimState, glState: GlState, shader: Shader, markers: Marker[]) => {
   const {gl} = glState;
   const {width, height} = glState.getViewport();
-  const pulseRadius = getPulseRadius(animState);
 
   const markerPositions = loMap(markers, 'positionNDC');
   const markerColors = loMap(markers, 'color');
-  const markerRadius = markers.map(getMarkerSize(pulseRadius));
 
   setUniforms(gl, shader, {
     'g_Viewport': [width, height],
+    'g_MarkerRadius': MARKER_RADIUS,
   }, true);
 
   for (let i = 0; i < markers.length; i++) {
@@ -119,10 +96,8 @@ const setMarkerUniforms = (animState: AnimState, glState: GlState, shader: Shade
     gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), markerPositions[i]);
     const colName = `g_MarkerColors[${i}]`;
     gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), markerColors[i]);
-    const radName = `g_MarkerRadius[${i}]`;
-    gl.uniform1fv(gl.getUniformLocation(shader.glId, radName), [markerRadius[i]]);
 
-    markers[i].radius = markerRadius[i];
+    markers[i].radius = MARKER_RADIUS;
   }
 };
 

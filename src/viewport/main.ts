@@ -6,6 +6,7 @@ import {drawGizmo, GizmoType} from './drawGizmos';
 import {getMarkersFromArmature, drawMarkers} from './drawMarkers';
 import {calculateBoneMatrices} from './calculateBoneMatrices';
 import {getSelectedObject} from '../UI_State';
+import {Marker} from './structs';
 
 
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
@@ -25,6 +26,22 @@ const TEST_MARKER = {
   renderable: true,
 };
 
+const updateMarkerCache = (glState: GlState, newMarkers: Marker[]) => {
+  const oldMarkers = glState.lastFrameCache.markers;
+  const getOldMarker = (name: string) => oldMarkers.filter(m => m.name === name)[0];
+
+  newMarkers.forEach(marker => {
+    const oldMarker = getOldMarker(marker.name);
+    if (!oldMarker) {
+      oldMarkers.push(marker);
+    } else {
+      oldMarker.position3d = marker.position3d;
+      oldMarker.positionNDC = marker.positionNDC;
+    }
+  });
+
+  return oldMarkers;
+};
 
 let timeOld = 0;
 let frameId = 0;
@@ -59,10 +76,13 @@ export const viewportUpdate = (time: number, glState: GlState) => {
     origin: getSelectedObject(),
   });
 
+  // markers
   const armatureMarkers = getMarkersFromArmature(glState, lampArmature, boneTransforms, identityMatrix);
-  const markers = [...armatureMarkers, {...TEST_MARKER}];
+  const markers = updateMarkerCache(glState, [
+    ...armatureMarkers,
+    {...TEST_MARKER}
+  ]);
   drawMarkers(animState, glState, markers);
 
   // cache
-  glState.lastFrameCache.markers = markers;
 };

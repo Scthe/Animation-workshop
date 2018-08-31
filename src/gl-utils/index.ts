@@ -79,7 +79,12 @@ export const lerp = (a: number, b: number, time: number) => {
   return (1 - time) * a + time * b;
 };
 
-export const hexToVec3 = (hex: number) => {
+export const hexToVec3 = (hex: number | string) => {
+  if (typeof hex === 'string') {
+    const hexStr = hex[0] === '#' ? hex.substr(1) : hex;
+    hex = parseInt(hexStr, 16);
+  }
+
   // const a = (hex >> 24) & 0xff;
   const r = (hex >> 16) & 0xff;
   const g = (hex >>  8) & 0xff;
