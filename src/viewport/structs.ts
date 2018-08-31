@@ -61,13 +61,12 @@ export interface AnimState {
   frameId: number; // id of current frame
 }
 
-export type MarkerPosition = vec2;
-
 /** @see drawMarkers.ts for entire file about markers */
 export interface Marker {
   name: string;
   radius: number;
   color: vec3;
-  positionNDC: MarkerPosition; // NOTE: in NDC(!!!): [-1, 1] x [-1, 1]
+  position3d: vec3; // used for gizmo placement
+  positionNDC: vec2; // NOTE: in NDC(!!!): [-1, 1] x [-1, 1]
   renderable: boolean;
 }

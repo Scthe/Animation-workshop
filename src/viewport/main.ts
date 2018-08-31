@@ -1,10 +1,11 @@
 import {GlState} from './GlState';
-import {calculateBoneMatrices} from './calculateBoneMatrices';
 import {create as mat4_Create, identity} from 'gl-mat4';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {drawLamp} from './drawLamp';
 import {drawGizmo, GizmoType} from './drawGizmos';
 import {getMarkersFromArmature, drawMarkers} from './drawMarkers';
+import {calculateBoneMatrices} from './calculateBoneMatrices';
+import {getSelectedObject} from '../UI_State';
 
 
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
@@ -19,6 +20,7 @@ const TEST_MARKER = {
   name: `Test`,
   radius: 0,
   color: [1.0, 0.5, 1.0] as any,
+  position3d: [0, 0, 0] as any,
   positionNDC: [0.5, 0.5] as any,
   renderable: true,
 };
@@ -54,7 +56,7 @@ export const viewportUpdate = (time: number, glState: GlState) => {
   drawGizmo(glState, {
     type: GizmoType.Move,
     size: 0.6,
-    origin: vec3_Create(0, 1, 0),
+    origin: getSelectedObject(),
   });
 
   const armatureMarkers = getMarkersFromArmature(glState, lampArmature, boneTransforms, identityMatrix);

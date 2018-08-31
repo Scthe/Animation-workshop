@@ -8,6 +8,7 @@ import {
 import {Shader, setUniforms, DrawParameters, DepthTest, CullingMode, toRadians} from '../gl-utils';
 import {GlState} from './GlState';
 import {readObject} from './readGltfObject';
+import {Marker} from './structs';
 
 const GIZMO_GLTF_URL = require('assets/gizmos.glb'); // TODO combine gltf files
 
@@ -70,7 +71,7 @@ const getGizmoModelMatrix = (glState: GlState, axis: GizmoAxis, opts: GizmoDrawO
   }
 
   const moveMat = mat4_Create();
-  fromTranslation(moveMat, opts.origin);
+  fromTranslation(moveMat, opts.origin.position3d);
 
   const scaleMat = mat4_Create();
   fromScaling(scaleMat, vec3_Create(opts.size, opts.size, opts.size));
@@ -102,12 +103,14 @@ const drawMoveGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
 };
 
 interface GizmoDrawOpts {
-  origin: vec3;
   size: number;
   type: GizmoType;
+  origin: Marker;
 }
 
 export const drawGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
+  if (!opts.origin) { return; }
+
   const dp = new DrawParameters();
   dp.depth.write = false;
   dp.depth.test = DepthTest.AlwaysPass;

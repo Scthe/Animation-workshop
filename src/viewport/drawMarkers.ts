@@ -61,16 +61,18 @@ export const getMarkersFromArmature = (glState: GlState, armature: Armature, bon
     const localPos = vec3_Create(); // apply new bone transform
     transformPointByMat4(localPos, pos, boneMat);
 
-    // apply mvp
-    const result = vec3_Create();
-    transformPointByMat4(result, localPos, mvp);
-    // TODO apply modelMat only for position 3d for gizmo position?
+    // calc positions
+    const resultNDC = vec3_Create();
+    transformPointByMat4(resultNDC, localPos, mvp);
+    const result3d = vec3_Create();
+    transformPointByMat4(result3d, localPos, modelMatrix);
 
     return {
       name: `Bone${idx}`,
       radius: 0,
       color: MARKER_COLORS.BONE,
-      positionNDC: vec2_Create(result[0], result[1]),
+      position3d: result3d,
+      positionNDC: vec2_Create(resultNDC[0], resultNDC[1]),
       renderable: true,
     };
   });
