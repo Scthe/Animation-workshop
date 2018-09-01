@@ -1,5 +1,5 @@
 import {mat4} from 'gl-mat4';
-import {create as vec3_Create} from 'gl-vec3';
+import {vec3, create as vec3_Create} from 'gl-vec3';
 import {fromValues as vec2_Create} from 'gl-vec2';
 import {
   setUniforms,
@@ -17,8 +17,17 @@ import {GlState} from './GlState';
 // rendered as dot in viewport, indicates e.g. selectable bone or object
 // Used also for gizmo click-handling etc.
 
-const MARKER_RADIUS = 5;
-export const getMarkerRadius = (_: Marker) => MARKER_RADIUS;
+
+export const getMarkerRadius = (marker: Marker) => {
+  switch (marker.type) {
+    case MarkerType.GizmoMove: return marker.radius || 20;
+
+    // case MarkerType.Armature: return hexToVec3('#823ab9');
+    // case MarkerType.GizmoRotate: return hexToVec3('#3aa2b9');
+    default: return 5;
+  }
+};
+
 
 //////////
 /// Some init stuff
@@ -42,6 +51,19 @@ export const createMarkersVao = (gl: Webgl, shader: Shader) => {
 /// Marker calculations
 //////////
 
+export const createMarkerPosition = (mvp: mat4, modelMatrix: mat4, pos: vec3) => {
+  const resultNDC = vec3_Create();
+  transformPointByMat4(resultNDC, pos, mvp);
+
+  const position3d = vec3_Create();
+  transformPointByMat4(position3d, pos, modelMatrix);
+
+  return {
+    position3d,
+    positionNDC: vec2_Create(resultNDC[0], resultNDC[1]),
+  };
+};
+
 const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) => (bone: Bone, boneMat: mat4) => {
   const bonePos = bone.translation; // relative to parent
 
@@ -51,16 +73,7 @@ const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) 
   const localPos = vec3_Create(); // apply new bone transform
   transformPointByMat4(localPos, pos, boneMat);
 
-  // calc positions
-  const resultNDC = vec3_Create();
-  transformPointByMat4(resultNDC, localPos, mvp);
-  const position3d = vec3_Create();
-  transformPointByMat4(position3d, localPos, modelMatrix);
-
-  return {
-    position3d,
-    positionNDC: vec2_Create(resultNDC[0], resultNDC[1]),
-  };
+  return createMarkerPosition(mvp, modelMatrix, localPos);
 };
 
 export const updateArmatureMarkers = (glState: GlState, armature: Armature, boneTransforms: mat4[], modelMatrix: mat4) => {
@@ -82,6 +95,8 @@ export const updateArmatureMarkers = (glState: GlState, armature: Armature, bone
 const getMarkerColor = (marker: Marker) => {
   switch (marker.type) {
     case MarkerType.Armature: return hexToVec3('#823ab9');
+    case MarkerType.GizmoMove: return hexToVec3('#b93a46');
+    case MarkerType.GizmoRotate: return hexToVec3('#3aa2b9');
     default: return hexToVec3('#4fee55');
   }
 };
@@ -92,7 +107,6 @@ const setMarkerUniforms = (animState: AnimState, glState: GlState, shader: Shade
 
   setUniforms(gl, shader, {
     'g_Viewport': [width, height],
-    'g_MarkerRadius': MARKER_RADIUS,
   }, true);
 
   for (let i = 0; i < markers.length; i++) {
@@ -104,6 +118,9 @@ const setMarkerUniforms = (animState: AnimState, glState: GlState, shader: Shade
 
     const colName = `g_MarkerColors[${i}]`;
     gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), getMarkerColor(marker));
+
+    const radName = `g_MarkerRadius[${i}]`;
+    gl.uniform1fv(gl.getUniformLocation(shader.glId, radName), [getMarkerRadius(marker)]);
   }
 };
 

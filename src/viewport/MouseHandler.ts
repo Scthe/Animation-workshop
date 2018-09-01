@@ -2,6 +2,7 @@ import {GlState} from './GlState';
 import {Marker} from './structs';
 import {setSelectedObject} from '../UI_State';
 import {getMarkerRadius} from './drawMarkers';
+import {NDCtoPixels} from '../gl-utils';
 
 
 const MOUSE_LEFT_BTN = 0; // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
@@ -50,18 +51,10 @@ export class MouseHandler {
     const {width, height} = this.glState.getViewport();
     // console.log(`Clicked (${clickX}, ${clickY})`);
 
-    const toViewportPx = (marker: Marker) => {
-      const {positionNDC} = marker.position;
-      // convert chain: [-1, 1] => [0, 2] => [0, 1] => [0, w]
-      return [
-        (positionNDC[0] + 1) / 2 * width,
-        height - (positionNDC[1] + 1) / 2 * height
-      ];
-    };
-
     const wasClicked = (marker: Marker, i: number) => {
+      const {positionNDC} = marker.position;
       const radius = getMarkerRadius(marker);
-      const [posX, posY] = toViewportPx(marker);
+      const [posX, posY] = NDCtoPixels(positionNDC, width, height, true);
       const delta = [clickX - posX, clickY - posY];
       const dist2 = delta[0] * delta[0] + delta[1] * delta[1];
       // console.log(`Marker[${i}] (x=${posX}, y=${posY}) dist: ${Math.sqrt(dist2)}`);

@@ -6,6 +6,7 @@ export * from './Shader';
 export * from './uniforms';
 export * from './vao';
 import { fromValues as vec3_Create, vec3 } from 'gl-vec3';
+import { fromValues as vec2_Create, vec2 } from 'gl-vec2';
 import { mat4 } from 'gl-mat4';
 
 // https://github.com/KhronosGroup/WebGLDeveloperTools/blob/master/src/debug/webgl-debug.js#L492
@@ -90,4 +91,11 @@ export const hexToVec3 = (hex: number | string) => {
   const g = (hex >>  8) & 0xff;
   const b = (hex      ) & 0xff;
   return vec3_Create(r / 255, g / 255, b / 255);
+};
+
+export const NDCtoPixels = (pos: vec2, width: number, height: number, reverseHeight = false) => {
+  // convert chain: [-1, 1] => [0, 2] => [0, 1] => [0, w]
+  const x = (pos[0] + 1) / 2 * width;
+  const y = (pos[1] + 1) / 2 * height;
+  return vec2_Create(x, reverseHeight ? height - y : y);
 };

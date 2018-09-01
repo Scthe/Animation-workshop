@@ -69,6 +69,7 @@ export interface Marker {
   name: string;
   type: MarkerType;
   position: MarkerPosition;
+  radius?: number;
 }
 
 
