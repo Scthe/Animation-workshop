@@ -25,7 +25,7 @@ export enum GizmoType {
 }
 
 // gizmo to move/rotate/scale in 3 axis, we draw 1 by 1
-enum GizmoAxis {
+export enum GizmoAxis {
   AxisX, AxisY, AxisZ
 }
 const AXIS_COLORS = [vec3_Create(1, 0, 0), vec3_Create(0, 1, 0), vec3_Create(0, 0, 1)];
@@ -99,18 +99,27 @@ const getMarkerRadius = (glState: GlState, mvp: mat4, marker: Marker) => {
   // and [0, 1, 0], which is exact arrow tip
   // ugh, I actually want to do normal object picking ATM...
 
-  // calculate NDC of [0, 1, 0]
-  const arrowTmp = vec3_Create(0, 1.0, 0);
-  const markerTmp = vec3_Create(0, 0, 0);
-  transformPointByMat4(markerTmp, arrowTmp, mvp);
-
-  // calculate difference in pixels as radius
   const {width, height} = glState.getViewport();
   const markerPos = marker.position.positionNDC;
   const m1 = NDCtoPixels(markerPos, width, height, false);
-  const m2 = NDCtoPixels(markerTmp, width, height, false);
-  const deltaTmp = [m1[0] - m2[0], m1[1] - m2[1]];
-  return Math.sqrt(deltaTmp[0] * deltaTmp[0] + deltaTmp[1] * deltaTmp[1]);
+
+  const arrowTmp = [
+    vec3_Create(0.0, 1.0, 0.0),
+    vec3_Create(0.1, 1.0, 0.0), // fix problems when looking directly down the axis
+    vec3_Create(0.0, 1.0, 0.1),
+  ];
+  const radiuses = arrowTmp.map(ar => {
+    // calculate NDC of [0, 1, 0] etc.
+    const markerTmp = vec3_Create(0, 0, 0);
+    transformPointByMat4(markerTmp, ar, mvp);
+
+    // calculate difference in pixels as radius
+    const m2 = NDCtoPixels(markerTmp, width, height, false);
+    const deltaTmp = [m1[0] - m2[0], m1[1] - m2[1]];
+    return Math.sqrt(deltaTmp[0] * deltaTmp[0] + deltaTmp[1] * deltaTmp[1]);
+  });
+
+  return radiuses.reduce((acc, r) => Math.max(acc, r), 0);
 };
 
 const drawMoveArrow = (glState: GlState, opts: GizmoDrawOpts) => (axis: GizmoAxis) => {
