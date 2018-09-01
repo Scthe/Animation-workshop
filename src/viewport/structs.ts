@@ -51,6 +51,28 @@ export class Bone {
 export type Armature = Bone[];
 
 //////////
+/// Markers
+//////////
+
+export enum MarkerType {
+  Armature, Object, GizmoMove, GizmoRotate
+}
+
+// changes per frame
+export interface MarkerPosition {
+  position3d: vec3; // used for gizmo placement
+  positionNDC: vec2; // NOTE: in NDC(!!!): [-1, 1] x [-1, 1]
+}
+
+/** @see drawMarkers.ts for entire file about markers */
+export interface Marker {
+  name: string;
+  type: MarkerType;
+  position: MarkerPosition;
+}
+
+
+//////////
 /// 'Runtime' structs
 //////////
 
@@ -59,14 +81,4 @@ export interface AnimState {
   deltaTime: number; // previous -> this frame
   // animationFrameId: number; // frame to render, used for interpolation etc.
   frameId: number; // id of current frame
-}
-
-/** @see drawMarkers.ts for entire file about markers */
-export interface Marker {
-  name: string;
-  radius: number;
-  color: vec3;
-  position3d: vec3; // used for gizmo placement
-  positionNDC: vec2; // NOTE: in NDC(!!!): [-1, 1] x [-1, 1]
-  renderable: boolean;
 }

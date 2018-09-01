@@ -1,5 +1,5 @@
 import {GltfLoader} from 'gltf-loader-ts';
-import {vec3, fromValues as vec3_Create} from 'gl-vec3';
+import {fromValues as vec3_Create} from 'gl-vec3';
 import {
   create as mat4_Create,
   fromTranslation, fromXRotation, fromZRotation, fromScaling,
@@ -9,6 +9,9 @@ import {Shader, setUniforms, DrawParameters, DepthTest, CullingMode, toRadians} 
 import {GlState} from './GlState';
 import {readObject} from './readGltfObject';
 import {Marker} from './structs';
+
+
+// TODO separate folder, split Move/Rotate/Scale into files. maybe class in index.ts?
 
 const GIZMO_GLTF_URL = require('assets/gizmos.glb'); // TODO combine gltf files
 
@@ -71,7 +74,7 @@ const getGizmoModelMatrix = (glState: GlState, axis: GizmoAxis, opts: GizmoDrawO
   }
 
   const moveMat = mat4_Create();
-  fromTranslation(moveMat, opts.origin.position3d);
+  fromTranslation(moveMat, opts.origin.position.position3d);
 
   const scaleMat = mat4_Create();
   fromScaling(scaleMat, vec3_Create(opts.size, opts.size, opts.size));
@@ -117,6 +120,5 @@ export const drawGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
   dp.culling = CullingMode.None;
   glState.setDrawState(dp);
 
-  // TODO how to produce markers from this?
   drawMoveGizmo(glState, opts);
 };

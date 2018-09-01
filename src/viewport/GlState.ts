@@ -1,16 +1,16 @@
+import {GltfLoader} from 'gltf-loader-ts';
+import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
+import {ObjectGeometry, Armature, Marker, MarkerType, MarkerPosition} from './structs';
 import {
   createWebGlContext,
   Shader,
   Vao,
   DrawParameters, applyDrawParams
 } from '../gl-utils';
-import {GltfLoader} from 'gltf-loader-ts';
 import {CameraFPS} from './camera-fps';
 import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
-import {ObjectGeometry, Armature, Marker} from './structs';
 import {createMarkersVao} from './drawMarkers';
-import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
 import {MouseHandler} from './MouseHandler';
 import {createGizmoGeo} from './drawGizmos';
 
@@ -28,9 +28,7 @@ const SHADERS = {
   GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
 };
 
-interface LastFrameCache {
-  markers: Marker[]; // mouse handling is async
-}
+type MarkerFilter = (marker: Marker) => boolean;
 
 export class GlState {
 
@@ -38,7 +36,6 @@ export class GlState {
   private canvas: HTMLCanvasElement;
   private drawParams: DrawParameters;
   public camera: CameraFPS;
-  public lastFrameCache: LastFrameCache;
   // IO
   private mouseHander: MouseHandler;
   public pressedKeys: boolean[] = new Array(128); // keycode => bool
@@ -52,6 +49,9 @@ export class GlState {
   // gizmo
   public gizmoShader: Shader;
   public gizmoMoveGeometry: ObjectGeometry;
+  // markers
+  private markers: Marker[] = [];
+
 
   async init (canvasId: string, gltfUrl: string) {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -82,9 +82,6 @@ export class GlState {
     // gizmo
     this.gizmoShader = new Shader(this.gl, SHADERS.GIZMO_VERT, SHADERS.LAMP_FRAG);
     this.gizmoMoveGeometry = await createGizmoGeo(this.gl, this.gizmoShader);
-
-    // cache
-    this.lastFrameCache = { markers: [], };
 
     // IO
     this.mouseHander = new MouseHandler(this.canvas, this);
@@ -118,6 +115,25 @@ export class GlState {
     multiply(mvp, vp, modelMatrix);
 
     return mvp;
+  }
+
+  updateMarker (name: string, type: MarkerType, position: MarkerPosition) {
+    const marker = this.getMarker(name, type);
+    if (!marker) {
+      this.markers.push({
+        name, type, position
+      });
+    } else {
+      marker.position = position;
+    }
+  }
+
+  getMarkers (filterFn: MarkerFilter) {
+    return this.markers.filter(filterFn);
+  }
+
+  getMarker (name: string, type: MarkerType) {
+    return this.markers.filter(m => m.name === name && m.type === type)[0];
   }
 
 }
