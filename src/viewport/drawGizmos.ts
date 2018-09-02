@@ -104,7 +104,7 @@ const getMarkerRadius = (glState: GlState, mvp: mat4, marker: Marker) => {
   const m1 = NDCtoPixels(markerPos, width, height, false);
 
   const arrowTmp = [
-    vec3_Create(0.0, 1.0, 0.0),
+    vec3_Create(0.0, 1.0, 0.0), // TODO this line is not needed, always shortest of the 3
     vec3_Create(0.1, 1.0, 0.0), // fix problems when looking directly down the axis
     vec3_Create(0.0, 1.0, 0.1),
   ];

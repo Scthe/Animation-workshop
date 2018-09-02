@@ -6,11 +6,12 @@ import {
   multiply,
   fromRotationTranslation
 } from 'gl-mat4';
-import {fromValues as vec3_Create} from 'gl-vec3';
+import {fromValues as vec3_Create, add} from 'gl-vec3';
 import {create as quat_Create, rotateX} from 'gl-quat';
 import {Armature} from './structs';
 import {toRadians} from '../gl-utils';
 import {AnimState} from './structs';
+import {getMove} from '../UI_State';
 
 /*
   In this file we update bone matrices for animation.
@@ -56,15 +57,12 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const {animState, bones} = cfg;
   const bone = bones[boneId];
 
-  let rotation = bone.rotation;
-  if (boneId === 1) {
-    // TEST: given boneLocalRotation, compose it with other rotation
-    // (normally, You would replace instead of composing)
-    rotation = quat_Create();
-    rotateX(rotation, bone.rotation, toRadians(animState.frameId % 360));
-  }
+  const translation = vec3_Create(0, 0, 0);
+  add(translation, bone.translation, getMove({name: bone.name} as any));
+
+  const rotation = bone.rotation;
   const rotTraMat = mat4_Create();
-  fromRotationTranslation(rotTraMat, rotation, bone.translation);
+  fromRotationTranslation(rotTraMat, rotation, translation);
 
   const scaleMat = mat4_Create(); // scale to prevent z-fighting
   const s = 0.95;

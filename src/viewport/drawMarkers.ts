@@ -83,7 +83,7 @@ export const updateArmatureMarkers = (glState: GlState, armature: Armature, bone
   return boneTransforms.forEach((boneMat, idx) => {
     const bone = armature[idx];
     const newPosition = getMarkerFromBone_(bone, boneMat);
-    glState.updateMarker(`Bone${idx}`, MarkerType.Armature, newPosition);
+    glState.updateMarker(bone.name, MarkerType.Armature, newPosition);
   });
 };
 
