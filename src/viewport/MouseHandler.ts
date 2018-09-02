@@ -1,7 +1,6 @@
 import {GlState} from './GlState';
-import {Marker, MarkerType} from './structs';
 import {setSelectedObject, addMoveToSelectedObject} from '../UI_State';
-import {getMarkerRadius} from './drawMarkers';
+import {Marker, MarkerType, getMarkerRadius} from './marker';
 import {GizmoAxis} from './drawGizmos';
 import {NDCtoPixels} from '../gl-utils';
 
@@ -114,7 +113,6 @@ export class MouseHandler {
       }
 
       case ClickedState.MoveGizmo: {
-        console.log(`DRAG MoveX`);
         const speed = delta[0] / 200;
         const moveVector = [speed, 0, 0];
         addMoveToSelectedObject(moveVector);

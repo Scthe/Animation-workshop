@@ -1,19 +1,18 @@
 import {GltfLoader} from 'gltf-loader-ts';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {
-  create as mat4_Create, mat4,
+  create as mat4_Create,
   fromTranslation, fromXRotation, fromZRotation, fromScaling,
   multiply
 } from 'gl-mat4';
 import {
   Shader,
   setUniforms, DrawParameters, DepthTest, CullingMode,
-  toRadians, NDCtoPixels, transformPointByMat4
+  toRadians
 } from '../gl-utils';
 import {GlState} from './GlState';
 import {readObject} from './readGltfObject';
-import {Marker, MarkerType} from './structs';
-import {createMarkerPosition} from './drawMarkers';
+import {Marker, updateMoveGizmoMarker} from './marker';
 
 
 // TODO separate folder, split Move/Rotate/Scale into files. maybe class in index.ts?
@@ -94,37 +93,9 @@ const getMoveModelMatrix = (glState: GlState, axis: GizmoAxis, opts: GizmoDrawOp
   return result;
 };
 
-const getMarkerRadius = (glState: GlState, mvp: mat4, marker: Marker) => {
-  // we calculate difference between [0, 0.9, 0], which is middle of arrow tip
-  // and [0, 1, 0], which is exact arrow tip
-  // ugh, I actually want to do normal object picking ATM...
-
-  const {width, height} = glState.getViewport();
-  const markerPos = marker.position.positionNDC;
-  const m1 = NDCtoPixels(markerPos, width, height, false);
-
-  const arrowTmp = [
-    vec3_Create(0.0, 1.0, 0.0), // TODO this line is not needed, always shortest of the 3
-    vec3_Create(0.1, 1.0, 0.0), // fix problems when looking directly down the axis
-    vec3_Create(0.0, 1.0, 0.1),
-  ];
-  const radiuses = arrowTmp.map(ar => {
-    // calculate NDC of [0, 1, 0] etc.
-    const markerTmp = vec3_Create(0, 0, 0);
-    transformPointByMat4(markerTmp, ar, mvp);
-
-    // calculate difference in pixels as radius
-    const m2 = NDCtoPixels(markerTmp, width, height, false);
-    const deltaTmp = [m1[0] - m2[0], m1[1] - m2[1]];
-    return Math.sqrt(deltaTmp[0] * deltaTmp[0] + deltaTmp[1] * deltaTmp[1]);
-  });
-
-  return radiuses.reduce((acc, r) => Math.max(acc, r), 0);
-};
-
 const drawMoveArrow = (glState: GlState, opts: GizmoDrawOpts) => (axis: GizmoAxis) => {
   const {gl, gizmoShader: shader, gizmoMoveGeometry: geo} = glState;
-  const {vao, indicesGlType, indexBuffer, triangleCnt} = geo;
+  const {indicesGlType, triangleCnt} = geo;
 
   const modelMatrix = getMoveModelMatrix(glState, axis, opts);
   const mvp = glState.getMVP(modelMatrix);
@@ -136,18 +107,12 @@ const drawMoveArrow = (glState: GlState, opts: GizmoDrawOpts) => (axis: GizmoAxi
   gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indicesGlType, 0);
 
   // marker:
-  const markerName = GizmoAxis[axis];
-  const arrowTip = vec3_Create(0, 0.9, 0); // about right in the middle of the tip
-  const markerPos = createMarkerPosition(mvp, modelMatrix, arrowTip);
-
-  glState.updateMarker(markerName, MarkerType.GizmoMove, markerPos);
-  const marker = glState.getMarker(markerName, MarkerType.GizmoMove);
-  marker.radius = getMarkerRadius(glState, mvp, marker);
+  updateMoveGizmoMarker(glState, mvp, modelMatrix, axis);
 };
 
 const drawMoveGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
   const {gl, gizmoShader: shader, gizmoMoveGeometry: geo} = glState;
-  const {vao, indicesGlType, indexBuffer, triangleCnt} = geo;
+  const {vao, indexBuffer} = geo;
 
   shader.use(gl);
   vao.bind(gl);

@@ -1,5 +1,5 @@
 import {GlState} from './GlState';
-import {AnimState} from './structs';
+import {AnimState} from './main';
 import {Shader, setUniforms, DrawParameters, DepthTest} from '../gl-utils';
 import {mat4} from 'gl-mat4';
 

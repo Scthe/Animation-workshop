@@ -1,6 +1,7 @@
 import {GltfLoader} from 'gltf-loader-ts';
 import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
-import {ObjectGeometry, Armature, Marker, MarkerType, MarkerPosition} from './structs';
+import {Armature} from './Armature';
+import {Marker, MarkerType, MarkerPosition} from './marker';
 import {
   createWebGlContext,
   Shader,
@@ -10,7 +11,7 @@ import {
 import {CameraFPS} from './camera-fps';
 import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
-import {createMarkersVao} from './drawMarkers';
+import {initMarkersDraw} from './marker';
 import {MouseHandler} from './MouseHandler';
 import {createGizmoGeo} from './drawGizmos';
 
@@ -23,12 +24,21 @@ const CAMERA_SETTINGS = {
 const SHADERS = {
   LAMP_VERT: require('shaders/lampShader.vert.glsl'),
   LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
-  MARKER_VERT: require('shaders/marker.vert.glsl'),
-  MARKER_FRAG: require('shaders/marker.frag.glsl'),
+
   GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
 };
 
 type MarkerFilter = (marker: Marker) => boolean;
+
+export class ObjectGeometry {
+  constructor(
+    public readonly vao: Vao,
+    public readonly indicesGlType: GLenum, // e.g. gl.UNSIGNED_SHORT
+    public readonly indexBuffer: WebGLBuffer,
+    public readonly triangleCnt: number
+  ) { }
+}
+
 
 export class GlState {
 
@@ -43,9 +53,6 @@ export class GlState {
   public lampShader: Shader;
   public lampObject: ObjectGeometry;
   public lampArmature: Armature;
-  // objects: dots to indicate object's origins
-  public markersShader: Shader;
-  public markersVao: Vao;
   // gizmo
   public gizmoShader: Shader;
   public gizmoMoveGeometry: ObjectGeometry;
@@ -76,8 +83,7 @@ export class GlState {
     });
 
     // objects: markers
-    this.markersShader = new Shader(this.gl, SHADERS.MARKER_VERT, SHADERS.MARKER_FRAG);
-    this.markersVao = createMarkersVao(this.gl, this.markersShader);
+    initMarkersDraw(this.gl);
 
     // gizmo
     this.gizmoShader = new Shader(this.gl, SHADERS.GIZMO_VERT, SHADERS.LAMP_FRAG);

@@ -1,4 +1,4 @@
-import {Marker} from './viewport/structs';
+import {Marker} from './viewport/marker';
 import {fromValues as vec3_Create, add} from 'gl-vec3';
 
 let selectedObject: Marker;

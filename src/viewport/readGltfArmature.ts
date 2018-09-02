@@ -3,7 +3,7 @@ import {mat4, invert} from 'gl-mat4';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {fromValues as quat_Create} from 'gl-quat';
 import {BYTES} from '../gl-utils';
-import {Bone} from './structs';
+import {Bone} from './Armature';
 
 const MAT4_ELEMENTS = 16;
 const DEFAULT_TRANSLATION = vec3_Create(0, 0, 0);
