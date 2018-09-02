@@ -1,7 +1,7 @@
 import {GlState} from './GlState';
 import {setSelectedObject, addMoveToSelectedObject} from '../UI_State';
 import {Marker, MarkerType, getMarkerRadius} from './marker';
-import {GizmoAxis} from './drawGizmos';
+import {GizmoAxis} from './gizmo';
 import {NDCtoPixels} from '../gl-utils';
 
 

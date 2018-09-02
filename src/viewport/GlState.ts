@@ -13,7 +13,7 @@ import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
 import {initMarkersDraw} from './marker';
 import {MouseHandler} from './MouseHandler';
-import {createGizmoGeo} from './drawGizmos';
+import {initGizmoDraw} from './gizmo';
 
 const CAMERA_SETTINGS = {
   fovDgr: 90,
@@ -24,8 +24,6 @@ const CAMERA_SETTINGS = {
 const SHADERS = {
   LAMP_VERT: require('shaders/lampShader.vert.glsl'),
   LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
-
-  GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
 };
 
 type MarkerFilter = (marker: Marker) => boolean;
@@ -53,9 +51,6 @@ export class GlState {
   public lampShader: Shader;
   public lampObject: ObjectGeometry;
   public lampArmature: Armature;
-  // gizmo
-  public gizmoShader: Shader;
-  public gizmoMoveGeometry: ObjectGeometry;
   // markers
   private markers: Marker[] = [];
 
@@ -86,8 +81,7 @@ export class GlState {
     initMarkersDraw(this.gl);
 
     // gizmo
-    this.gizmoShader = new Shader(this.gl, SHADERS.GIZMO_VERT, SHADERS.LAMP_FRAG);
-    this.gizmoMoveGeometry = await createGizmoGeo(this.gl, this.gizmoShader);
+    await initGizmoDraw(this.gl);
 
     // IO
     this.mouseHander = new MouseHandler(this.canvas, this);

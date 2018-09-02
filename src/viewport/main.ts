@@ -1,7 +1,7 @@
 import {GlState} from './GlState';
 import {create as mat4_Create, identity} from 'gl-mat4';
 import {drawLamp} from './drawLamp';
-import {drawGizmo, GizmoType} from './drawGizmos';
+import {drawGizmo, GizmoType} from './gizmo';
 import {updateArmatureMarkers, drawMarkers} from './marker';
 import {calculateBoneMatrices} from './Armature';
 import {getSelectedObject} from '../UI_State';

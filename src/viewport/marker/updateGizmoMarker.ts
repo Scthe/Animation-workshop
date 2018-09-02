@@ -3,7 +3,7 @@ import {mat4} from 'gl-mat4';
 import {NDCtoPixels, transformPointByMat4} from '../../gl-utils';
 import {GlState} from '../GlState';
 import {Marker, MarkerType, createMarkerPosition} from './index';
-import {GizmoAxis} from '../drawGizmos';
+import {GizmoAxis} from '../gizmo';
 
 
 // @see getMoveGizmoMarkerRadius
