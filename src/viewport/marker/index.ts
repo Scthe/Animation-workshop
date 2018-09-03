@@ -7,6 +7,7 @@ export * from './drawMarkers';
 export * from './getMarkerRadius';
 export * from './updateArmatureMarkers';
 export * from './updateGizmoMarker';
+export * from './getMarkerAt';
 
 
 // Marker:

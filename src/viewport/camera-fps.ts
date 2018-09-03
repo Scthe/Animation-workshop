@@ -9,6 +9,7 @@ import {
 } from 'gl-mat4';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {transformPointByMat4, toRadians} from '../gl-utils';
+import {MouseDragEvent} from './MouseHandler';
 
 const KEY_FORWARD = 'W'.charCodeAt(0);
 const KEY_BACK    = 'S'.charCodeAt(0);
@@ -92,14 +93,16 @@ export class CameraFPS {
     return vec3_Create(pos[0], pos[1], pos[2]);
   }
 
-  onMouseMove (mouseDelta: number[]) {
-    this.angles[1] += mouseDelta[0] * this.rotateSpeed;
+  onMouseMove (event: MouseDragEvent) {
+    const {delta} = event;
+
+    this.angles[1] += delta[0] * this.rotateSpeed;
     while (this.angles[1] < 0)
         this.angles[1] += toRadians(360);
     while (this.angles[1] >= toRadians(360))
         this.angles[1] -= toRadians(360);
 
-    this.angles[0] += mouseDelta[1] * this.rotateSpeed;
+    this.angles[0] += delta[1] * this.rotateSpeed;
     while (this.angles[0] < -toRadians(90))
         this.angles[0] = -toRadians(90);
     while (this.angles[0] > toRadians(90))

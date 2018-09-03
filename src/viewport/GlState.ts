@@ -12,8 +12,9 @@ import {CameraFPS} from './camera-fps';
 import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
 import {initMarkersDraw} from './marker';
-import {MouseHandler} from './MouseHandler';
-import {initGizmoDraw} from './gizmo';
+import {MouseHandler, MouseDragEvent} from './MouseHandler';
+import {GizmoAxis, initGizmoDraw, applyGizmoMove} from './gizmo';
+import {getSelectedObject, setSelectedObject, addMoveToSelectedObject} from '../UI_State';
 
 const CAMERA_SETTINGS = {
   fovDgr: 90,
@@ -51,8 +52,10 @@ export class GlState {
   public lampShader: Shader;
   public lampObject: ObjectGeometry;
   public lampArmature: Armature;
-  // markers
+  // markers & misc
   private markers: Marker[] = [];
+  private activeMarker: number;
+  private activeAxis: GizmoAxis; // meaningful if clicked axis
 
 
   async init (canvasId: string, gltfUrl: string) {
@@ -84,13 +87,54 @@ export class GlState {
     await initGizmoDraw(this.gl);
 
     // IO
+    this.initIO();
+  }
+
+  private initIO () {
     this.mouseHander = new MouseHandler(this.canvas, this);
+
+    this.onMarkerClicked = this.onMarkerClicked.bind(this);
+    this.onMarkerDragged = this.onMarkerDragged.bind(this);
+    this.mouseHander.setOnMarkerClicked(this.onMarkerClicked);
+    this.mouseHander.setOnMarkerDragged(this.onMarkerDragged);
+
     window.addEventListener('keydown', event => {
       this.pressedKeys[event.keyCode] = true;
     }, false);
     window.addEventListener('keyup', event => {
       this.pressedKeys[event.keyCode] = false;
     }, false);
+  }
+
+  private onMarkerClicked (marker: Marker) {
+    console.log(`Clicked marker: `, marker);
+    const markerIdx = this.markers.reduce((acc: number, m, i: number) => m.name === marker.name ? i : acc, undefined);
+    this.activeMarker = markerIdx;
+
+    switch (marker.type) {
+      case MarkerType.GizmoMove:
+        this.activeAxis = GizmoAxis[marker.name as any] as any as GizmoAxis;
+        break;
+
+      case MarkerType.Armature:
+      case MarkerType.Object:
+      default:
+        setSelectedObject(marker);
+        break;
+    }
+  }
+
+  private onMarkerDragged (ev: MouseDragEvent) {
+    const selectedObject = getSelectedObject();
+    const lastClickedMarker = this.markers[this.activeMarker];
+
+    switch (lastClickedMarker.type) {
+      case MarkerType.GizmoMove:
+        applyGizmoMove(ev, this.activeAxis);
+        break;
+      default:
+        break;
+    }
   }
 
   setDrawState (nextParams: DrawParameters) {
@@ -116,6 +160,8 @@ export class GlState {
 
     return mvp;
   }
+
+  // Markers:
 
   updateMarker (name: string, type: MarkerType, position: MarkerPosition) {
     const marker = this.getMarker(name, type);

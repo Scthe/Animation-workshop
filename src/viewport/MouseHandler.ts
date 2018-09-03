@@ -1,30 +1,41 @@
+import {vec2, fromValues as vec2_Create} from 'gl-vec2';
 import {GlState} from './GlState';
-import {setSelectedObject, addMoveToSelectedObject} from '../UI_State';
-import {Marker, MarkerType, getMarkerRadius} from './marker';
-import {GizmoAxis} from './gizmo';
-import {NDCtoPixels} from '../gl-utils';
+import {Marker, getMarkerAt} from './marker';
 
 
 const MOUSE_LEFT_BTN = 0; // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
 
 // based on last left click
 enum ClickedState {
-  NotClicked, Camera,
-  Object, // some general object, do nothing on MOUSE_MOVE etc.
-  MoveGizmo,
+  NotClicked, Camera, Marker
 }
 
-const setVec = (vec: number[], x: number, y: number) => {
+export interface MouseDragEvent {
+  firstClick: vec2; // click that initiated draw
+  position: vec2; // current mouse xy
+  delta: vec2; // change since last emited event
+}
+
+const setVec = (vec: vec2, x: number, y: number) => {
   vec[0] = x;
   vec[1] = y;
 };
 
+const getXYfromMouseEv = (event: MouseEvent) => {
+  return [event.pageX, event.pageY];
+};
+
+type ClickHandler = (m: Marker) => void;
+type DragHandler = (ev: MouseDragEvent) => void;
+
+
 export class MouseHandler {
 
   private clickedState = ClickedState.NotClicked;
-  private lastPosition = [0, 0]; // since last MOUSE_MOVE
-  private firstClick = [0, 0]; // click position that started MOUSE_MOVE
-  private gizmoAxis = GizmoAxis.AxisX; // if clicked axis
+  private lastPosition = vec2_Create(0, 0); // since last MOUSE_MOVE
+  private firstClick = vec2_Create(0, 0); // click position that started MOUSE_MOVE
+  private onMarkerClickedHandler?: ClickHandler;
+  private onMarkerDraggedHandler?: DragHandler;
 
   constructor (
     private readonly canvas: HTMLCanvasElement,
@@ -39,61 +50,27 @@ export class MouseHandler {
     this.canvas.addEventListener('mouseup', this.onMouseUp, false);
   }
 
-  private onMouseDown (event: MouseEvent ) {
-    const x = event.pageX;
-    const y = event.pageY;
+  setOnMarkerClicked(cb: ClickHandler) { this.onMarkerClickedHandler = cb; }
+  setOnMarkerDragged(cb: DragHandler) { this.onMarkerDraggedHandler = cb; }
+
+  private onMouseDown (event: MouseEvent) {
+    const [x, y] = getXYfromMouseEv(event);
 
     if (event.button === MOUSE_LEFT_BTN) {
       setVec(this.firstClick, x, y);
-      const clickedMarker = this.objectPick(x, y);
+
+      const markers = this.glState.getMarkers(_ => true);
+      const clickedMarker = getMarkerAt(this.glState, x, y, markers);
+
       if (!clickedMarker) {
         this.clickedState = ClickedState.Camera;
-      } else {
-        this.onMarkerClicked(clickedMarker);
+      } else if (this.onMarkerClickedHandler) {
+        this.clickedState = ClickedState.Marker;
+        this.onMarkerClickedHandler(clickedMarker);
       }
     }
 
     setVec(this.lastPosition, x, y);
-  }
-
-  private objectPick (clickX: number, clickY: number) {
-    const markers = this.glState.getMarkers(m => true);
-    const {width, height} = this.glState.getViewport();
-    // console.log(`Clicked (${clickX}, ${clickY})`);
-
-    const wasClicked = (marker: Marker, i: number) => {
-      const {positionNDC} = marker.position;
-      const radius = getMarkerRadius(marker);
-      const [posX, posY] = NDCtoPixels(positionNDC, width, height, true);
-      const delta = [clickX - posX, clickY - posY];
-      const dist2 = delta[0] * delta[0] + delta[1] * delta[1];
-      // console.log(`Marker[${i}] (x=${posX}, y=${posY}) dist: ${Math.sqrt(dist2)}`);
-      return dist2 < (radius * radius);
-    };
-
-    return markers.filter(wasClicked)[0];
-  }
-
-  private onMarkerClicked (marker: Marker) {
-    console.log(`Clicked marker: `, marker);
-
-    switch (marker.type) {
-      case MarkerType.GizmoMove:
-        this.clickedState = ClickedState.MoveGizmo;
-        switch (marker.name) {
-          case GizmoAxis[GizmoAxis.AxisX]: this.gizmoAxis = GizmoAxis.AxisX; break;
-          case GizmoAxis[GizmoAxis.AxisY]: this.gizmoAxis = GizmoAxis.AxisY; break;
-          case GizmoAxis[GizmoAxis.AxisZ]: this.gizmoAxis = GizmoAxis.AxisZ; break;
-        }
-        break;
-
-      case MarkerType.Armature:
-      case MarkerType.Object:
-      default:
-        this.clickedState = ClickedState.Object;
-        setSelectedObject(marker);
-        break;
-    }
   }
 
   private onMouseUp (event: MouseEvent ) {
@@ -101,34 +78,40 @@ export class MouseHandler {
   }
 
   private onMouseMove (event: MouseEvent) {
-    // get this out of the way
-    if (this.clickedState === ClickedState.NotClicked) { return; }
-
+    const [x, y] = getXYfromMouseEv(event);
     const delta = this.calculateMoveDelta(event);
+    const ev = {
+      firstClick: this.firstClick,
+      position: vec2_Create(x, y),
+      delta,
+    } as MouseDragEvent;
 
     switch (this.clickedState) {
+
       case ClickedState.Camera: {
-        this.glState.camera.onMouseMove(delta);
+        this.glState.camera.onMouseMove(ev);
         break;
       }
 
-      case ClickedState.MoveGizmo: {
-        const speed = delta[0] / 200;
-        const moveVector = [speed, 0, 0];
-        addMoveToSelectedObject(moveVector);
+      case ClickedState.Marker: {
+        if (this.onMarkerDraggedHandler) {
+          this.onMarkerDraggedHandler(ev);
+        }
         break;
       }
 
-      default: break;
+      case ClickedState.NotClicked:
+      default:
+        break;
     }
   }
 
   private calculateMoveDelta (event: MouseEvent) {
-    const x = event.pageX;
-    const y = event.pageY;
-    let mouseDelta = [
+    const [x, y] = getXYfromMouseEv(event);
+    let mouseDelta = vec2_Create(
       x - this.lastPosition[0],
-      y - this.lastPosition[1] ];
+      y - this.lastPosition[1]
+    );
     setVec(this.lastPosition, x, y);
     return mouseDelta;
   }

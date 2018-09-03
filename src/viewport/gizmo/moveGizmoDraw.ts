@@ -1,5 +1,5 @@
 import {GltfAsset} from 'gltf-loader-ts';
-import {fromValues as vec3_Create} from 'gl-vec3';
+import {vec3, fromValues as vec3_Create} from 'gl-vec3';
 import {
   create as mat4_Create,
   fromTranslation, fromXRotation, fromZRotation, fromScaling,
@@ -32,29 +32,35 @@ export const initMoveGizmoDraw = async (gl: Webgl, shader: Shader, asset: GltfAs
 
 const ANGLE_90_DGR = toRadians(90);
 
-const getMoveRotationMatrix = (glState: GlState, axis: GizmoAxis) => {
+const getMoveRotationMatrix = (glState: GlState, axis: GizmoAxis, markerPos: vec3) => {
   const cameraPos = glState.camera.getPosition();
+  const delta = [
+    markerPos[0] - cameraPos[0],
+    markerPos[1] - cameraPos[1],
+    markerPos[2] - cameraPos[2]
+  ];
   const rotateAxisMat = mat4_Create();
   let isNegative: number; // fun thing, no one said that {True, False} has to be boolean
 
   switch (axis) {
     case GizmoAxis.AxisX:
-      isNegative = cameraPos[0] >= 0 ? -1 : 1;
+      isNegative = delta[0] >= 0 ? 1 : -1;
       return fromZRotation(rotateAxisMat, ANGLE_90_DGR * isNegative);
     case GizmoAxis.AxisY:
-      isNegative = cameraPos[1] >= 0 ? 0 : 2;
+      isNegative = delta[1] >= 0 ? 2 : 0;
       return fromXRotation(rotateAxisMat, ANGLE_90_DGR * isNegative);
     case GizmoAxis.AxisZ:
-      isNegative = cameraPos[2] > 0 ? 1 : -1;
+      isNegative = delta[2] > 0 ? -1 : 1;
       return fromXRotation(rotateAxisMat, ANGLE_90_DGR * isNegative);
   }
 };
 
 const getMoveModelMatrix = (glState: GlState, axis: GizmoAxis, opts: GizmoDrawOpts) => {
-  const rotateAxisMat = getMoveRotationMatrix(glState, axis);
+  const markerPos = opts.origin.position.position3d;
+  const rotateAxisMat = getMoveRotationMatrix(glState, axis, markerPos);
 
   const moveMat = mat4_Create();
-  fromTranslation(moveMat, opts.origin.position.position3d);
+  fromTranslation(moveMat, markerPos);
 
   const scaleMat = mat4_Create();
   fromScaling(scaleMat, vec3_Create(opts.size, opts.size, opts.size));

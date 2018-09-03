@@ -5,6 +5,7 @@ import {GlState} from '../GlState';
 import {Marker} from '../marker';
 import {initMoveGizmoDraw, drawMoveGizmo} from './moveGizmoDraw';
 
+export * from './moveGizmoApply';
 
 export enum GizmoType {
   Move, Rotate, Scale

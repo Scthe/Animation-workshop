@@ -97,7 +97,7 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const rotTraMat = mat4_Create();
   fromRotationTranslation(rotTraMat, rotation, translation);
 
-  const scaleMat = mat4_Create(); // scale to prevent z-fighting
+  const scaleMat = mat4_Create(); // scale to prevent z-fighting TODO remove
   const s = 0.95;
   fromScaling(scaleMat, vec3_Create(s, s, s));
 
