@@ -8,9 +8,13 @@ import {
   fromRotationTranslation
 } from 'gl-mat4';
 import {vec3, fromValues as vec3_Create, add} from 'gl-vec3';
-import {quat} from 'gl-quat';
+import {quat, create as quat_Create, multiply as qMul} from 'gl-quat';
 import {AnimState} from './main';
-import {getMove} from '../UI_State';
+import {getMove, getRotation} from '../UI_State';
+
+// tmp
+import {toRadians} from '../gl-utils';
+import {rotateX} from 'gl-quat';
 
 
 export class Bone {
@@ -89,15 +93,21 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
 
 const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const bone = cfg.bones[boneId];
+  const marker = {name: bone.name} as any;
 
   const translation = vec3_Create(0, 0, 0);
-  add(translation, bone.translation, getMove({name: bone.name} as any));
+  const deltaFromAnim = getMove(marker);
+  add(translation, bone.translation, deltaFromAnim);
 
-  const rotation = bone.rotation;
+  const rotation = quat_Create();
+  const qAnim = getRotation(marker);
+  qMul(rotation, qAnim, bone.rotation);
+
   const rotTraMat = mat4_Create();
   fromRotationTranslation(rotTraMat, rotation, translation);
 
-  const scaleMat = mat4_Create(); // scale to prevent z-fighting TODO remove
+  // scale to prevent z-fighting TODO remove
+  const scaleMat = mat4_Create();
   const s = 0.95;
   fromScaling(scaleMat, vec3_Create(s, s, s));
 

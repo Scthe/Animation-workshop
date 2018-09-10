@@ -42,7 +42,7 @@ const getMarkerColor = (marker: Marker) => {
   switch (marker.type) {
     case MarkerType.Armature: return hexToVec3('#823ab9');
     case MarkerType.GizmoMove: return hexToVec3('#b93a46');
-    case MarkerType.GizmoRotate: return hexToVec3('#3aa2b9');
+    case MarkerType.GizmoRotate: return hexToVec3('#6eb1bf');
     default: return hexToVec3('#4fee55');
   }
 };

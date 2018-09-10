@@ -49,7 +49,7 @@ export const viewportUpdate = (time: number, glState: GlState) => {
 
   drawGizmo(glState, {
     type: GizmoType.Move,
-    size: 0.6,
+    size: 1.0,
     origin: getSelectedObject(),
   });
 

@@ -3,7 +3,7 @@ import {mat4} from 'gl-mat4';
 import {NDCtoPixels, transformPointByMat4} from '../../gl-utils';
 import {GlState} from '../GlState';
 import {Marker, MarkerType, createMarkerPosition} from './index';
-import {GizmoAxis} from '../gizmo';
+import {GizmoAxis, GizmoAxisList} from '../gizmo';
 
 
 // @see getMoveGizmoMarkerRadius
@@ -44,7 +44,7 @@ export const updateMoveGizmoMarker = (glState: GlState, mvp: mat4, modelMatrix: 
   const markerPos = createMarkerPosition(mvp, modelMatrix, GIZMO_MOVE_TIP);
   glState.updateMarker(markerName, MarkerType.GizmoMove, markerPos);
 
-  // set raidus based on view
+  // set radius based on view
   const marker = glState.getMarker(markerName, MarkerType.GizmoMove);
   marker.radius = getMoveGizmoMarkerRadius(glState, mvp, marker);
 };

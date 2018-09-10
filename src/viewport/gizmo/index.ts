@@ -4,8 +4,10 @@ import {Shader, DrawParameters, DepthTest, CullingMode} from '../../gl-utils';
 import {GlState} from '../GlState';
 import {Marker} from '../marker';
 import {initMoveGizmoDraw, drawMoveGizmo} from './moveGizmoDraw';
+import {initRotationGizmoDraw, drawRotateGizmo} from './rotateGizmoDraw';
 
 export * from './moveGizmoApply';
+export * from './rotateGizmoApply';
 
 export enum GizmoType {
   Move, Rotate, Scale
@@ -34,6 +36,7 @@ let GIZMO_SHADER: Shader = undefined;
 /// Some init stuff
 //////////
 
+// TODO rotate gizmo should have triangle/quad cross-cut
 const GIZMO_VERT = require('shaders/gizmo.vert.glsl');
 const GIZMO_FRAG = require('shaders/lampShader.frag.glsl');
 const GIZMO_GLTF_URL = require('assets/gizmos.glb'); // TODO combine gltf files
@@ -43,10 +46,11 @@ export const initGizmoDraw = async (gl: Webgl) => {
 
   const loader = new GltfLoader();
   const asset = await loader.load(GIZMO_GLTF_URL);
-  // console.log('gizmo-asset', asset);
-  // console.log('gizmo-gltf', asset.gltf);
+  console.log('gizmo-asset', asset);
+  console.log('gizmo-gltf', asset.gltf);
 
   await initMoveGizmoDraw(gl, GIZMO_SHADER, asset);
+  await initRotationGizmoDraw(gl, GIZMO_SHADER, asset);
 };
 
 
@@ -70,5 +74,6 @@ export const drawGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
   dp.culling = CullingMode.None;
   glState.setDrawState(dp);
 
-  drawMoveGizmo(glState, GIZMO_SHADER, opts);
+  // drawMoveGizmo(glState, GIZMO_SHADER, opts);
+  drawRotateGizmo(glState, GIZMO_SHADER, opts);
 };

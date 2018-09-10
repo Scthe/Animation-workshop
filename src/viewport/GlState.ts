@@ -13,8 +13,8 @@ import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
 import {initMarkersDraw} from './marker';
 import {MouseHandler, MouseDragEvent} from './MouseHandler';
-import {GizmoAxis, initGizmoDraw, applyGizmoMove} from './gizmo';
-import {getSelectedObject, setSelectedObject, addMoveToSelectedObject} from '../UI_State';
+import {GizmoAxis, initGizmoDraw, applyGizmoMove, applyGizmoRotate} from './gizmo';
+import {getSelectedObject, setSelectedObject} from '../UI_State';
 
 const CAMERA_SETTINGS = {
   fovDgr: 90,
@@ -113,6 +113,7 @@ export class GlState {
 
     switch (marker.type) {
       case MarkerType.GizmoMove:
+      case MarkerType.GizmoRotate:
         this.activeAxis = GizmoAxis[marker.name as any] as any as GizmoAxis;
         break;
 
@@ -125,12 +126,14 @@ export class GlState {
   }
 
   private onMarkerDragged (ev: MouseDragEvent) {
-    const selectedObject = getSelectedObject();
     const lastClickedMarker = this.markers[this.activeMarker];
 
     switch (lastClickedMarker.type) {
       case MarkerType.GizmoMove:
         applyGizmoMove(ev, this.activeAxis);
+        break;
+      case MarkerType.GizmoRotate:
+        applyGizmoRotate(ev, this.activeAxis);
         break;
       default:
         break;

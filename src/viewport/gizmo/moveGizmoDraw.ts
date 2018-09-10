@@ -19,8 +19,10 @@ let MOVE_GIZMO_OBJ: ObjectGeometry = undefined;
 /// Some init stuff
 //////////
 
+const MESH_NAME = 'GizmoArrow';
+
 export const initMoveGizmoDraw = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
-  MOVE_GIZMO_OBJ = await readObject(gl, asset, shader, 'GizmoArrow', {
+  MOVE_GIZMO_OBJ = await readObject(gl, asset, shader, MESH_NAME, {
     'POSITION': 'a_Position'
   });
 };
@@ -32,7 +34,7 @@ export const initMoveGizmoDraw = async (gl: Webgl, shader: Shader, asset: GltfAs
 
 const ANGLE_90_DGR = toRadians(90);
 
-const getMoveRotationMatrix = (glState: GlState, axis: GizmoAxis, markerPos: vec3) => {
+const getRotationMatrix = (glState: GlState, axis: GizmoAxis, markerPos: vec3) => {
   const cameraPos = glState.camera.getPosition();
   const delta = [
     markerPos[0] - cameraPos[0],
@@ -55,9 +57,9 @@ const getMoveRotationMatrix = (glState: GlState, axis: GizmoAxis, markerPos: vec
   }
 };
 
-const getMoveModelMatrix = (glState: GlState, axis: GizmoAxis, opts: GizmoDrawOpts) => {
+const getModelMatrix = (glState: GlState, axis: GizmoAxis, opts: GizmoDrawOpts) => {
   const markerPos = opts.origin.position.position3d;
-  const rotateAxisMat = getMoveRotationMatrix(glState, axis, markerPos);
+  const rotateAxisMat = getRotationMatrix(glState, axis, markerPos);
 
   const moveMat = mat4_Create();
   fromTranslation(moveMat, markerPos);
@@ -77,7 +79,7 @@ const drawMoveArrow = (glState: GlState, shader: Shader, opts: GizmoDrawOpts) =>
   const {gl} = glState;
   const {indicesGlType, triangleCnt} = MOVE_GIZMO_OBJ;
 
-  const modelMatrix = getMoveModelMatrix(glState, axis, opts);
+  const modelMatrix = getModelMatrix(glState, axis, opts);
   const mvp = glState.getMVP(modelMatrix);
 
   setUniforms(gl, shader, {

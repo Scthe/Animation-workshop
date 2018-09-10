@@ -6,6 +6,6 @@ export const getMarkerRadius = (marker: Marker) => {
 
     // case MarkerType.Armature: return hexToVec3('#823ab9');
     // case MarkerType.GizmoRotate: return hexToVec3('#3aa2b9');
-    default: return 5;
+    default: return 25;
   }
 };
