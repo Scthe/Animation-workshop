@@ -1,8 +1,8 @@
 import {mat4} from 'gl-mat4';
 import {create as vec3_Create} from 'gl-vec3';
 import {transformPointByMat4} from '../../gl-utils';
-import {Armature, Bone} from '../Armature';
-import {MarkerType, createMarkerPosition} from './index';
+import {Armature, Bone} from '../armature';
+import {MarkerType, createMarkerPosition} from '../marker';
 import {GlState} from '../GlState';
 
 const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) => (bone: Bone, boneMat: mat4) => {

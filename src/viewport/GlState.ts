@@ -1,9 +1,9 @@
 import {GltfLoader} from 'gltf-loader-ts';
 import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
-import {Armature} from './Armature';
+import {Armature} from './armature';
 import {Marker, MarkerType, MarkerPosition} from './marker';
 import {
-  createWebGlContext,
+  createWebGlContext, Axis,
   Shader,
   Vao,
   DrawParameters, applyDrawParams
@@ -13,8 +13,8 @@ import {readObject} from './readGltfObject';
 import {readArmature} from './readGltfArmature';
 import {initMarkersDraw} from './marker';
 import {MouseHandler, MouseDragEvent} from './MouseHandler';
-import {GizmoAxis, initGizmoDraw, applyGizmoMove, applyGizmoRotate} from './gizmo';
-import {getSelectedObject, setSelectedObject} from '../UI_State';
+import {initGizmoDraw, applyGizmoMove, applyGizmoRotate} from './gizmo';
+import {setSelectedObject} from '../UI_State';
 
 const CAMERA_SETTINGS = {
   fovDgr: 90,
@@ -26,8 +26,6 @@ const SHADERS = {
   LAMP_VERT: require('shaders/lampShader.vert.glsl'),
   LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
 };
-
-type MarkerFilter = (marker: Marker) => boolean;
 
 export class ObjectGeometry {
   constructor(
@@ -55,7 +53,7 @@ export class GlState {
   // markers & misc
   private markers: Marker[] = [];
   private activeMarker: number;
-  private activeAxis: GizmoAxis; // meaningful if clicked axis
+  private activeAxis: Axis; // meaningful if clicked axis
 
 
   async init (canvasId: string, gltfUrl: string) {
@@ -114,7 +112,7 @@ export class GlState {
     switch (marker.type) {
       case MarkerType.GizmoMove:
       case MarkerType.GizmoRotate:
-        this.activeAxis = GizmoAxis[marker.name as any] as any as GizmoAxis;
+        this.activeAxis = Axis[marker.name as any] as any as Axis;
         break;
 
       case MarkerType.Armature:
@@ -175,10 +173,12 @@ export class GlState {
     } else {
       marker.position = position;
     }
+
+    return this.getMarker(name, type);
   }
 
-  getMarkers (filterFn: MarkerFilter) {
-    return this.markers.filter(filterFn);
+  getMarkers () {
+    return [...this.markers];
   }
 
   getMarker (name: string, type: MarkerType) {

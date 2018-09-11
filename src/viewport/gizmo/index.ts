@@ -3,25 +3,20 @@ import {fromValues as vec3_Create} from 'gl-vec3';
 import {Shader, DrawParameters, DepthTest, CullingMode} from '../../gl-utils';
 import {GlState} from '../GlState';
 import {Marker} from '../marker';
-import {initMoveGizmoDraw, drawMoveGizmo} from './moveGizmoDraw';
-import {initRotationGizmoDraw, drawRotateGizmo} from './rotateGizmoDraw';
+import {initMoveGizmoDraw, drawMoveGizmo} from './move/draw';
+import {initRotationGizmoDraw, drawRotateGizmo} from './rotate/draw';
 
-export * from './moveGizmoApply';
-export * from './rotateGizmoApply';
+export * from './move/draw';
+export * from './move/handler';
+export * from './rotate/draw';
+export * from './rotate/handler';
+
+// TODO combine gltf files
+
 
 export enum GizmoType {
-  Move, Rotate, Scale
+  Move, Rotate, // Scale
 }
-
-export enum GizmoAxis {
-  AxisX, AxisY, AxisZ
-}
-export const GizmoAxisList = (() => {
-  return ( // iterating over enum in TS is ...
-    Object.keys(GizmoAxis)
-     .map((k: any) => GizmoAxis[k])
-     .filter(v => typeof v === 'number')) as any as GizmoAxis[];
-})();
 
 export const AXIS_COLORS = [
   vec3_Create(1, 0, 0),
@@ -36,18 +31,17 @@ let GIZMO_SHADER: Shader = undefined;
 /// Some init stuff
 //////////
 
-// TODO rotate gizmo should have triangle/quad cross-cut
 const GIZMO_VERT = require('shaders/gizmo.vert.glsl');
 const GIZMO_FRAG = require('shaders/lampShader.frag.glsl');
-const GIZMO_GLTF_URL = require('assets/gizmos.glb'); // TODO combine gltf files
+const GIZMO_GLTF_URL = require('assets/gizmos.glb');
 
 export const initGizmoDraw = async (gl: Webgl) => {
   GIZMO_SHADER = new Shader(gl, GIZMO_VERT, GIZMO_FRAG);
 
   const loader = new GltfLoader();
   const asset = await loader.load(GIZMO_GLTF_URL);
-  console.log('gizmo-asset', asset);
-  console.log('gizmo-gltf', asset.gltf);
+  // console.log('gizmo-asset', asset);
+  // console.log('gizmo-gltf', asset.gltf);
 
   await initMoveGizmoDraw(gl, GIZMO_SHADER, asset);
   await initRotationGizmoDraw(gl, GIZMO_SHADER, asset);
@@ -74,6 +68,15 @@ export const drawGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
   dp.culling = CullingMode.None;
   glState.setDrawState(dp);
 
-  // drawMoveGizmo(glState, GIZMO_SHADER, opts);
-  drawRotateGizmo(glState, GIZMO_SHADER, opts);
+  switch (opts.type) {
+    case GizmoType.Move:
+      drawMoveGizmo(glState, GIZMO_SHADER, opts);
+      break;
+    case GizmoType.Rotate:
+      drawRotateGizmo(glState, GIZMO_SHADER, opts);
+      break;
+    // case GizmoType.Scale:
+      // drawScaleGizmo(glState, GIZMO_SHADER, opts);
+      // break;
+  }
 };

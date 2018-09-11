@@ -5,8 +5,6 @@ import {transformPointByMat4} from '../../gl-utils';
 
 export * from './drawMarkers';
 export * from './getMarkerRadius';
-export * from './updateArmatureMarkers';
-export * from './updateGizmoMarker';
 export * from './getMarkerAt';
 
 
@@ -30,6 +28,7 @@ export interface Marker {
   type: MarkerType;
   position: MarkerPosition;
   radius?: number;
+  color?: vec3;
 }
 
 export const createMarkerPosition = (mvp: mat4, modelMatrix: mat4, pos: vec3) => {

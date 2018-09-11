@@ -52,7 +52,7 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
 const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: number) => {
   const accessor = asset.gltf.accessors[indicesAccesorId];
   if (accessor.componentType !== gl.UNSIGNED_BYTE) {
-    // TODO hardcoded for now to gl.UNSIGNED_BYTE
+    // hardcoded for now to gl.UNSIGNED_BYTE
     throw `Unsupported index buffer component type (${accessor.componentType})`;
   }
 

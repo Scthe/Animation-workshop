@@ -59,8 +59,7 @@ export class MouseHandler {
     if (event.button === MOUSE_LEFT_BTN) {
       setVec(this.firstClick, x, y);
 
-      const markers = this.glState.getMarkers(_ => true);
-      const clickedMarker = getMarkerAt(this.glState, x, y, markers);
+      const clickedMarker = getMarkerAt(this.glState, x, y);
 
       if (!clickedMarker) {
         this.clickedState = ClickedState.Camera;

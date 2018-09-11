@@ -39,10 +39,14 @@ export const initMarkersDraw = (gl: Webgl) => {
 //////////
 
 const getMarkerColor = (marker: Marker) => {
+  if (marker.color) {
+    return marker.color;
+  }
+
   switch (marker.type) {
     case MarkerType.Armature: return hexToVec3('#823ab9');
     case MarkerType.GizmoMove: return hexToVec3('#b93a46');
-    case MarkerType.GizmoRotate: return hexToVec3('#6eb1bf');
+    case MarkerType.GizmoRotate: return hexToVec3('#6eb1bf'); // actually, will use per-axis colors
     default: return hexToVec3('#4fee55');
   }
 };
@@ -76,9 +80,7 @@ const VERTICES_PER_MARKER = 6;
 export const drawMarkers = (animState: AnimState, glState: GlState) => {
   const {gl} = glState;
 
-  const markers = glState.getMarkers((marker: Marker) => {
-    return true;
-  });
+  const markers = glState.getMarkers();
   const vertexCount = VERTICES_PER_MARKER * markers.length;
 
   const dp = new DrawParameters();

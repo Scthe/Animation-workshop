@@ -1,3 +1,12 @@
+import {fromValues as vec3_Create, vec3} from 'gl-vec3';
+import {fromValues as vec2_Create, vec2} from 'gl-vec2';
+import {quat} from 'gl-quat';
+import {
+  mat4, create as mat4_Create,
+  multiply,
+  fromRotationTranslation, fromTranslation, fromScaling
+} from 'gl-mat4';
+
 export * from './DrawParams';
 export * from './DrawParams/Depth';
 export * from './DrawParams/Stencil';
@@ -5,9 +14,7 @@ export * from './createContext';
 export * from './Shader';
 export * from './uniforms';
 export * from './vao';
-import { fromValues as vec3_Create, vec3 } from 'gl-vec3';
-import { fromValues as vec2_Create, vec2 } from 'gl-vec2';
-import { mat4 } from 'gl-mat4';
+export * from './axis';
 
 // https://github.com/KhronosGroup/WebGLDeveloperTools/blob/master/src/debug/webgl-debug.js#L492
 
@@ -98,4 +105,22 @@ export const NDCtoPixels = (pos: vec2, width: number, height: number, reverseHei
   const x = (pos[0] + 1) / 2 * width;
   const y = (pos[1] + 1) / 2 * height;
   return vec2_Create(x, reverseHeight ? height - y : y);
+};
+
+export const createModelMatrix = (pos: vec3, rotation: quat | mat4, scale: number) => {
+  let rotationMoveMat = mat4_Create();
+
+  if (rotation.length === 4) { // if is quat, not mat4
+    fromRotationTranslation(rotationMoveMat, rotation, pos);
+  } else {
+    const moveMat = mat4_Create();
+    fromTranslation(moveMat, pos);
+    multiply(rotationMoveMat, moveMat, rotation);
+  }
+
+  const scaleMat = mat4_Create();
+  fromScaling(scaleMat, vec3_Create(scale, scale, scale));
+
+  const result = mat4_Create();
+  return multiply(result, rotationMoveMat, scaleMat);
 };

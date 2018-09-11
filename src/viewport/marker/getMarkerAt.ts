@@ -3,9 +3,10 @@ import {GlState} from '../GlState';
 import {Marker, getMarkerRadius} from './index';
 
 
-export const getMarkerAt = (glState: GlState, pixelX: number, pixelY: number, markers: Marker[]) => {
+export const getMarkerAt = (glState: GlState, pixelX: number, pixelY: number) => {
   // console.log(`Clicked (${pixelX}, ${pixelY})`);
   const {width, height} = glState.getViewport();
+  const markers = glState.getMarkers();
 
   const wasClicked = (marker: Marker, i: number) => {
     const {positionNDC} = marker.position;

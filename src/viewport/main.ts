@@ -2,8 +2,8 @@ import {GlState} from './GlState';
 import {create as mat4_Create, identity} from 'gl-mat4';
 import {drawLamp} from './drawLamp';
 import {drawGizmo, GizmoType} from './gizmo';
-import {updateArmatureMarkers, drawMarkers} from './marker';
-import {calculateBoneMatrices} from './Armature';
+import {drawMarkers} from './marker';
+import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
 import {getSelectedObject} from '../UI_State';
 
 
@@ -33,6 +33,9 @@ const createAnimState = ((timeOld: number, frameId: number) => (time: number) =>
   return animState;
 })(0, 0);
 
+
+//
+// main function invoked per frame:
 export const viewportUpdate = (time: number, glState: GlState) => {
   const {gl, lampArmature, camera, pressedKeys} = glState;
 
@@ -48,8 +51,9 @@ export const viewportUpdate = (time: number, glState: GlState) => {
   drawLamp(animState, glState, boneTransforms, identityMatrix);
 
   drawGizmo(glState, {
-    type: GizmoType.Move,
-    size: 1.0,
+    type: GizmoType.Rotate,
+    // type: GizmoType.Move,
+    size: 0.5,
     origin: getSelectedObject(),
   });
 
