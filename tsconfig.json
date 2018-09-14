@@ -5,16 +5,27 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "target": "es2015",
+    "experimentalDecorators": true,
     "allowJs": true,
+    "jsx": "react",
+    "jsxFactory": "h",
     "types": [
       "webpack-env"
-    ]
+    ],
+    "baseUrl": "./src",
+    "paths": {
+      "ui/*": ["./ui/*"],
+      "viewport/*": ["./viewport/*"]
+    }
   },
   "include": [
     "types/globals.d.ts",
-    "types/gl-matrix.d.ts"
+    "types/gl-matrix.d.ts",
+    "types/mobx-preact.d.ts",
+    "./src"
   ],
   "exclude": [
-    "references"
+    "references",
+    "node_modules"
   ]
 }
