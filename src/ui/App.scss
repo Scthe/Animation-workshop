@@ -1,5 +1,34 @@
-.animCanvasClass {
-  // width: 100vw;
-  // height: 100vh;
-  display: block;
+@import "ui/style/base.scss";
+
+.App {
+  position: relative;
+}
+
+.CanvasWrapper {
+  width: 100vw;
+  height: 100vh;
+  padding-right: $settings-width;
+  padding-bottom: $timeline-height;
+}
+
+.AnimCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+.Settings {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: $settings-width;
+  height: calc(100% - #{$timeline-height});
+}
+
+.Timeline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: $timeline-height;
 }

@@ -1,0 +1,12 @@
+@import "ui/style/base.scss";
+
+$padding: 5px;
+
+.Settings {
+  background: #e6e6e6;
+  padding: 0 $padding 0 $padding;
+}
+
+.SettingsBody {
+  padding-top: 15px;
+}

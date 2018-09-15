@@ -1,0 +1,38 @@
+@import "ui/style/base.scss";
+
+$tick-time-size: 15px;
+$tick-full-size: 61px; // TODO calculate/from layout
+
+.TimelineAxis {
+  background: #e6e6e6;
+  height: $tick-full-size;
+  border-top: 2px solid #6b6b6b;
+  position: relative;
+  @extend %unselectable;
+}
+
+.Tick {
+  position: absolute;
+  top: 0;
+  left: 0; // will get overriden
+  height: $tick-time-size;
+  border-left: 1px solid transparent;
+
+  &.TickTime {
+    border-color: #6b6b6b;
+    padding-left: 4px;
+    font-size: 10px;
+  }
+
+  &.TickKeyframe {
+    border-color: #e7d218;
+    border-width: 2px;
+    height: $tick-full-size - 6px;
+  }
+
+  &.TickCurrentFrame {
+    border-color: red;
+    border-width: 5px;
+    height: $tick-full-size - 6px;
+  }
+}

@@ -41,14 +41,9 @@ module.exports = {
             { test: /\.(gltf|bin|glb)$/, loader: 'file-loader', exclude: /node_modules/ },
             { test: /\.(png|jpg|gif)$/, use: 'url-loader?limit=15000&name=[name]-[hash].[ext]', exclude: /node_modules/ },
             { test: /\.scss$/, exclude: /node_modules/,
-              // NOTE: we have to use 'typings-for-css-modules-loader' instead of
-              //       'css-loader', cause typescript needs types to import
-              //       when using css-modules.
-              //         > import * as Styles from 'a.scss'
-              //       would not work, cause typescipt needs info about 'a.scss'.
               loaders: [
                 'style-loader', // creates style nodes from JS strings
-                'typings-for-css-modules-loader?modules&namedExport', // translates CSS into CommonJS
+                'css-loader?modules&namedExport&localIdentName=[local]--[hash:base64:5]', // translates CSS into CommonJS
                 'sass-loader' // compiles Sass to CSS, using Node Sass by default
               ] }
         ],

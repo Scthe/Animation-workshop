@@ -1,0 +1,42 @@
+.Dropdown {
+  position: relative;
+  text-align: right;
+
+  &:hover .DropdownOptions {
+    display: block;
+  }
+}
+
+.DropdownOpen {}
+
+.DropdownClosed {}
+
+.DropdownValue {
+  border: 2px solid #4a4a4a;
+  padding: 2px 5px;
+  cursor: pointer;
+  padding-right: 10px;
+}
+
+.DropdownValue:hover {
+  background-color: #ececec;
+}
+
+.DropdownOptions {
+  display: none;
+  position: absolute;
+  right: 0;
+  cursor: pointer;
+  border: 2px solid #4a4a4a;
+  border-top-style: none;
+  width: 100%;
+  background-color: white;
+}
+
+.DropdownOptionItem {
+  padding: 5px 10px 0px 0px;
+}
+
+.DropdownOptionItem:hover {
+  background-color: #ececec;
+}

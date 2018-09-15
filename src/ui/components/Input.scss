@@ -1,0 +1,65 @@
+$border-radius: 5px;
+$prepend-size: 30px;
+$border: 1px solid grey;
+
+.InputWrapper {
+  position: relative;
+  margin-bottom: 5px;
+
+  &.HasPrepend {
+    padding-left: $prepend-size;
+    .Input {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  &.HasAppend {
+    padding-right: $prepend-size;
+    .Input {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+}
+
+.Input {
+  width: 100%;
+  border-radius: $border-radius;
+  box-shadow: none;
+  padding: 5px 8px;
+  border: $border;
+}
+
+.InputDisabled {
+  background-color: #bababa;
+}
+
+%InputBuildInLabel {
+  position: absolute;
+  top: 0;
+  background: #e9ecef;
+  margin: 0;
+  height: 100%;
+  width: $prepend-size;
+  border: $border;
+  line-height: 24px;
+}
+
+.InputPrepend {
+  @extend %InputBuildInLabel;
+  left: 0;
+  border-top-left-radius: $border-radius;
+  border-bottom-left-radius: $border-radius;
+  border-right-style: none;
+  padding-left: 10px;
+}
+
+.InputAppend {
+  @extend %InputBuildInLabel;
+  right: 0;
+  border-top-right-radius: $border-radius;
+  border-bottom-right-radius: $border-radius;
+  border-left-style: none;
+  padding-left: 10px;
+}
