@@ -9,20 +9,57 @@ interface SectionProps {
   children: any;
 }
 
-export const Section = (props: SectionProps) => {
-  const {title, icon, children} = props;
+interface SectionState {
+  isExpanded: boolean;
+}
 
-  // TODO animate vanish into transparent on header click
+export class Section extends Component<SectionProps, SectionState> {
 
-  return (
-    <div className={Styles.Section}>
-      <header className={Styles.SectionHeader}>
-        {icon && <FaIcon svg={icon} />}
-        <h6 className={Styles.SectionTitle}>{title}</h6>
-      </header>
-      <div className={Styles.SectionBody}>
-        {children}
+  state = {
+    isExpanded: true,
+  };
+
+  public render () {
+    const {title, icon, children} = this.props;
+    const {isExpanded} = this.state;
+
+    return (
+      <div className={this.getClasses()}>
+        <header className={Styles.SectionHeader} onClick={this.onHeaderClick}>
+          {/* {this.getExpandArrow()} */}
+          {icon && <FaIcon svg={icon} />}
+          <h6 className={Styles.SectionTitle}>{title}</h6>
+        </header>
+
+        {isExpanded && (
+          <div className={Styles.SectionBody}>
+            {children}
+          </div>
+        )}
       </div>
-    </div>
-  );
-};
+    );
+  }
+
+  private getClasses () {
+    const {isExpanded} = this.state;
+
+    return classnames(
+      Styles.Section,
+      isExpanded ? Styles.SectionExpanded : Styles.SectionCollapsed,
+    );
+  }
+
+  private getExpandArrow () {
+    const {isExpanded} = this.state;
+    return (isExpanded
+      ? <FaIcon className={Styles.ExpandIcon} svg={require('fa/faAngleDown')} />
+      : <FaIcon className={Styles.ExpandIcon} svg={require('fa/faAngleRight')} />);
+  }
+
+  private onHeaderClick = (_: any) => {
+    this.setState((state: SectionState) => ({
+      isExpanded: !state.isExpanded,
+    }));
+  }
+
+}

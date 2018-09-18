@@ -1,6 +1,26 @@
+@import "ui/style/base.scss";
+
 .TabObject {}
 
 .ObjectName {
   text-align: center;
   margin-top: 0;
+  font-size: 1em;
+
+  svg {
+    margin-right: 5px;
+  }
 }
+
+@mixin create-axis-label ($color) {
+  background-color: $color;
+  color: $white;
+  font-weight: bold;
+  width: 30px;
+}
+
+// too lazy to expose .prepend, so just stupid selector
+.InputAxisX p { @include create-axis-label($red); }
+.InputAxisY p { @include create-axis-label($green); }
+.InputAxisZ p { @include create-axis-label($blue); }
+.InputAxisW p { @include create-axis-label($brown); }

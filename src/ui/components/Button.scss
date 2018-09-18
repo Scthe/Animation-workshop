@@ -1,18 +1,26 @@
+@import "ui/style/base.scss";
+
+@mixin create-btn-theme ($color-bg, $color-text) {
+  background-color: $color-bg;
+  color: $color-text;
+
+  &:hover {
+    background-color: lighten($color-bg, 20%);
+  }
+}
+
 .Button {
   display: inline-block;
-  padding: 0 30px;
-  color: #555;
-  text-align: center;
-  // font-size: 11px;
-  // font-weight: 600;
-  // line-height: 38px;
-  // letter-spacing: .1rem;
-  // text-transform: uppercase;
-  // text-decoration: none;
-  // white-space: nowrap;
-  background-color: transparent;
-  border-radius: 4px;
-  border: 1px solid #bbb;
+  padding: 5px;
+  transition: background-color 0.2s;
+  border: 1px solid $brown;
   cursor: pointer;
-  // box-sizing: border-box;
+  outline: none !important; // fix on chrome
+
+  &.Blue   { @include create-btn-theme($blue, $beige); }
+  &.Green  { @include create-btn-theme($green, $beige); }
+  &.Red    { @include create-btn-theme($red, $beige); }
+  &.Yellow { @include create-btn-theme($yellow, $brown); }
+  &.Beige  { @include create-btn-theme($beige, $brown); }
+  &.Brown  { @include create-btn-theme($brown, $beige); }
 }

@@ -10,6 +10,7 @@ interface IconProps {
   size?: any; // string or number, but TS is shouting
   style?: object;
   [key: string]: any;
+  className?: string;
 }
 
 const getStyle = (props: IconProps) => {
@@ -22,8 +23,8 @@ const getStyle = (props: IconProps) => {
 };
 
 export const Icon = (props: IconProps) => {
-  const {children, size} = props;
-  const propsRest = omit(props, 'children', 'color', 'size', 'style');
+  const {children, size, className} = props;
+  const propsRest = omit(props, 'children', 'color', 'size', 'style', 'className');
   const computedSize = size || '1em';
 
   return (
@@ -34,6 +35,7 @@ export const Icon = (props: IconProps) => {
       height={computedSize}
       width={computedSize}
       style={getStyle(props)}
+      className={className || ''}
       {...propsRest}
     />
   );

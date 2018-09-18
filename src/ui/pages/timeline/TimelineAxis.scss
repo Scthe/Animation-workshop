@@ -2,11 +2,15 @@
 
 $tick-time-size: 15px;
 $tick-full-size: 61px; // TODO calculate/from layout
+$tick-current-frame: $red;
+$tick-time: $brown;
+$tick-keyframe: $keyframe-color;
+
 
 .TimelineAxis {
-  background: #e6e6e6;
+  background-color: $body-bg;
   height: $tick-full-size;
-  border-top: 2px solid #6b6b6b;
+  border-top: 1px solid $panel-border;
   position: relative;
   @extend %unselectable;
 }
@@ -19,19 +23,23 @@ $tick-full-size: 61px; // TODO calculate/from layout
   border-left: 1px solid transparent;
 
   &.TickTime {
-    border-color: #6b6b6b;
+    border-color: $tick-time;
     padding-left: 4px;
     font-size: 10px;
+    z-index: 500;
+    background: linear-gradient(
+      rgba($body-bg, 0.7),
+      rgba($body-bg, 0.0));
   }
 
   &.TickKeyframe {
-    border-color: #e7d218;
+    border-color: $tick-keyframe;
     border-width: 2px;
     height: $tick-full-size - 6px;
   }
 
   &.TickCurrentFrame {
-    border-color: red;
+    border-color: rgba($tick-current-frame, 0.75);
     border-width: 5px;
     height: $tick-full-size - 6px;
   }

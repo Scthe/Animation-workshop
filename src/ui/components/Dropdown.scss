@@ -1,9 +1,19 @@
+@import "ui/style/base.scss";
+
+$border: 1px solid $brown;
+$option-list-bg: $beige;
+$option-list-hover: $blue;
+$option-value-hover: $white;
+$option-list-padding: 5px;
+
 .Dropdown {
   position: relative;
   text-align: right;
 
   &:hover .DropdownOptions {
-    display: block;
+    // display: block;
+    visibility: visible;
+    opacity: 1.0;
   }
 }
 
@@ -12,31 +22,36 @@
 .DropdownClosed {}
 
 .DropdownValue {
-  border: 2px solid #4a4a4a;
-  padding: 2px 5px;
+  border: $border;
+  padding: 5px 15px;
   cursor: pointer;
-  padding-right: 10px;
-}
 
-.DropdownValue:hover {
-  background-color: #ececec;
+  &:hover {
+    background-color: $option-value-hover;
+  }
 }
 
 .DropdownOptions {
-  display: none;
+  padding: $option-list-padding;
+  // display: none;
+  visibility: collapse;
   position: absolute;
+  // right: -$option-list-padding;
   right: 0;
+  top: -$option-list-padding;
+  z-index: 1000;
   cursor: pointer;
-  border: 2px solid #4a4a4a;
-  border-top-style: none;
-  width: 100%;
-  background-color: white;
+  border: $border;
+  background-color: $option-list-bg;
+  text-align: right; // center; better align
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
 }
 
 .DropdownOptionItem {
-  padding: 5px 10px 0px 0px;
-}
+  padding: 5px 10px;
 
-.DropdownOptionItem:hover {
-  background-color: #ececec;
+  &:hover {
+    background-color: $option-list-hover;
+  }
 }

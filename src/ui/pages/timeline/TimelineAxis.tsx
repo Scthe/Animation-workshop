@@ -1,5 +1,5 @@
 import {h, Component} from 'preact';
-import {classnames, WithDimensions, Dimensions} from 'ui/utils';
+import {classnames, WithDimensions, Dimensions, clamp} from 'ui/utils';
 const Styles = require('./TimelineAxis.scss');
 import {Tick, createTickPosition, TickLabel} from './TimelineTick';
 
@@ -12,6 +12,7 @@ const CLASSES_KEYFRAME = classnames(Styles.Tick, Styles.TickKeyframe);
 const CLASSES_CURRENT_FRAME = classnames(Styles.Tick, Styles.TickCurrentFrame);
 
 // TODO remove [keyframes, ticks] > MAX_FRAMES, as would render weirdly
+// TODO debounce
 
 interface TimelineAxisProps {
   className?: string;
@@ -26,7 +27,7 @@ interface TimelineAxisState {
 const calculateFrameFromEvent = (e: any, dimensions: Dimensions) => {
   const x = e.clientX;
   const progress = x / dimensions.width;
-  return Math.ceil(progress * MAX_FRAMES);
+  return clamp(Math.ceil(progress * MAX_FRAMES) - 1, 0, MAX_FRAMES);
 };
 
 @WithDimensions

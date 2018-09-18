@@ -1,14 +1,37 @@
-.TimelineButtonRow {
-  background: #e6e6e6;
-  border-top: 2px solid #6b6b6b;
-  padding: 5px
+@import "ui/style/base.scss";
+
+$button-spacing: 10px;
+$frameStatus-input-w: 50px;
+$frameStatus-label-w: 70px;
+
+%btn-spacer {
+  margin-right: $button-spacing;
 }
 
-.TfxSpaceDropdown {
+.TimelineButtonRow {
+  background-color: $body-bg;
+  border-top: 1px solid $panel-border;
+  padding: 5px;
+}
+
+.TransformSpacesDropdown {
+  @extend %btn-spacer;
   display: inline-block;
+  top: 2px;
 }
 
 .FrameStatus {
-  display: inline-block;
-  border: 1px solid #a8a8a8;
+  @extend %btn-spacer;
+  display: inline-flex !important;
+  position: relative;
+  top: 3px;
+  margin-bottom: 0;
+
+  // too lazy to expose, so just stupid selector
+  input { max-width: $frameStatus-input-w; padding-bottom: 4px; }
+  p { width: $frameStatus-label-w; }
+}
+
+.ButtonSpacing {
+  @extend %btn-spacer;
 }

@@ -1,12 +1,39 @@
 @import "ui/style/base.scss";
 
 $padding: 5px;
+$animation-swtich-tab: 330ms;
+$far-away-x: 150%;
+
 
 .Settings {
-  background: #e6e6e6;
-  padding: 0 $padding 0 $padding;
+  border-left: 1px solid $panel-border;
+  background-color: $body-bg;
+  overflow-x: hidden;
+  border-top-left-radius: 10px;
 }
 
 .SettingsBody {
   padding-top: 15px;
+}
+
+
+
+
+.AnimatedTab {
+  padding: 0 $padding;
+  width: 100%;
+}
+
+.SettingsBody {
+  width: 200%;
+  display: flex;
+  transition: all $animation-swtich-tab;
+
+  &.TabObject {
+    transform: translateX(0);
+  }
+
+  &.TabGlobal {
+    transform: translateX(-50%);
+  }
 }

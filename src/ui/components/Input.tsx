@@ -35,6 +35,9 @@ export const Input = (props: InputProps) => {
 
   return (
     <div className={classes}>
+      {prepend && (
+        <p class={Styles.InputPrepend}>{prepend}</p>
+      )}
       <input
         name={name}
         className={inputClasses}
@@ -43,10 +46,6 @@ export const Input = (props: InputProps) => {
         disabled={disabled}
         onKeyPress={handleChange}
       />
-
-      {prepend && (
-        <p class={Styles.InputPrepend}>{prepend}</p>
-      )}
       {append && (
         <p class={Styles.InputAppend}>{append}</p>
       )}

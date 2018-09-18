@@ -2,6 +2,8 @@ import {h, Component} from 'preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Dropdown.scss');
 
+const DROPDOWN_ITEM_HEIGHT = 28;
+
 export interface DropdownItem {
   name: string;
   value: any;
@@ -19,13 +21,17 @@ export class Dropdown extends Component<DropdownProps, any> {
     const {options} = this.props;
     const {isOpen} = this.state;
     const item = this.getCurrentItem();
+    const currentItemIdx = item ? options.findIndex(e => e.name === item.name) : 0;
+    const listStyle = {
+      transform: `translateY(${-currentItemIdx * DROPDOWN_ITEM_HEIGHT}px)`,
+    };
 
     return (
       <div className={this.getClasses()}>
         <div className={Styles.DropdownValue}>
           {item ? item.name : ''}
         </div>
-        <div className={Styles.DropdownOptions}>
+        <div className={Styles.DropdownOptions} style={listStyle}>
           {options.map(this.renderOptionItem)}
         </div>
       </div>
@@ -43,7 +49,7 @@ export class Dropdown extends Component<DropdownProps, any> {
   private renderOptionItem = (item: DropdownItem) => {
     const cb = (_: any) => this.onNewOptionSelected(item);
     return (
-      <div key={item.name} className={Styles.DropdownOptionItem} onMouseDown={cb} onClick={cb}>
+      <div key={item.name} className={Styles.DropdownOptionItem} onClick={cb}>
         {item.name}
       </div>
     );

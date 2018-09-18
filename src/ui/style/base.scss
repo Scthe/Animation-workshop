@@ -11,3 +11,9 @@
   position:absolute;
   left:-9999px;
 }
+
+// add border-radius to left/right
+@mixin with-border-radius ($border, $value) {
+  border-top-#{$border}-radius: $value;
+  border-bottom-#{$border}-radius: $value;
+}

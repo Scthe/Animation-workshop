@@ -4,10 +4,10 @@
 // next to label
 
 $square-size: 18px;
-$active-color: #5755d9; // #db5855
+$active-color: $blue;
 
 .Checkbox {
-  margin-bottom: 10px;
+  // margin-bottom: 10px;
 }
 
 .CheckboxInput {
@@ -19,6 +19,7 @@ $active-color: #5755d9; // #db5855
   padding-left: 30px;
   cursor: pointer;
   display: inline-block;
+  line-height: 23px;
 }
 
 .CheckboxLabel:before {

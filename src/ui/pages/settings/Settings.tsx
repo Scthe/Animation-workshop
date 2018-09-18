@@ -18,16 +18,10 @@ interface SettingsProps {
 export class Settings extends Component<SettingsProps, any> {
 
   public render() {
-    // TODO name of current object
-
     return (
       <div className={this.getClasses()}>
         <Tabs tabs={TABS}>
-          {(activeTab: string) => (
-            <div className={Styles.SettingsBody}>
-              {activeTab === 'Global' ? <TabGlobal /> : <TabObject />}
-            </div>
-          )}
+          {this.renderBody}
         </Tabs>
       </div>
     );
@@ -38,6 +32,31 @@ export class Settings extends Component<SettingsProps, any> {
     return classnames(
       Styles.Settings,
       className,
+    );
+  }
+
+  private renderBody = (activeTab: string) => {
+    const isGlobalActive = activeTab === 'Global';
+    const getActiveClass = (isActive: boolean) => (
+      isActive ? Styles.TabContentActive : Styles.TabContentInactive);
+    const classes = classnames(
+      Styles.SettingsBody,
+      isGlobalActive ? Styles.TabGlobal : Styles.TabObject,
+    );
+
+    return (
+      <div className={classes}>
+        <TabObject className={classnames(
+          Styles.AnimatedTab,
+          getActiveClass(!isGlobalActive),
+          Styles.TabObject
+        )}/>
+        <TabGlobal className={classnames(
+          Styles.AnimatedTab,
+          getActiveClass(isGlobalActive),
+          Styles.TabGlobal
+        )}/>
+      </div>
     );
   }
 

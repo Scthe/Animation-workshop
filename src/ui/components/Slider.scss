@@ -1,0 +1,126 @@
+@import "ui/style/base.scss";
+
+$label-color: $text-color;
+$thumb-color: $blue;
+$thumb-size: 14px;
+$track-height: 3px;
+$track-color: #c2c0c2;
+// value popup:
+$value-popup-size: 35px;
+$value-popup-font-size: 18px;
+$value-popup-color: $white;
+$value-popup-bg: $blue;
+$value-popup-border: $brown;
+
+.SliderWrapper {
+  position: relative;
+}
+
+.Label {
+  color: $label-color;
+}
+
+
+.SliderPopup {
+  position: absolute;
+  border: none;
+  height: 0;
+  width: 0;
+  top: -15px;
+}
+
+.SliderPopupValue {
+  width: $value-popup-size;
+  height: $value-popup-size;
+  line-height: $value-popup-size - 2;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 0;
+  color: $value-popup-color;
+  background-color: $value-popup-bg;
+  border: 1px solid $value-popup-border;
+  transition: transform 0.2s;
+  transform: translateX(-5px) scale(0);
+  transform-origin: center bottom;
+  border-style: none;
+}
+
+.SliderPopup.active .SliderPopupValue {
+  display: block;
+  font-size: $value-popup-font-size;
+  transform: translateX(-5px) scale(1);
+  border-style: solid;
+}
+
+.SliderInput:focus {
+  outline: none;
+}
+
+///
+/// Not even going to pretend I know wtf happens below
+/// @see https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/
+///
+
+
+@mixin thumb-class {
+  border: none;
+  height: $thumb-size;
+  width: $thumb-size;
+  border-radius: 50%;
+  background-color: $thumb-color;
+  margin: -5px 0 0 0;
+  cursor: pointer;
+}
+
+@mixin track-class {
+  height: 3px;
+  background: $track-color;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  // position: relative;
+  width: 100%;
+  min-height: 20px; // fix chrome
+  border-style: none;
+  background-color: transparent;
+  outline: none;
+
+  &:focus { outline: none; }
+}
+
+// webkit
+input[type=range]::-webkit-slider-runnable-track {
+  @include track-class;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  transform-origin: 50% 50%;
+  margin-top: -14px;
+  @include thumb-class;
+}
+
+// firefox
+input[type=range]::-moz-range-track {
+  @include track-class;
+}
+
+input[type=range]::-moz-range-thumb {
+  @include thumb-class;
+}
+
+// ms (may not work, but I could not care less)
+input[type=range]::-ms-track {
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+  @include track-class;
+}
+
+input[type=range]::-ms-thumb {
+  @include thumb-class;
+}

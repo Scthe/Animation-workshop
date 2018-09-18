@@ -8,6 +8,8 @@ setInterval(() => {
 
 ///////////////////////////////////
 
+// TODO make maxFrame a @computed props
+
 /*
 import {observer, inject, Provider} from 'mobx-preact';
 

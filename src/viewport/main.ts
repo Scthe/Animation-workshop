@@ -82,7 +82,7 @@ export const init = async () => {
   const glState = new GlState();
   await glState.init(CANVAS_EL_ID, GLTF_URL);
 
-  glState.gl.clearColor(0.5, 0.5, 0.5, 0.9);
+  glState.gl.clearColor(0.5, 0.5, 0.5, 1.0);
   glState.gl.clearDepth(1.0);
 
   const onDraw = (time: number) => {

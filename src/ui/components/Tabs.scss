@@ -1,4 +1,8 @@
-$active-color: #5755d9;
+@import "ui/style/base.scss";
+
+$active-color: $blue;
+$animation-indicator: 0.2s;
+$animation-title: 0.2s;
 
 .TabsWithBodyWrapper {
   width: 100%;
@@ -23,10 +27,24 @@ $active-color: #5755d9;
 
   padding: .4rem .2rem .3rem .2rem;
   line-height: 24px;
+
+  svg {
+    top: -2px;
+    position: relative;
+    margin-right: 5px;
+  }
+}
+
+.TabTitle {
+  display: inline;
+  margin: 0;
 }
 
 .TabActive {
-  color: $active-color;
+  animation-delay: $animation-indicator / 2;
+  animation-duration: $animation-title;
+  animation-name: becomeActive;
+  animation-fill-mode: forwards;
 }
 
 .TabInactive {
@@ -37,5 +55,16 @@ $active-color: #5755d9;
   position: absolute;
   bottom: 0;
   left: 0;
-  transition: 0.2s;
+  transition: $animation-indicator;
+  transition-timing-function: ease-out;
+}
+
+@keyframes becomeActive {
+  0% {
+    color: $text-color;
+  }
+
+  100% {
+    color: $active-color;
+  }
 }

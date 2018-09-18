@@ -66,6 +66,7 @@ export class Tabs extends Component<TabsProps, TabsState> {
     const classes = classnames(
       Styles.Tab,
       name === currentTab ? Styles.TabActive : Styles.TabInactive,
+      {[Styles.TabWithIcon]: !!icon},
     );
 
     return (
@@ -75,7 +76,7 @@ export class Tabs extends Component<TabsProps, TabsState> {
         onClick={this.setTab.bind(this, name)}
       >
         {icon && <FaIcon svg={icon}/>}
-        {name}
+        <h4 className={Styles.TabTitle}>{name}</h4>
       </li>
     );
   }
