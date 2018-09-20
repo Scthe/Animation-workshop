@@ -6,16 +6,12 @@ import {timerData} from './state';
 import {Timeline} from './pages/timeline';
 import {Settings} from './pages/settings';
 
-// - add delay to tab when becomes active - wait for bottom stripe to reach position under, then colorize
-// TODO tooltips (and key shortcuts in tooltips)
 // TODO put font in cache
-// TODO animate fullscreen, but refresh webgl contest only on anim done
-// TODO add :focused state to components
-// TODO responsive
-// TODO change background of xyz (in settings) when manipulating respective in 3d
-// TODO animate changing object
-// TODO make PureComponent - as many as can
-// TODO notifications / confirmations
+// TODO animate fullscreen, but refresh webgl context only on anim done
+// TODO add :focused/disabled state to components
+// TODO responsive, or at least disallow mobile
+// TODO change background of xyz axis in settings, when manipulating respective axis in 3d
+// TODO make PureComponents?
 
 
 // TODO check for updates for package.json e.g. typescript 3.0 (yarn upgrade)

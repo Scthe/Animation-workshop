@@ -1,7 +1,11 @@
 import {h, Component} from 'preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./TabGlobal.scss');
-import {Checkbox, Slider, Button, ButtonTheme, Section, Dropdown, DropdownItem} from 'ui/components';
+import {
+  Checkbox, Slider, Button, ButtonTheme, Section,
+  Dropdown, DropdownItem,
+  Tooltip, TooltipPosition
+} from 'ui/components';
 
 // TODO save/load/reset
 // TODO input: max frames
@@ -26,7 +30,7 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
 
         {/* Animation settings */}
         <Section title='Animation settings' icon={require('fa/faPlay')}>
-          {/* Interpolate quat using SLERP */}
+          <Tooltip text='Linear or spherical linear interpolation' className={Styles.Tooltip}/>
           <div className={Styles.QuatInterpolation}>
             <label>Quat interpolation</label>
             <Dropdown
@@ -50,12 +54,15 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
           >
             Reset preview range
           </Button>
+
+          <Tooltip text='Temporarily limit keyframe range' className={Styles.Tooltip}/>
           <Slider
             onChange={(e: number) => console.log(e)}
             name='preview-start'
             label='Preview start'
             min={0} max={maxFrame} value={0}
           />
+          <Tooltip text='Temporarily limit keyframe range' className={Styles.Tooltip}/>
           <Slider
             onChange={(e: number) => console.log(e)}
             name='preview-end'
@@ -66,12 +73,14 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
 
         {/* Display */}
         <Section title='Display' icon={require('fa/faEye')}>
+          <Tooltip text='Size of selection circle' className={Styles.Tooltip}/>
           <Slider
             onChange={(e: number) => console.log(e)}
             name='marker-size'
             label='Marker size'
             min={0} max={maxFrame} value={100}
           />
+          <Tooltip text='Size of 3d manipulators' className={Styles.Tooltip}/>
           <Slider
             onChange={(e: number) => console.log(e)}
             name='gizmo-size'

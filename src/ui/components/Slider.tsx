@@ -18,15 +18,14 @@ interface SliderState {
 
 export class Slider extends Component<SliderProps, SliderState> {
 
-  state = {
-    isDragging: false,
-  };
-
   private wrapperRef = createRef();
   private inputRef = createRef();
   private thumbRef = createRef();
   private thumbValueRef = createRef();
 
+  state = {
+    isDragging: false,
+  };
 
   public componentDidMount () {
     const el = this.wrapperRef.current;

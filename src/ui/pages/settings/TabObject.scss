@@ -24,3 +24,8 @@
 .InputAxisY p { @include create-axis-label($green); }
 .InputAxisZ p { @include create-axis-label($blue); }
 .InputAxisW p { @include create-axis-label($brown); }
+
+.QuaternionWarning {
+  font-size: 0.8em;
+  margin: 0 0 10px 0;
+}

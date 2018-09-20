@@ -1,0 +1,66 @@
+@import "ui/style/base.scss";
+
+$animation-len: 0.2s;
+
+.TooltipWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.Tooltip {
+  position: absolute;
+  z-index: 1250;
+  font-size: 13px;
+  padding: 5px;
+  white-space: nowrap;
+
+  // background: $white;
+  // color: $brown;
+  background: $blue;
+  color: $white;
+  border: 1px solid #3c2e21;
+  border-radius: 3px;
+
+  transition: transform $animation-len;
+  transform: translate(0, 0) scale(0);
+}
+
+
+@mixin with-alt-dir-v {
+  &.TooltipNormDir .Tooltip { left: 0; }
+  // &.TooltipSwapDir .Tooltip { right: 100%; } // has to be handled in js
+}
+
+@mixin with-active-anim ($tx, $ty) {
+  &.TooltipActive .Tooltip {
+    transform: translate($tx, $ty) scale(1);
+  }
+}
+
+.TooltipTop {
+  .Tooltip {
+    bottom: 100%; // move above
+    transform-origin: bottom left;
+  }
+  @include with-alt-dir-v;
+  @include with-active-anim(0, -5px);
+}
+
+.TooltipBottom {
+  .Tooltip { transform-origin: top left; }
+  @include with-alt-dir-v;
+  @include with-active-anim(0, 5px);
+}
+
+.TooltipRight {
+  .Tooltip { transform-origin: center left; }
+  @include with-active-anim(5px, 0);
+}
+
+.TooltipLeft {
+  .Tooltip {
+    right: 100%; // move to the left
+    transform-origin: center right;
+  }
+  @include with-active-anim(-5px, 0);
+}

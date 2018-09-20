@@ -35,3 +35,7 @@ $frameStatus-label-w: 70px;
 .ButtonSpacing {
   @extend %btn-spacer;
 }
+
+.Tooltip {
+  top: -18px;
+}

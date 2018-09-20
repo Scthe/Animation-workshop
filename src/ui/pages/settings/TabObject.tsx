@@ -74,6 +74,9 @@ export class TabObject extends Component<TabObjectProps, any> {
         </Section>
 
         <Section title='Rotation' icon={require('fa/faUndo')}>
+          <p className={Styles.QuaternionWarning}>
+            Rotation is represented as quaternion. Any changes would be ill-advised
+          </p>
           {ROTATION_FIELDS.map(fieldMeta =>
             this.renderInput(fieldMeta, this.onPositionChange))}
         </Section>

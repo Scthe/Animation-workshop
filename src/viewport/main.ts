@@ -8,7 +8,6 @@ import {requestAnimFrame, handleResize} from '../gl-utils';
 import {getSelectedObject} from '../UI_State';
 
 // TODO verify if move gizmo is not clickable when rotate is selected
-// TODO [q], [e] keybindings for move/rotate
 
 const CANVAS_EL_ID = 'anim-canvas';
 const GLTF_URL = require('assets/TestScene.glb');

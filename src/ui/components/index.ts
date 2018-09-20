@@ -8,3 +8,4 @@ export * from './Input';
 export * from './Section';
 export * from './Slider';
 export * from './Tabs';
+export * from './Tooltip';

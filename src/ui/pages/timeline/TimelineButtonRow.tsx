@@ -1,7 +1,7 @@
 import {h, Component} from 'preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./TimelineButtonRow.scss');
-import {Button, ButtonTheme, ButtonGroup, Input, FaIcon, Dropdown} from 'ui/components';
+import {Button, ButtonTheme, ButtonGroup, Input, FaIcon, Dropdown, Tooltip, TooltipPosition} from 'ui/components';
 
 // TODO pause btn
 
@@ -27,9 +27,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
         {/* GENERAL PLAYBACK */}
         <ButtonGroup className={Styles.ButtonSpacing}>
-          <Button onClick={this.onPlay} theme={ButtonTheme.Beige}>
-            <FaIcon svg={require('fa/faAngleDoubleLeft')}/>
-          </Button>
+          <Tooltip text='Go to previous frame [&larr;]' className={Styles.Tooltip}/>
           <Button onClick={this.onPlay} theme={ButtonTheme.Beige}>
             <FaIcon svg={require('fa/faAngleLeft')}/>
           </Button>
@@ -41,11 +39,9 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
             <FaIcon svg={require('fa/faStop')}/>
           </Button>
 
+          <Tooltip text='Go to next frame [&rarr;]' className={Styles.Tooltip}/>
           <Button onClick={this.onPlay} theme={ButtonTheme.Beige}>
             <FaIcon svg={require('fa/faAngleRight')}/>
-          </Button>
-          <Button onClick={this.onPlay} theme={ButtonTheme.Beige}>
-            <FaIcon svg={require('fa/faAngleDoubleRight')}/>
           </Button>
         </ButtonGroup>
 
@@ -59,16 +55,19 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
         />
 
         <ButtonGroup className={Styles.ButtonSpacing}>
+          <Tooltip text='Go to previous keyframe' className={Styles.Tooltip} />
           <Button onClick={this.onStepBackward} theme={ButtonTheme.Yellow}>
             <FaIcon svg={require('fa/faKey')}/>
             <FaIcon svg={require('fa/faStepBackward')}/>
           </Button>
 
+          <Tooltip text='Go to next keyframe' className={Styles.Tooltip} />
           <Button onClick={this.onStepForward} theme={ButtonTheme.Yellow}>
             <FaIcon svg={require('fa/faStepForward')}/>
             <FaIcon svg={require('fa/faKey')}/>
           </Button>
 
+          <Tooltip text='Remove data at current keyframe' className={Styles.Tooltip} />
           <Button onClick={this.onKeyframeDelete} theme={ButtonTheme.Yellow}>
             <FaIcon svg={require('fa/faBan')}/>
             <FaIcon svg={require('fa/faKey')}/>
@@ -77,19 +76,23 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
         {/* MANIPULATORS + TRANSFORM SPACE (yeah, icons are ***) */}
         <ButtonGroup className={Styles.ButtonSpacing}>
+          <Tooltip text='Move [Q]' className={Styles.Tooltip}/>
           <Button onClick={this.onMove} theme={ButtonTheme.Blue}>
             <FaIcon svg={require('fa/faArrowsAlt')}/>
           </Button>
 
+          <Tooltip text='Rotate [E]' className={Styles.Tooltip}/>
           <Button onClick={this.onRotate} theme={ButtonTheme.Blue}>
             <FaIcon svg={require('fa/faUndo')}/>
           </Button>
 
+          <Tooltip text='Scale [R]' className={Styles.Tooltip}/>
           <Button onClick={this.onScale} theme={ButtonTheme.Blue}>
             <FaIcon svg={require('fa/faExpand')}/>
           </Button>
         </ButtonGroup>
 
+        <Tooltip text='Transformation space' className={Styles.Tooltip} position={TooltipPosition.Right}/>
         <Dropdown
           options={TRANSFORM_SPACES}
           value={tfxSpace}
