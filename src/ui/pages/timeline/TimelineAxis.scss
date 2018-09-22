@@ -5,6 +5,10 @@ $tick-full-size: 61px;
 $tick-current-frame: $red;
 $tick-time: $brown;
 $tick-keyframe: $keyframe-color;
+$tick-z-index: 250;
+$preview-z-index: 200;
+$preview-bg: rgba($brown, 0.25);
+$preview-border: rgba($brown, 0.4);
 
 
 .TimelineAxis {
@@ -21,6 +25,7 @@ $tick-keyframe: $keyframe-color;
   left: 0; // will get overriden
   height: $tick-time-size;
   border-left: 1px solid transparent;
+  z-index: $tick-z-index;
 
   &.TickTime {
     border-color: $tick-time;
@@ -43,4 +48,14 @@ $tick-keyframe: $keyframe-color;
     border-width: 5px;
     height: $tick-full-size - 6px;
   }
+}
+
+
+.PreviewRange {
+  z-index: $preview-z-index;
+  height: 100%;
+  background: $preview-bg;
+  position: absolute;
+  border-color: $preview-border;
+  border-width: 1px;
 }

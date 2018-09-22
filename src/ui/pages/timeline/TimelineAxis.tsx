@@ -1,64 +1,64 @@
 import {h, Component} from 'preact';
+import {observer, inject} from 'mobx-preact';
 import {classnames, WithDimensions, Dimensions, clamp} from 'ui/utils';
 const Styles = require('./TimelineAxis.scss');
+import {AppState, TimelineState} from 'ui/state';
 import {Tick, createTickPosition, TickLabel} from './TimelineTick';
-
-const TICK_SPACING = 24;
-const MAX_FRAMES = 240;
-const KEYFRAMES = [5, 15, 20, 120, 150];
+import {ANIM_FPS} from 'viewport/animation';
 
 const CLASSES_TICK = classnames(Styles.Tick, Styles.TickTime);
 const CLASSES_KEYFRAME = classnames(Styles.Tick, Styles.TickKeyframe);
 const CLASSES_CURRENT_FRAME = classnames(Styles.Tick, Styles.TickCurrentFrame);
 
-// TODO remove [keyframes, ticks] > MAX_FRAMES, as would render weirdly
-// TODO debounce
+// TODO debounce if needed
 
 interface TimelineAxisProps {
   className?: string;
   dimensions?: Dimensions;
+  appState?: AppState;
+  timelineState?: TimelineState;
 }
 
 interface TimelineAxisState {
-  currentFrame: number;
   isClicked: boolean;
 }
 
-const calculateFrameFromEvent = (e: any, dimensions: Dimensions) => {
-  const x = e.clientX;
-  const progress = x / dimensions.width;
-  return clamp(Math.ceil(progress * MAX_FRAMES) - 1, 0, MAX_FRAMES);
-};
 
 @WithDimensions
+@inject('appState')
+@inject('timelineState')
+@observer
 export class TimelineAxis extends Component<TimelineAxisProps, TimelineAxisState> {
 
   state = {
-    currentFrame: 50,
     isClicked: false,
   };
 
   public render() {
-    const {currentFrame} = this.state;
-    const {className, dimensions} = this.props;
+    const {className, dimensions, appState, timelineState} = this.props;
     const {width} = dimensions;
+    const tickUnit = appState.showTimeAsSeconds ? TickLabel.Time : TickLabel.FrameId;
 
     const ticks = this.createTickList(width);
     const keyframes = this.createKeyframesList(width);
-    const curFrame = createTickPosition(currentFrame, MAX_FRAMES, width);
+    const currFrame = createTickPosition(timelineState.currentFrame, timelineState.frameCount, width);
 
     return (
       <div
         className={this.getClasses()}
-        onMouseUp={this.onTimelineClick}
-        onMouseDown={this.onTimelineClick}
-        onMouseMove={this.onTimelineDrag}
+        onMouseDown={this.onMouseDown}
+        onMouseUp={this.onMouseUp}
+        onMouseLeave={this.onMouseUp}
+        onMouseMove={this.onMouseMove}
       >
-        {ticks.map(t =>
-          <Tick {...t} className={CLASSES_TICK} labelMode={TickLabel.FrameId}/>)}
-        {keyframes.map(t =>
+        {ticks.filter(this.isTickInRange).map(t =>
+          <Tick {...t} className={CLASSES_TICK} labelMode={tickUnit}/>)}
+        {keyframes.filter(this.isTickInRange).map(t =>
           <Tick {...t} className={CLASSES_KEYFRAME} labelMode={TickLabel.None}/>)}
-        <Tick {...curFrame} className={CLASSES_CURRENT_FRAME} labelMode={TickLabel.None}/>
+        <Tick {...currFrame} className={CLASSES_CURRENT_FRAME} labelMode={TickLabel.None}/>
+
+        {this.getPreviewShadows().map((style: any) =>
+          <div className={Styles.PreviewRange} style={style}></div>)}
       </div>
     );
   }
@@ -71,51 +71,76 @@ export class TimelineAxis extends Component<TimelineAxisProps, TimelineAxisState
     );
   }
 
+  private isTickInRange = (tick: any) => {
+    const {timelineState} = this.props;
+    return tick.frameId >= 0 && tick.frameId <= timelineState.frameCount;
+  }
+
   private createTickList (panelWidth: number) {
+    const {timelineState} = this.props;
+    const frameCount = timelineState.frameCount;
+
     const list = [];
-    const count = (MAX_FRAMES - TICK_SPACING + 1) / TICK_SPACING;
-    const dummyArr = Array.from(Array(Math.ceil(count) - 1));
+    const count = (frameCount - ANIM_FPS + 1) / ANIM_FPS;
+    const dummyArr = Array.from(Array(Math.ceil(count))); // [0...count]
 
     return dummyArr.map((_, i) => {
-      const frameId = (i + 1) * TICK_SPACING;
-      return createTickPosition(frameId, MAX_FRAMES, panelWidth);
+      const frameId = (i + 1) * ANIM_FPS;
+      return createTickPosition(frameId, frameCount, panelWidth);
     });
   }
 
   private createKeyframesList (panelWidth: number) {
-    return KEYFRAMES.map(k => createTickPosition(k, MAX_FRAMES, panelWidth));
+    const {timelineState} = this.props;
+
+    return timelineState.currentObjectTimeline.map(keyframe =>
+      createTickPosition(keyframe.frameId, timelineState.frameCount, panelWidth));
   }
 
-  private onTimelineClick = (e: any) => {
-    const isClicked = e.type === 'mousedown';
-    if (!isClicked  && !this.state.isClicked) {
-      // was dragged outside of element and then back onto it
-      return;
-    }
-
-    this.setState({
-      currentFrame: calculateFrameFromEvent(e, this.props.dimensions),
-      isClicked,
-    });
+  private onMouseDown = (e: any) => {
+    this.setState({ isClicked: true, });
+    this.updateCurrentFrameFromEvent(e);
   }
 
-  private onTimelineDrag = (e: any) => {
+  private onMouseUp = (e: any) => {
     if (!this.state.isClicked) {
       return;
     }
+    this.setState({ isClicked: false, });
+    this.updateCurrentFrameFromEvent(e);
+  }
 
-    const isOverAxisEl = e.offsetY > 0;
-    if (isOverAxisEl) {
-      this.setState({
-        ...this.state,
-        currentFrame: calculateFrameFromEvent(e, this.props.dimensions),
-      });
-    } else {
-      this.setState({
-        ...this.state,
-        isClicked: false,
-      });
+  private onMouseMove = (e: any) => {
+    if (!this.state.isClicked) {
+      return;
     }
+    this.updateCurrentFrameFromEvent(e);
+  }
+
+  private updateCurrentFrameFromEvent (e: any) {
+    const {timelineState, dimensions} = this.props;
+
+    const progress = e.clientX / dimensions.width;
+    const frameId = Math.ceil(progress * timelineState.frameCount) - 1;
+    timelineState.currentFrame = timelineState.clampFrame(frameId);
+  }
+
+  private getPreviewShadows () {
+    const {timelineState, dimensions} = this.props;
+    const frameCount = timelineState.frameCount;
+    const {width} = dimensions;
+
+    let range = timelineState.previewRange;
+    range = [Math.min(...range), Math.max(...range)];
+
+    const px = range.map((p: number) => (
+      createTickPosition(p, frameCount, width).pixelX
+    ));
+
+    const result = [];
+    result.push({ left: 0, width: `${px[0]}px`, borderRightStyle: 'solid', });
+    result.push({ right: 0, width: `${width - px[1]}px`, borderLeftStyle: 'solid', });
+    return result;
   }
 
 }

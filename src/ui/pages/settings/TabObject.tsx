@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {get} from 'lodash';
 import {classnames} from 'ui/utils';
 const Styles = require('./TabObject.scss');
-import {Section, Input, FaIcon} from 'ui/components';
+import {Section, Input, InputValidate, FaIcon} from 'ui/components';
 
 // TODO add material settings
 // TODO add light settings
@@ -48,7 +48,12 @@ const ROTATION_FIELDS = [
   {prepend: 'w', className: Styles.InputAxisW, path: 'rotation[3]'},
 ];
 
-const IS_NUMBER = /^-?\d+\.?\d*$/; // /^[0-9]*\\\\.?[0-9]+$/;
+const SCALE_FIELDS = [
+  {prepend: 'x', className: Styles.InputAxisX, path: 'scale[0]'},
+  {prepend: 'y', className: Styles.InputAxisY, path: 'scale[1]'},
+  {prepend: 'z', className: Styles.InputAxisZ, path: 'scale[2]'},
+];
+
 
 interface TabObjectProps {
   className?: string;
@@ -58,7 +63,6 @@ export class TabObject extends Component<TabObjectProps, any> {
 
   public render () {
     const {objData, objCfg} = this.getSelectedObjectInfo();
-    // TODO split into comp/MoveComp
 
     return selectedObject ? (
       <div className={this.getClasses()}>
@@ -80,6 +84,14 @@ export class TabObject extends Component<TabObjectProps, any> {
           {ROTATION_FIELDS.map(fieldMeta =>
             this.renderInput(fieldMeta, this.onPositionChange))}
         </Section>
+
+        {/*
+          TODO when overflow, make only subpanel scrollable, not whole <Settings>
+        <Section title='Scale' icon={require('fa/faExpand')}>
+          {SCALE_FIELDS.map(fieldMeta =>
+            this.renderInput(fieldMeta, this.onScaleChange))}
+        </Section>
+         */}
 
       </div>
     ) : <p>No object selected?</p>;
@@ -114,24 +126,33 @@ export class TabObject extends Component<TabObjectProps, any> {
         className={className}
         value={get(selectedObjectData, path)}
         onInput={cb}
+        validate={InputValidate.NumberFloat}
       />
     );
   }
 
   private onPositionChange = (nextVal: string, e: any) => {
-    const isOk = IS_NUMBER.test(nextVal);
-    if (!isOk) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    const val = parseFloat(nextVal);
+    if (isNaN(val)) { return; }
+    // TODO check if changed
+
+    console.log(`pos: ${val}`);
   }
 
   private onRotationChange = (nextVal: string, e: any) => {
-    const isOk = IS_NUMBER.test(nextVal);
-    if (!isOk) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    const val = parseFloat(nextVal);
+    if (isNaN(val)) { return; }
+    // TODO check if changed
+
+    console.log(`rot: ${val}`);
+  }
+
+  private onScaleChange = (nextVal: string, e: any) => {
+    const val = parseFloat(nextVal);
+    if (isNaN(val)) { return; }
+    // TODO check if changed
+
+    console.log(`scale: ${val}`);
   }
 
 }

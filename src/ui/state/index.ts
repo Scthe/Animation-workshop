@@ -1,39 +1,133 @@
 import {observable, computed, action} from 'mobx';
+import {Keyframe} from 'viewport/animation';
+import {GizmoType} from 'viewport/gizmo';
+import {clamp} from 'ui/utils';
 
-export const timerData = observable({ secondsPassed: 0 });
+export const MAX_MARKER_SIZE = 20;
+export const MAX_GIZMO_SIZE = 20;
 
-setInterval(() => {
-  timerData.secondsPassed++;
-}, 1000);
+const MAX_FRAMES = 250;
 
-///////////////////////////////////
+export class AppState {
 
-// TODO make maxFrame a @computed props
+  // when viewport fills whole view
+  // private isFullscreen = false;
+  // current manipulator
+  @observable currentGizmo = GizmoType.Move;
+  @observable gizmoSize = 10;
+  //
+  @observable isUseLocalSpace = true;
+  @observable markerSize = 10;
+  @observable useSlerp = true;
+  @observable showTimeAsSeconds = false;
+  @observable showDebug = true;
 
-/*
-import {observer, inject, Provider} from 'mobx-preact';
-
-@observer
-class StateTest extends Component<any, any> {
-  render () {
-    const {timerData} = this.props;
-    return (
-      <div>Seconds passed 1: { timerData.secondsPassed % 60 }</div>
-    );
+  isGizmoAllowed (gizmoType: GizmoType) {
+    return gizmoType !== GizmoType.Scale;
   }
+  /*
+  @computed
+  get currentObject () {
+    return {
+      name,
+      type, // or just whole marker?
+      timeline,
+      config,
+    }
+  }
+  */
+
 }
 
-const StateTest2 = observer(({ timerData }) =>
-  <div>Seconds passed 2: {timerData.secondsPassed}</div>);
 
-@inject('timerData')
-@observer
-class StateTest3 extends Component<any, any> {
-  render () {
-    const {timerData} = this.props;
-    return (
-      <div>Seconds passed 3: { timerData.secondsPassed % 60 }</div>
-    );
+type Timeline = Keyframe[];
+// type TimelineMap = {[key: string]: Timeline};
+
+const KEYFRAMES =  [
+  {frameId: 5, },
+  {frameId: 15, },
+  {frameId: 120, },
+  {frameId: 200, },
+] as Keyframe[];
+
+
+export class TimelineState {
+
+  // current frame on timeline
+  @observable currentFrame = 0;
+  // playing animation should disable UI
+  @observable isPlaying = false;
+  // all animation data
+  // private timelines = {} as TimelineMap;
+  // preview
+  @observable previewRange = [150, 50]; // [0, MAX_FRAMES];
+
+  @computed
+  get frameCount () { return MAX_FRAMES; }
+
+  @computed
+  get currentObjectTimeline () {
+    return KEYFRAMES;
   }
+
+  clampFrame (frameId: number) {
+    return clamp(frameId, 0, this.frameCount - 1);
+  }
+
+  private getKeyframeBefore (keyframes: Timeline, frameId: number, allowCurrent: boolean) {
+    const isExactCurrent = (k: Keyframe) => allowCurrent && k.frameId === frameId;
+    const isBefore = (k: Keyframe) => k.frameId < frameId || isExactCurrent(k);
+
+    let frameBeforeIdx = -1;
+    keyframes.forEach((k: Keyframe, idx: number) => {
+      if (isBefore(k)) {
+        frameBeforeIdx = idx;
+      }
+    });
+
+    return frameBeforeIdx;
+  }
+
+  // TODO test me!
+  // get frame directly before `frameId` and one directly after
+  // @param allowCurrent returned frames has to be different then current one
+  getCurrentObjectKeyframeNeighbours (frameId: number, allowCurrent: boolean = true) {
+    // NOTE: we require that timeline has keyframes SORTED by frameId
+    // or:  && k.frameId > timeline[frameBeforeIdx].frameId
+    const keyframes = this.currentObjectTimeline;
+    const frameBeforeIdx = this.getKeyframeBefore(keyframes, frameId, allowCurrent);
+
+    let keyframeAfter = keyframes[frameBeforeIdx + 1];
+    const isAfterSameAsCurrent = keyframeAfter && keyframeAfter.frameId === frameId;
+    if (!allowCurrent && isAfterSameAsCurrent) {
+      keyframeAfter = keyframes[frameBeforeIdx + 2];
+    }
+
+    return [keyframes[frameBeforeIdx], keyframeAfter];
+  }
+
+  deleteKeyframeForCurrentObject (frameId: number) {
+    console.log(`would delete keyframe ${frameId}`);
+  }
+
+  /*
+  // sets keyframe for selected object
+  setKeyframe (name: string, keyframe: Keyframe) {
+    const currentObj = this.getSelectedObj();
+    const time = this.getCurrentTime();
+    const timeline = this.getTimeline(currentObj);
+    timelineSet(timeline, time, keyframe);
+  }
+
+  // delete keyframe
+  deleteKeyframe (name: string, frameId: number) {
+  }
+
+  // get timeline for an object
+  getTimeline (name: string) {
+  }
+  */
 }
-*/
+
+export const appState = new AppState();
+export const timelineState = new TimelineState();
