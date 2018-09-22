@@ -1,6 +1,8 @@
 import {h, Component} from 'preact';
-import {classnames} from 'ui/utils';
+import {classnames, createRef} from 'ui/utils';
 const Styles = require('./Dropdown.scss');
+
+// TODO after selecting the item, the Tooltip stays on. Should reacalc instead
 
 const DROPDOWN_ITEM_HEIGHT = 28;
 
@@ -16,7 +18,46 @@ interface DropdownProps {
   value: string;
 }
 
-export class Dropdown extends Component<DropdownProps, any> {
+interface DropdownState {
+  isOpen: boolean;
+}
+
+
+export class Dropdown extends Component<DropdownProps, DropdownState> {
+
+  private meRef = createRef();
+
+  state = {
+    isOpen: false,
+  };
+
+  public componentDidMount () {
+    const meEl = this.meRef.current;
+    if (meEl) {
+      meEl.addEventListener('mouseenter', this.onMouseEnter);
+      meEl.addEventListener('mouseleave', this.onMouseLeave);
+    } else {
+      const item = this.getCurrentItem();
+      throw `Could not set hover listeners for dropdown with value '${item ? item.name : '?'}'`;
+    }
+  }
+
+  public componentWillUnmount () {
+    const meEl = this.meRef.current;
+    if (meEl) {
+      meEl.removeEventListener('mouseenter', this.onMouseEnter);
+      meEl.removeEventListener('mouseleave', this.onMouseLeave);
+    }
+  }
+
+  private onMouseEnter = () => {
+    this.setState({ isOpen: true, });
+  }
+
+  private onMouseLeave = () => {
+    this.setState({ isOpen: false, });
+  }
+
   public render () {
     const {options} = this.props;
     const {isOpen} = this.state;
@@ -27,13 +68,15 @@ export class Dropdown extends Component<DropdownProps, any> {
     };
 
     return (
-      <div className={this.getClasses()}>
+      <div className={this.getClasses()} ref={this.meRef}>
         <div className={Styles.DropdownValue}>
           {item ? item.name : ''}
         </div>
-        <div className={Styles.DropdownOptions} style={listStyle}>
-          {options.map(this.renderOptionItem)}
-        </div>
+        {isOpen ? (
+          <div className={Styles.DropdownOptions} style={listStyle}>
+            {options.map(this.renderOptionItem)}
+          </div>
+        ) : null }
       </div>
     );
   }
@@ -60,6 +103,7 @@ export class Dropdown extends Component<DropdownProps, any> {
 
     if (item.name !== value) {
       onSelected(item);
+      this.onMouseLeave();
     }
   }
 

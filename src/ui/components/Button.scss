@@ -4,8 +4,15 @@
   background-color: $color-bg;
   color: $color-text;
 
-  &:hover {
+  &:not(.Active):hover {
     background-color: lighten($color-bg, 20%);
+  }
+  &.Disabled {
+    background-color: darken($color-bg, 20%) !important;
+  }
+  &.Active {
+    background-color: lighten($color-bg, 20%);
+    color: $brown;
   }
 }
 

@@ -43,7 +43,7 @@ $animation-title: 0.2s;
 .TabActive {
   animation-delay: $animation-indicator / 2;
   animation-duration: $animation-title;
-  animation-name: becomeActive;
+  animation-name: anim-tab-name-light-up;
   animation-fill-mode: forwards;
 }
 
@@ -59,7 +59,7 @@ $animation-title: 0.2s;
   transition-timing-function: ease-out;
 }
 
-@keyframes becomeActive {
+@keyframes anim-tab-name-light-up {
   0% {
     color: $text-color;
   }

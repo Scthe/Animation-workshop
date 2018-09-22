@@ -9,12 +9,6 @@ $option-list-padding: 5px;
 .Dropdown {
   position: relative;
   text-align: right;
-
-  &:hover .DropdownOptions {
-    // display: block;
-    visibility: visible;
-    opacity: 1.0;
-  }
 }
 
 .DropdownOpen {}
@@ -32,20 +26,15 @@ $option-list-padding: 5px;
 }
 
 .DropdownOptions {
-  padding: $option-list-padding;
-  // display: none;
-  visibility: collapse;
   position: absolute;
-  // right: -$option-list-padding;
   right: 0;
   top: -$option-list-padding;
+  padding: $option-list-padding;
+  border: $border;
   z-index: 1000;
   cursor: pointer;
-  border: $border;
   background-color: $option-list-bg;
-  text-align: right; // center; better align
-  opacity: 0;
-  transition: opacity 0.2s ease-out;
+  text-align: right; // looks so-and-so, but better align
 }
 
 .DropdownOptionItem {

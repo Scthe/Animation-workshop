@@ -14,17 +14,6 @@ $far-away-x: 150%;
 
 .SettingsBody {
   padding-top: 15px;
-}
-
-
-
-
-.AnimatedTab {
-  padding: 0 $padding;
-  width: 100%;
-}
-
-.SettingsBody {
   width: 200%;
   display: flex;
   transition: all $animation-swtich-tab;
@@ -36,4 +25,9 @@ $far-away-x: 150%;
   &.TabGlobal {
     transform: translateX(-50%);
   }
+}
+
+.AnimatedTab {
+  padding: 0 $padding;
+  width: 100%;
 }

@@ -4,7 +4,8 @@ const Styles = require('./Slider.scss');
 
 interface SliderProps {
   className?: string;
-  onChange: Function;
+  onChange?: Function;
+  onSelected?: Function;
   name: string;
   label: string;
   max: number;
@@ -83,15 +84,23 @@ export class Slider extends Component<SliderProps, SliderState> {
 
     const thumb = this.thumbRef.current;
     thumb.classList.remove(Styles.active);
+
+    const {onSelected} = this.props;
+    if (onSelected) {
+      onSelected(this.getCurrentValue());
+    }
   }
 
   private onMouseMove = (e: any) => {
     const {onChange} = this.props;
     const {isDragging} = this.state;
+
     if (isDragging) {
       this.updateThumb(e);
+      if (onChange) {
+        onChange(this.getCurrentValue());
+      }
     }
-    onChange(this.getCurrentValue());
   }
 
   private updateThumb(e: any) {

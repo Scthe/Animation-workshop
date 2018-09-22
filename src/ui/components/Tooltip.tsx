@@ -1,4 +1,5 @@
 import {h, Component} from 'preact';
+const Portal = require('preact-portal');
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./Tooltip.scss');
 
@@ -32,6 +33,8 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
     } else {
       throw `Could not find target for tooltip with text: '${this.props.text}'`;
     }
+
+    this.forceUpdate(); // re-render after getting refs
   }
 
   public componentWillUnmount () {
@@ -43,16 +46,17 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
   }
 
   public render () {
-    const {text, position, className} = this.props;
+    const {text, position} = this.props;
     const targetEl = this.getTargetEl();
 
     return (
-      <div className={this.getClasses(targetEl)} ref={this.meRef}>
-        <div className={Styles.Tooltip}
-          style={this.getCoordinates(targetEl)}
-        >
-          {text}
-        </div>
+      <div ref={this.meRef} className={Styles.TooltipWrapper}>
+        <Portal into='#tooltip-container'>
+          <span
+            className={this.getClasses(targetEl)}
+            style={this.getCoordinates(targetEl)}
+          >{text}</span>
+        </Portal>
       </div>
     );
   }
@@ -60,7 +64,7 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
   private getClasses (target: HTMLElement) {
     const {className, position, swapDirection} = this.props;
     return classnames(
-      Styles.TooltipWrapper,
+      Styles.Tooltip,
       className,
       this.isShowTooltip(target) ? Styles.TooltipActive : Styles.TooltipInactive,
       {[Styles.TooltipBottom]: position === TooltipPosition.Bottom},
@@ -87,27 +91,39 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
   }
 
   private getCoordinates (target: HTMLElement) {
-    const {position, swapDirection} = this.props;
-    if (!target) { return { display: 'none' }; }
+    if (!target) { // only during 1st render
+      return { display: 'none' };
+    }
 
+    const {position, swapDirection} = this.props;
     const rect = target.getBoundingClientRect();
+    const edgeRight = document.body.clientWidth - rect.right;
+    const verticalTtipStyleHoriz = (swapDirection
+      ? { right: edgeRight, }
+      : { left: rect.left, }
+    );
 
     switch (position) {
       case TooltipPosition.Bottom:
         return {
-          top: rect.height,
-          right: swapDirection ? -rect.width : 'auto',
+          top: rect.top + rect.height,
+          ...verticalTtipStyleHoriz,
         };
       case TooltipPosition.Left:
-        return {};
+        return {
+          top: rect.top,
+          right: edgeRight + rect.width,
+        };
       case TooltipPosition.Right:
         return {
-          left: rect.width,
+          top: rect.top,
+          left: rect.right,
         };
       case TooltipPosition.Top:
       default:
         return {
-          right: swapDirection ? -rect.width : 'auto',
+          top: rect.top - rect.height,
+          ...verticalTtipStyleHoriz,
         };
     }
   }

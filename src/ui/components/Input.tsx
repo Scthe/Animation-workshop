@@ -2,6 +2,15 @@ import {h, Component} from 'preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Input.scss');
 
+const isAlphaNumbericKey = (e: any) => e.key.length === 1;
+
+export enum InputValidate { None, NumberDecimal, NumberFloat }
+const VALIDATORS = [
+  null,
+  /^[-\d]$/,
+  /^[-\.\d]$/,
+];
+
 interface InputProps {
   value: any;
   name: string;
@@ -10,10 +19,15 @@ interface InputProps {
   onInput?: Function;
   prepend?: any;
   append?: any;
+  validate?: InputValidate;
+  rawProps?: any;
 }
 
+// NOTE: making it uncontrolled makes it easier to add
+// different validations to onKeyPress
+
 export const Input = (props: InputProps) => {
-  const {value, className, name, prepend, append, disabled, onInput} = props;
+  const {value, className, name, prepend, append, disabled, onInput, validate, rawProps} = props;
 
   const classes = classnames(
     Styles.InputWrapper,
@@ -27,10 +41,22 @@ export const Input = (props: InputProps) => {
     {[Styles.InputDisabled]: disabled},
   );
 
-  const handleChange = (e: any) => {
-    console.log(e.target.value, e);
-    const nextText = e.target.value + e.key;
-    if (onInput) { onInput(nextText, e); }
+  const onKeyPress = (e: any) => {
+    if (!isAlphaNumbericKey(e)) {
+      return;
+    }
+
+    const validator = VALIDATORS[validate];
+    if (validator && !validator.test(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  const onKeyUp = (e: any) => {
+    if (onInput) {
+      onInput(e.target.value, e);
+    }
   };
 
   return (
@@ -44,7 +70,9 @@ export const Input = (props: InputProps) => {
         type='text'
         value={value}
         disabled={disabled}
-        onKeyPress={handleChange}
+        onKeyPress={onKeyPress}
+        onKeyUp={onKeyUp}
+        {...(rawProps || {})}
       />
       {append && (
         <p class={Styles.InputAppend}>{append}</p>

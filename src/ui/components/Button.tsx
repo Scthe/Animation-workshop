@@ -22,22 +22,26 @@ interface ButtonProps {
   children: any;
   onClick: Function;
   theme?: ButtonTheme;
+  disabled?: boolean;
+  active?: boolean;
 }
 
 export const Button = (props: ButtonProps) => {
-  const {className, children, onClick, theme} = props;
+  const {className, children, onClick, theme, disabled, active} = props;
 
   const classes = classnames(
     Styles.Button,
     className,
     getThemeClass(theme),
+    {[Styles.Disabled]: disabled},
+    {[Styles.Active]: active},
   );
 
   const handler = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (onClick) { onClick(e); }
+    if (!disabled && onClick) { onClick(e); }
   };
 
   return (
