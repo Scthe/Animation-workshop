@@ -1,0 +1,76 @@
+@import "ui/style/base.scss";
+
+$fullscreen-transition-len: 0.2s;
+$fullscreen-btn-bg: #444;
+$fullscreen-btn-color: $white;
+
+.App {
+  position: relative;
+}
+
+// this class is animation class - just to kickoff hidding the UI
+.AppFullscreen {
+  .Settings { transform: translateX($settings-width); }
+  .Timeline { transform: translateY($timeline-height); }
+}
+
+// this is 'true' Fullscreen class - recalculate layout after transition
+// and resize <canvas>
+.AppFullscreenAfterTransition {
+  .CanvasWrapper {
+    padding-right: 0;
+    padding-bottom: 0;
+  }
+
+  .FullscreenBtnWrapper {
+    right: 0;
+    bottom: 0;
+  }
+}
+
+.FullscreenBtnWrapper {
+  position: fixed;
+  right: $settings-width;
+  bottom: $timeline-height;
+  padding: 5px;
+
+  .FullscreenBtn {
+    background: rgba($fullscreen-btn-bg, 0.5);
+    color: $fullscreen-btn-color;
+
+    &:hover {
+      background: rgba($fullscreen-btn-bg, 0.1) !important;
+    }
+  }
+}
+
+.CanvasWrapper {
+  width: 100vw;
+  height: 100vh;
+  padding-right: $settings-width;
+  padding-bottom: $timeline-height;
+}
+
+.AnimCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+.Settings {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: $settings-width;
+  height: calc(100% - #{$timeline-height});
+  transition: transform $fullscreen-transition-len;
+}
+
+.Timeline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: $timeline-height;
+  transition: transform $fullscreen-transition-len;
+}

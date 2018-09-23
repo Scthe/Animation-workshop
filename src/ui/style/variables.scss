@@ -1,0 +1,22 @@
+// layout
+$settings-width: 300px;
+$timeline-height: 100px;
+
+// color palette
+$blue: hsl(202, 47%, 50%); // #6fbae6;
+$green: hsl(119, 47%, 50%); // #a0e66f;
+$red: hsl(0, 47%, 50%); // #c53a24;
+$yellow: #dacc2e; //#ccc038; // hsl(55, 47%, 50%); // #c6ac25;
+$beige: #fbf6e8;
+$brown: #3c2e21;
+$white: #fcfcf7;
+
+// colors
+$viewport-color: rgb(128, 128, 128);
+$body-bg: $white;
+$panel-border: $brown;
+$text-color: #222;
+$keyframe-color: $yellow;
+$section-border-top: lighten($panel-border, 50%);
+$section-header-bg: lighten($panel-border, 70%);
+$panel-inactive-overlay: rgba(black, 0.55);

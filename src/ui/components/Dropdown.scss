@@ -1,0 +1,46 @@
+@import "ui/style/base.scss";
+
+$border: 1px solid $brown;
+$option-list-bg: $beige;
+$option-list-hover: $blue;
+$option-value-hover: $white;
+$option-list-padding: 5px;
+
+.Dropdown {
+  position: relative;
+  text-align: right;
+}
+
+.DropdownOpen {}
+
+.DropdownClosed {}
+
+.DropdownValue {
+  border: $border;
+  padding: 5px 15px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $option-value-hover;
+  }
+}
+
+.DropdownOptions {
+  position: absolute;
+  right: 0;
+  top: -$option-list-padding;
+  padding: $option-list-padding;
+  border: $border;
+  z-index: 1000;
+  cursor: pointer;
+  background-color: $option-list-bg;
+  text-align: right; // looks so-and-so, but better align
+}
+
+.DropdownOptionItem {
+  padding: 5px 10px;
+
+  &:hover {
+    background-color: $option-list-hover;
+  }
+}

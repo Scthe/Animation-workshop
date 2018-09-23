@@ -1,0 +1,56 @@
+@import "ui/style/base.scss";
+
+$header-margins: 10px;
+
+@mixin label-with-icon {
+  & svg { margin-right: 5px; }
+}
+
+.TabObject {}
+
+.ObjectName {
+  text-align: center;
+  margin: 0 0 $header-margins 0;
+  font-size: 1em;
+  @include label-with-icon;
+}
+
+%KeyframeInfo {
+  text-align: center;
+  font-size: 0.8em;
+  padding: 5px;
+  font-weight: bold;
+  margin: 0 0 $header-margins 0;
+  text-transform: uppercase;
+}
+
+.KeyframeInfoYes {
+  @extend %KeyframeInfo;
+  @include label-with-icon;
+  background-color: $yellow;
+}
+.KeyframeInfoNo {
+  @extend %KeyframeInfo;
+}
+
+
+//
+// axis etc.
+
+@mixin create-axis-label ($color) {
+  background-color: $color;
+  color: $white;
+  font-weight: bold;
+  width: 30px;
+}
+
+// too lazy to expose .prepend, so just stupid selector
+.InputAxisX p { @include create-axis-label($red); }
+.InputAxisY p { @include create-axis-label($green); }
+.InputAxisZ p { @include create-axis-label($blue); }
+.InputAxisW p { @include create-axis-label($brown); }
+
+.QuaternionWarning {
+  font-size: 0.8em;
+  margin: 0 0 10px 0;
+}

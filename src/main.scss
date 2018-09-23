@@ -1,0 +1,13 @@
+@import "~normalize.css/normalize.css";
+@import "ui/style/base";
+
+* {
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+body {
+  overflow: hidden;
+  background-color: $viewport-color;
+  color: $text-color;
+}

@@ -1,0 +1,25 @@
+@import "ui/style/base.scss";
+
+$button-group-border-radius: 5px;
+
+.ButtonGroup {
+  border-radius: $button-group-border-radius;
+  display: inline-block;
+
+  // to lazy to expose
+  & button {
+    &:first-child {
+      border-top-left-radius: $button-group-border-radius;
+      border-bottom-left-radius: $button-group-border-radius;
+    }
+
+    &:last-child {
+      border-top-right-radius: $button-group-border-radius;
+      border-bottom-right-radius: $button-group-border-radius;
+    }
+
+    &:not(:last-child) {
+      border-right-style: none;
+    }
+  }
+}

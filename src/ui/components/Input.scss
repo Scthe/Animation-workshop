@@ -1,0 +1,49 @@
+@import "ui/style/base.scss";
+
+$label-bg: #e9ecef;
+$border-radius: 5px;
+$border: 1px solid $brown;
+
+.InputWrapper {
+  margin-bottom: 5px;
+  display: flex;
+
+  &.HasPrepend {
+    .Input { @include with-border-radius(left, 0); }
+  }
+
+  &.HasAppend {
+    .Input { @include with-border-radius(right, 0); }
+  }
+}
+
+.Input {
+  border-radius: $border-radius;
+  box-shadow: none;
+  padding: 5px 8px;
+  border: $border;
+}
+
+.InputDisabled {
+  background-color: #bababa;
+}
+
+%input-label {
+  background: $label-bg;
+  margin: 0;
+  border: $border;
+  line-height: 26px;
+  text-align: center;
+}
+
+.InputPrepend {
+  @extend %input-label;
+  @include with-border-radius(left, $border-radius);
+  border-right-style: none;
+}
+
+.InputAppend {
+  @extend %input-label;
+  @include with-border-radius(right, $border-radius);
+  border-left-style: none;
+}

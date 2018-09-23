@@ -15,7 +15,7 @@ export * from './rotate/handler';
 
 
 export enum GizmoType {
-  Move, Rotate, // Scale
+  Move, Rotate, Scale
 }
 
 export const AXIS_COLORS = [

@@ -1,0 +1,34 @@
+@import "ui/style/base.scss";
+
+.Section {
+  margin-bottom: 15px;
+  border-top: 1px solid $section-border-top;
+}
+
+.SectionHeader {
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 5px;
+  margin-bottom: 5px;
+
+  &:hover {
+    background-color: $section-header-bg;
+  }
+}
+
+.SectionTitle {
+  display: inline-block;
+  margin: 0 0 0 6px;
+  font-size: 15px;
+  position: relative;
+  top: 2px;
+}
+
+.SectionBody {
+  padding: 5px;
+}
+
+.ExpandIcon {
+  margin-right: 10px;
+  font-size: 25px;
+}

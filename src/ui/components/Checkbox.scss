@@ -1,0 +1,40 @@
+@import "ui/style/base.scss";
+
+// we render <input> off screen and create pseudo-element
+// next to label
+
+$square-size: 18px;
+$active-color: $blue;
+
+.Checkbox {
+  // margin-bottom: 10px;
+}
+
+.CheckboxInput {
+  @extend %off-screen;
+}
+
+.CheckboxLabel {
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  display: inline-block;
+  line-height: 23px;
+}
+
+.CheckboxLabel:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: $square-size;
+  height: $square-size;
+  z-index: 0;
+  border: 2px solid #5a5a5a;
+  border-radius: 1px;
+  transition: 0.2s;
+}
+
+.CheckboxChecked .CheckboxLabel:before{
+  background-color: $active-color;
+}
