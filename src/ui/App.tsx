@@ -13,7 +13,6 @@ import {Settings} from './pages/settings';
 // TODO responsive, or at least disallow mobile
 
 // TODO tslint
-// TODO check for updates for package.json e.g. typescript 3.0 (yarn upgrade)
 // TODO use mini-css-extract-plugin to extract css to file?
 
 
