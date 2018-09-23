@@ -1,5 +1,5 @@
 import {h, Component} from 'preact';
-import {classnames} from 'ui/utils';
+import {classnames, cancelEvent} from 'ui/utils';
 const Styles = require('./Checkbox.scss');
 
 interface CheckboxProps {
@@ -20,8 +20,7 @@ export const Checkbox = (props: CheckboxProps) => {
   );
 
   const handler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    cancelEvent(e);
 
     if (onChecked) { onChecked(!value); }
   };

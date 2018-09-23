@@ -8,10 +8,14 @@ export const MAX_GIZMO_SIZE = 20;
 
 const MAX_FRAMES = 250;
 
+enum Constraint { Allow, Disallow, } // AllowLocal, AllowGlobal
+const AllowAll = [Constraint.Allow, Constraint.Allow, Constraint.Allow];
+const DisallowAll = [Constraint.Disallow, Constraint.Disallow, Constraint.Disallow];
+
 export class AppState {
 
   // when viewport fills whole view
-  // private isFullscreen = false;
+  @observable isFullscreen = false;
   // current manipulator
   @observable currentGizmo = GizmoType.Move;
   @observable gizmoSize = 10;
@@ -19,23 +23,32 @@ export class AppState {
   @observable isUseLocalSpace = true;
   @observable markerSize = 10;
   @observable useSlerp = true;
-  @observable showTimeAsSeconds = false;
+  @observable showTimeAsSeconds = true;
   @observable showDebug = true;
 
   isGizmoAllowed (gizmoType: GizmoType) {
     return gizmoType !== GizmoType.Scale;
   }
-  /*
+
   @computed
   get currentObject () {
     return {
-      name,
-      type, // or just whole marker?
-      timeline,
-      config,
-    }
+      name: 'BoneLowerArm',
+      isBone: true, // one of {Bone, Object3d}
+      hasKeyframeAtCurrentFrame: false,
+      keyframe: {
+        frameId: 0,
+        position: [0, 1, 2],
+        rotation: [0, 1, 2, 3],
+        scale: [0, 1, 2],
+      },
+      constraints: {
+        position: AllowAll,
+        rotation: [Constraint.Disallow, Constraint.Allow, Constraint.Disallow],
+        scale:    DisallowAll,
+      },
+    };
   }
-  */
 
 }
 
@@ -88,9 +101,11 @@ export class TimelineState {
     return frameBeforeIdx;
   }
 
-  // TODO test me!
-  // get frame directly before `frameId` and one directly after
-  // @param allowCurrent returned frames has to be different then current one
+  /**
+   * TODO test me!
+   * get frame directly before `frameId` and one directly after
+   * @param allowCurrent returned frames has to be different then current one
+   */
   getCurrentObjectKeyframeNeighbours (frameId: number, allowCurrent: boolean = true) {
     // NOTE: we require that timeline has keyframes SORTED by frameId
     // or:  && k.frameId > timeline[frameBeforeIdx].frameId

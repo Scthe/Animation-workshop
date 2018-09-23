@@ -1,6 +1,6 @@
 import {h, Component} from 'preact';
-import {classnames, clamp} from 'ui/utils';
 import {observer, inject} from 'mobx-preact';
+import {classnames, clamp} from 'ui/utils';
 const Styles = require('./TabGlobal.scss');
 import {
   Checkbox, Slider, Button, ButtonTheme, Section,

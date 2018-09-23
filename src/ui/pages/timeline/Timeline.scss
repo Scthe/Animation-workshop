@@ -3,3 +3,19 @@
 .Timeline {
   background-color: none;
 }
+
+.IsPlayingOverlay {
+  @include with-full-overlay;
+}
+
+.PauseBtnWrapper {
+  height: 100%;
+  padding: 5px 0;
+  font-size: $timeline-height * 0.6;
+  text-align: center;
+}
+
+.PauseBtn {
+  height: 100%;
+  width: $timeline-height;
+}

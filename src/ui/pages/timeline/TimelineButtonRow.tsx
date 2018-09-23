@@ -11,7 +11,21 @@ import {
 import {AppState, TimelineState} from 'ui/state';
 import {GizmoType} from 'viewport/gizmo';
 
-// TODO pause btn
+
+const TRANSFORM_SPACES = [
+  {name: 'Global', value: 'Global'},
+  {name: 'Local', value: 'Local'},
+];
+
+const KEYMAP = [
+  { key: 'f', action: 'onPrevFrame', continous: true, },
+  { key: 'g', action: 'onNextFrame', continous: true, },
+  { key: 'v', action: 'onPlay', continous: false, },
+  { key: 'q', action: 'onMove', continous: false, },
+  { key: 'e', action: 'onRotate', continous: false, },
+  { key: 'r', action: 'onScale', continous: false, },
+];
+
 
 interface TimelineButtonRowProps {
   className?: string;
@@ -19,15 +33,21 @@ interface TimelineButtonRowProps {
   timelineState?: TimelineState;
 }
 
-const TRANSFORM_SPACES = [
-  {name: 'Global', value: 'Global'},
-  {name: 'Local', value: 'Local'},
-];
 
 @inject('appState')
 @inject('timelineState')
 @observer
 export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
+
+  public componentDidMount () {
+    window.addEventListener('keyup', this.globalShortcutKeyHandler);
+    window.addEventListener('keypress', this.globalShortcutKeyHandler);
+  }
+
+  public componentWillUnmount () {
+    window.removeEventListener('keyup', this.globalShortcutKeyHandler);
+    window.removeEventListener('keypress', this.globalShortcutKeyHandler);
+  }
 
   public render() {
     const {className, timelineState, appState} = this.props;
@@ -45,21 +65,23 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
         {/* GENERAL PLAYBACK */}
         <ButtonGroup className={Styles.ButtonSpacing}>
-          <Tooltip text='Go to previous frame [&larr;]' className={Styles.Tooltip} />
+          <Tooltip text='Go to previous frame [f]' className={Styles.Tooltip} />
           <Button onClick={this.onPrevFrame} theme={ButtonTheme.Beige}>
             <FaIcon svg={require('fa/faAngleLeft')}/>
           </Button>
 
-          <Tooltip text='Play [SPACE]' className={Styles.Tooltip} />
+          <Tooltip text='Play [V]' className={Styles.Tooltip} />
           <Button onClick={this.onPlay} theme={ButtonTheme.Green}>
-            <FaIcon svg={require('fa/faPlay')}/>
+            {timelineState.isPlaying
+              ? <FaIcon svg={require('fa/faPause')}/>
+              : <FaIcon svg={require('fa/faPlay')}/> }
           </Button>
           <Tooltip text='Stop' className={Styles.Tooltip} />
           <Button onClick={this.onReset} theme={ButtonTheme.Red}>
             <FaIcon svg={require('fa/faStop')}/>
           </Button>
 
-          <Tooltip text='Go to next frame [&rarr;]' className={Styles.Tooltip}/>
+          <Tooltip text='Go to next frame [g]' className={Styles.Tooltip}/>
           <Button onClick={this.onNextFrame} theme={ButtonTheme.Beige}>
             <FaIcon svg={require('fa/faAngleRight')}/>
           </Button>
@@ -125,12 +147,6 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
           className={Styles.TransformSpacesDropdown}
         />
 
-        {/* MISC */}
-        <Button onClick={this.onFullscreen}>
-          {/* TODO move right? or HUGE spacer? */}
-          <FaIcon svg={require('fa/faExpandArrowsAlt')}/>
-        </Button>
-
       </div>
     );
   }
@@ -143,10 +159,26 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     );
   }
 
+  private globalShortcutKeyHandler = (e: any) => {
+    const isHeld = e.type !== 'keyup';
+
+    for (const {key, action, continous} of KEYMAP) {
+      if (e.key !== key) { continue; }
+
+      if (isHeld && continous) {
+        (this as any)[action]();
+      }
+      if (!isHeld && !continous) {
+        (this as any)[action]();
+      }
+    }
+  }
+
   private gotoFrame (frameId: number) {
     const {timelineState} = this.props;
     const frameIdFixed = timelineState.clampFrame(frameId);
-    if (timelineState.currentFrame !== frameIdFixed) {
+
+    if (!timelineState.isPlaying && timelineState.currentFrame !== frameIdFixed) {
       timelineState.currentFrame = frameIdFixed;
     }
   }
@@ -208,23 +240,26 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
 
   /* MANIPULATORS + TRANSFORM SPACE */
-  private onMove = () => {
+  private trySetGizmo (type: GizmoType) {
+    // we are allowed to change gizmo during playback,
+    // as it is not visible anyway
     const {appState} = this.props;
-    appState.currentGizmo = GizmoType.Move;
+    if (appState.isGizmoAllowed(type)) {
+      // hmm.., could use attributes to skip onMove, onRotate etc.
+      appState.currentGizmo = type;
+    }
+  }
+
+  private onMove = () => {
+    this.trySetGizmo(GizmoType.Move);
   }
 
   private onRotate = () => {
-    const {appState} = this.props;
-    appState.currentGizmo = GizmoType.Rotate;
+    this.trySetGizmo(GizmoType.Rotate);
   }
 
   private onScale = () => {
-    const {appState} = this.props;
-    appState.currentGizmo = GizmoType.Scale;
-  }
-
-  private onFullscreen = () => {
-    console.log(`onFullscreen`);
+    this.trySetGizmo(GizmoType.Scale);
   }
 
   private onSpaceChange = (a: DropdownItem) => {

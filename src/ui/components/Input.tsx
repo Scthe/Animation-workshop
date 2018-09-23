@@ -1,5 +1,5 @@
 import {h, Component} from 'preact';
-import {classnames} from 'ui/utils';
+import {classnames, cancelEvent} from 'ui/utils';
 const Styles = require('./Input.scss');
 
 const isAlphaNumbericKey = (e: any) => e.key.length === 1;
@@ -42,19 +42,22 @@ export const Input = (props: InputProps) => {
   );
 
   const onKeyPress = (e: any) => {
+    if (disabled) {
+      cancelEvent(e);
+      return;
+    }
     if (!isAlphaNumbericKey(e)) {
       return;
     }
 
     const validator = VALIDATORS[validate];
     if (validator && !validator.test(e.key)) {
-      e.preventDefault();
-      e.stopPropagation();
+      cancelEvent(e);
     }
   };
 
   const onKeyUp = (e: any) => {
-    if (onInput) {
+    if (!disabled && onInput) {
       onInput(e.target.value, e);
     }
   };

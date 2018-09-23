@@ -7,6 +7,7 @@ interface SectionProps {
   title: string;
   icon?: any;
   children: any;
+  initFolded?: boolean;
 }
 
 interface SectionState {
@@ -15,9 +16,12 @@ interface SectionState {
 
 export class Section extends Component<SectionProps, SectionState> {
 
-  state = {
-    isExpanded: true,
-  };
+  constructor (props: SectionProps) {
+    super();
+    this.state = {
+      isExpanded: !props.initFolded,
+    };
+  }
 
   public render () {
     const {title, icon, children} = this.props;
@@ -26,7 +30,6 @@ export class Section extends Component<SectionProps, SectionState> {
     return (
       <div className={this.getClasses()}>
         <header className={Styles.SectionHeader} onClick={this.onHeaderClick}>
-          {/* {this.getExpandArrow()} */}
           {icon && <FaIcon svg={icon} />}
           <h6 className={Styles.SectionTitle}>{title}</h6>
         </header>
@@ -47,13 +50,6 @@ export class Section extends Component<SectionProps, SectionState> {
       Styles.Section,
       isExpanded ? Styles.SectionExpanded : Styles.SectionCollapsed,
     );
-  }
-
-  private getExpandArrow () {
-    const {isExpanded} = this.state;
-    return (isExpanded
-      ? <FaIcon className={Styles.ExpandIcon} svg={require('fa/faAngleDown')} />
-      : <FaIcon className={Styles.ExpandIcon} svg={require('fa/faAngleRight')} />);
   }
 
   private onHeaderClick = (_: any) => {

@@ -12,6 +12,10 @@ $far-away-x: 150%;
   border-top-left-radius: 10px;
 }
 
+.IsPlaying:after {
+  @include with-full-overlay;
+}
+
 .SettingsBody {
   padding-top: 15px;
   width: 200%;

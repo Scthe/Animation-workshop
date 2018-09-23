@@ -17,3 +17,18 @@
   border-top-#{$border}-radius: $value;
   border-bottom-#{$border}-radius: $value;
 }
+
+@mixin with-positions ($t, $r, $b, $l) {
+  left: $l;
+  right: $r;
+  top: $t;
+  bottom: $b;
+}
+
+@mixin with-full-overlay {
+  content: '';
+  position: absolute;
+  @include with-positions(0, 0, 0, 0);
+  background-color: $panel-inactive-overlay;
+  z-index: 5000;
+}

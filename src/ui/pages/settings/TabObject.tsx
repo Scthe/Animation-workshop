@@ -1,158 +1,135 @@
 import {h, Component} from 'preact';
-import {get} from 'lodash';
+import {observer, inject} from 'mobx-preact';
+import {get, set, has} from 'lodash';
 import {classnames} from 'ui/utils';
 const Styles = require('./TabObject.scss');
 import {Section, Input, InputValidate, FaIcon} from 'ui/components';
+import {AppState} from 'ui/state';
 
 // TODO add material settings
 // TODO add light settings
 
-///////// mocks:
-
-const Disallow = [] as any;
-enum MoveConstraint { LocalX, LocalY, LocalZ}
-const MoveAllowAll = [MoveConstraint.LocalX, MoveConstraint.LocalY, MoveConstraint.LocalZ];
-enum RotateConstraint { LocalX, LocalY, LocalZ}
-// or
-// x: [Constraints.AllowLocal, Constraints.AllowGlobal] etc.
-
-const selectedObject = 'BoneLowerArm';
-const selectedObjectData = {
-  name: selectedObject,
-  position: [0, 1, 2],
-  rotation: [0, 1, 2, 3],
-  scale: [0, 1, 2],
-};
-const selectedObjectConfig = {
-  name: selectedObject,
-  type: 'Bone',
-  constraints: {
-    move: MoveAllowAll,
-    rotate: [RotateConstraint.LocalY],
-    scale: Disallow,
-  }
-};
-
-//////// END mocks
+const CHANGE_EPS = 0.001;
 
 const POSITION_FIELDS = [
-  {prepend: 'x', className: Styles.InputAxisX, path: 'position[0]'},
-  {prepend: 'y', className: Styles.InputAxisY, path: 'position[1]'},
-  {prepend: 'z', className: Styles.InputAxisZ, path: 'position[2]'},
+  {prepend: 'x', className: Styles.InputAxisX, name: 'position[0]'},
+  {prepend: 'y', className: Styles.InputAxisY, name: 'position[1]'},
+  {prepend: 'z', className: Styles.InputAxisZ, name: 'position[2]'},
 ];
 
 const ROTATION_FIELDS = [
-  {prepend: 'x', className: Styles.InputAxisX, path: 'rotation[0]'},
-  {prepend: 'y', className: Styles.InputAxisY, path: 'rotation[1]'},
-  {prepend: 'z', className: Styles.InputAxisZ, path: 'rotation[2]'},
-  {prepend: 'w', className: Styles.InputAxisW, path: 'rotation[3]'},
+  {prepend: 'x', className: Styles.InputAxisX, name: 'rotation[0]', disabled: true},
+  {prepend: 'y', className: Styles.InputAxisY, name: 'rotation[1]', disabled: true},
+  {prepend: 'z', className: Styles.InputAxisZ, name: 'rotation[2]', disabled: true},
+  {prepend: 'w', className: Styles.InputAxisW, name: 'rotation[3]', disabled: true},
 ];
 
 const SCALE_FIELDS = [
-  {prepend: 'x', className: Styles.InputAxisX, path: 'scale[0]'},
-  {prepend: 'y', className: Styles.InputAxisY, path: 'scale[1]'},
-  {prepend: 'z', className: Styles.InputAxisZ, path: 'scale[2]'},
+  {prepend: 'x', className: Styles.InputAxisX, name: 'scale[0]'},
+  {prepend: 'y', className: Styles.InputAxisY, name: 'scale[1]'},
+  {prepend: 'z', className: Styles.InputAxisZ, name: 'scale[2]'},
 ];
 
 
 interface TabObjectProps {
   className?: string;
+  appState?: AppState;
 }
 
+
+@inject('appState')
+@observer
 export class TabObject extends Component<TabObjectProps, any> {
 
   public render () {
-    const {objData, objCfg} = this.getSelectedObjectInfo();
+    const {appState} = this.props;
+    const obj = appState.currentObject;
 
-    return selectedObject ? (
-      <div className={this.getClasses()}>
+    if (!obj) {
+      return <p>No object selected?</p>;
+    }
+
+    return (
+      <div className={this.getClasses(obj.hasKeyframeAtCurrentFrame)}>
 
         <h2 className={Styles.ObjectName}>
-          {this.getObjectTypeIcon()}
-          {selectedObject}
+          {obj.isBone
+            ? <FaIcon svg={require('fa/faBone')}/>
+            : <FaIcon svg={require('fa/faCube')}/>}
+          {obj.name}
         </h2>
+
+        {obj.hasKeyframeAtCurrentFrame
+          ? (<p className={Styles.KeyframeInfoYes}>
+              <FaIcon svg={require('fa/faKey')}/>
+              Keyframe
+            </p>)
+          : <p className={Styles.KeyframeInfoNo}>Interpolated frame</p>}
+
 
         <Section title='Position' icon={require('fa/faArrowsAlt')}>
           {POSITION_FIELDS.map(fieldMeta =>
-            this.renderInput(fieldMeta, this.onPositionChange))}
+            this.renderInput(obj, fieldMeta, this.onPosRotScaleChange))}
         </Section>
 
-        <Section title='Rotation' icon={require('fa/faUndo')}>
+        <Section title='Rotation' icon={require('fa/faUndo')} initFolded>
           <p className={Styles.QuaternionWarning}>
             Rotation is represented as quaternion. Any changes would be ill-advised
           </p>
           {ROTATION_FIELDS.map(fieldMeta =>
-            this.renderInput(fieldMeta, this.onPositionChange))}
+            this.renderInput(obj, fieldMeta, this.onPosRotScaleChange))}
         </Section>
 
         {/*
           TODO when overflow, make only subpanel scrollable, not whole <Settings>
         <Section title='Scale' icon={require('fa/faExpand')}>
           {SCALE_FIELDS.map(fieldMeta =>
-            this.renderInput(fieldMeta, this.onScaleChange))}
+            this.renderInput(obj, fieldMeta, this.onPosRotScaleChange))}
         </Section>
          */}
 
       </div>
-    ) : <p>No object selected?</p>;
+    );
   }
 
-  private getClasses () {
+  private getClasses (hasKeyframeAtCurrentFrame: boolean) {
     const {className} = this.props;
     return classnames(
       Styles.TabObject,
       className,
+      {[Styles.hasKeyframe]: hasKeyframeAtCurrentFrame}
     );
   }
 
-  private getObjectTypeIcon () {
-    return <FaIcon svg={require('fa/faBone')}/>;
-  }
-
-  private getSelectedObjectInfo () {
-    return {
-      objData: selectedObjectData,
-      objCfg: selectedObjectConfig,
-    };
-  }
-
-  private renderInput = (fieldMeta: any, cb: Function) => {
-    const {prepend, className, path} = fieldMeta;
-
+  private renderInput = (obj: any, fieldMeta: any, cb: Function) => {
     return (
       <Input
-        name={path}
-        prepend={prepend}
-        className={className}
-        value={get(selectedObjectData, path)}
+        {...fieldMeta}
+        value={get(obj, `keyframe.${fieldMeta.name}`)}
         onInput={cb}
         validate={InputValidate.NumberFloat}
       />
     );
   }
 
-  private onPositionChange = (nextVal: string, e: any) => {
-    const val = parseFloat(nextVal);
-    if (isNaN(val)) { return; }
-    // TODO check if changed
+  private updateKeyframeProperty (propName: string, value: number) {
+    if (isNaN(value)) { return; }
 
-    console.log(`pos: ${val}`);
+    const {appState} = this.props;
+    const obj = appState.currentObject;
+    const keyframe = { ...obj.keyframe };
+
+    const valPrev = get(keyframe, propName);
+    if (has(keyframe, propName) && Math.abs(valPrev - value) > CHANGE_EPS) {
+      set(keyframe, propName, value);
+      console.log(`SET (${propName}=${value}) will have: `, keyframe);
+    }
   }
 
-  private onRotationChange = (nextVal: string, e: any) => {
+  private onPosRotScaleChange = (nextVal: string, e: any) => {
+    const propName = e.target.name;
     const val = parseFloat(nextVal);
-    if (isNaN(val)) { return; }
-    // TODO check if changed
-
-    console.log(`rot: ${val}`);
-  }
-
-  private onScaleChange = (nextVal: string, e: any) => {
-    const val = parseFloat(nextVal);
-    if (isNaN(val)) { return; }
-    // TODO check if changed
-
-    console.log(`scale: ${val}`);
+    this.updateKeyframeProperty(propName, val);
   }
 
 }

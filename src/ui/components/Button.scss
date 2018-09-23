@@ -23,11 +23,11 @@
   border: 1px solid $brown;
   cursor: pointer;
   outline: none !important; // fix on chrome
-
-  &.Blue   { @include create-btn-theme($blue, $beige); }
-  &.Green  { @include create-btn-theme($green, $beige); }
-  &.Red    { @include create-btn-theme($red, $beige); }
-  &.Yellow { @include create-btn-theme($yellow, $brown); }
-  &.Beige  { @include create-btn-theme($beige, $brown); }
-  &.Brown  { @include create-btn-theme($brown, $beige); }
 }
+
+.Blue   { @include create-btn-theme($blue, $beige); }
+.Green  { @include create-btn-theme($green, $beige); }
+.Red    { @include create-btn-theme($red, $beige); }
+.Yellow { @include create-btn-theme($yellow, $brown); }
+.Beige  { @include create-btn-theme($beige, $brown); }
+.Brown  { @include create-btn-theme($brown, $beige); }
