@@ -1,4 +1,4 @@
-import {h, Component} from 'preact';
+import {h} from 'preact';
 import {Icon} from './Icon';
 import {pick} from 'lodash';
 
@@ -28,7 +28,7 @@ export const FaIcon = (props: FaIconProps) => {
 
   return (
     <Icon viewBox={getViewBox(svg)} className={className} {...iconProps}>
-      <g><path d={svg.svgPathData}/></g>
+      <g><path d={svg.svgPathData} /></g>
     </Icon>
   );
 };

@@ -46,7 +46,7 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
   }
 
   public render () {
-    const {text, position} = this.props;
+    const {text} = this.props;
     const targetEl = this.getTargetEl();
 
     return (
@@ -55,7 +55,9 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
           <span
             className={this.getClasses(targetEl)}
             style={this.getCoordinates(targetEl)}
-          >{text}</span>
+          >
+            {text}
+          </span>
         </Portal>
       </div>
     );

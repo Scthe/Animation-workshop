@@ -58,7 +58,7 @@ export const WithDimensions = <T extends IPreactComponent>(ComposedComponent: T)
     render () {
       return (
         <div ref={this.thisRef}>
-          <ComposedComponent {...this.props} dimensions={this.state}/>
+          <ComposedComponent {...this.props} dimensions={this.state} />
         </div>
       );
     }

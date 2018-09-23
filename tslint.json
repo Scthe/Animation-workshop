@@ -1,48 +1,5 @@
 {
-    "jsRules": {
-        "class-name": true,
-        "comment-format": [
-            true,
-            "check-space"
-        ],
-        "indent": [
-            true,
-            "spaces"
-        ],
-        "no-duplicate-variable": true,
-        "no-eval": true,
-        "no-trailing-whitespace": true,
-        "no-unsafe-finally": true,
-        "one-line": [
-            true,
-            "check-open-brace",
-            "check-whitespace"
-        ],
-        "quotemark": [
-            true,
-            "single"
-        ],
-        "semicolon": [
-            true,
-            "always"
-        ],
-        "triple-equals": [
-            true,
-            "allow-null-check"
-        ],
-        "variable-name": [
-            true,
-            "ban-keywords"
-        ],
-        "whitespace": [
-            true,
-            "check-branch",
-            "check-decl",
-            "check-operator",
-            "check-separator",
-            "check-type"
-        ]
-    },
+    "extends": ["tslint-react"],
     "rules": {
         "class-name": true,
         "comment-format": [
@@ -98,6 +55,10 @@
             "check-type"
         ],
         "no-unused-expression": true,
-        "no-unused-variable": true
+        "no-unused-variable": true,
+        "jsx-boolean-value": "never",
+        "jsx-space-before-trailing-slash": true,
+        "jsx-wrap-multiline": true,
+        "jsx-no-multiline-js": false
     }
 }

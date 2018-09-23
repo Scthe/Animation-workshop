@@ -1,10 +1,10 @@
-import {h, Component} from 'preact';
-import {classnames, WithDimensions} from 'ui/utils';
+import {h} from 'preact';
 import {ANIM_FPS} from 'viewport/animation';
 
 export enum TickLabel { None, FrameId, Time }
 
 interface TickProps {
+  key?: number; // hmm.. why do I have to whitelist this?
   labelMode: TickLabel;
   className?: string;
   // position:
@@ -33,7 +33,7 @@ const getLabel = (props: TickProps) => {
 };
 
 export const Tick = (props: TickProps) => {
-  const {pixelX, frameId, className} = props;
+  const {pixelX, className} = props;
 
 
   return (

@@ -75,7 +75,7 @@ export class Tabs extends Component<TabsProps, TabsState> {
         style={style}
         onClick={this.setTab.bind(this, name)}
       >
-        {icon && <FaIcon svg={icon}/>}
+        {icon && <FaIcon svg={icon} />}
         <h4 className={Styles.TabTitle}>{name}</h4>
       </li>
     );

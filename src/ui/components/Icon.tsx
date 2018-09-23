@@ -1,4 +1,4 @@
-import {h, Component} from 'preact';
+import {h} from 'preact';
 import {omit} from 'lodash';
 
 // based on https://github.com/efflam/preact-icon-base (MIT licence)

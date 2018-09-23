@@ -2,17 +2,16 @@ import {h, Component} from 'preact';
 import {Provider, observer, inject} from 'mobx-preact';
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./App.scss');
-import {Button, ButtonTheme, FaIcon} from 'ui/components';
+import {Button, FaIcon} from 'ui/components';
 import {init} from 'viewport/main';
 import {appState, timelineState} from './state';
 import {Timeline} from './pages/timeline';
 import {Settings} from './pages/settings';
 
 
+// TODO tslint
 // TODO put font in cache
 // TODO responsive, or at least disallow mobile
-
-// TODO tslint
 // TODO use mini-css-extract-plugin to extract css to file?
 
 
@@ -31,7 +30,6 @@ const initViewport = () => {
     });
 };
 
-
 const FullscreenButton = inject('appState')(observer((props: any) => {
     const { appState } = props;
 
@@ -42,7 +40,7 @@ const FullscreenButton = inject('appState')(observer((props: any) => {
     return (
       <div className={Styles.FullscreenBtnWrapper} >
         <Button className={Styles.FullscreenBtn} onClick={onFullscreen} >
-          <FaIcon svg={require('fa/faExpandArrowsAlt')}/>
+          <FaIcon svg={require('fa/faExpandArrowsAlt')} />
         </Button>
       </div>
     );
@@ -86,11 +84,11 @@ export class App extends Component<any, AppState> {
       <div className={this.getClasses()}>
 
         <div className={Styles.CanvasWrapper}>
-          <canvas id='anim-canvas' className={Styles.AnimCanvas}></canvas>
+          <canvas id='anim-canvas' className={Styles.AnimCanvas} />
         </div>
 
         <Provider appState={appState} timelineState={timelineState}>
-          <Settings className={Styles.Settings}/>
+          <Settings className={Styles.Settings} />
           <Timeline className={Styles.Timeline} ref={this.timelineRef} />
           <FullscreenButton />
         </Provider>

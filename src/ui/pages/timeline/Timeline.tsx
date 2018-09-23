@@ -5,7 +5,7 @@ const Styles = require('./Timeline.scss');
 import {TimelineState} from 'ui/state';
 import {TimelineButtonRow} from './TimelineButtonRow';
 import {TimelineAxis} from './TimelineAxis';
-import {Button, ButtonTheme, FaIcon, Tooltip} from 'ui/components';
+import {Button, ButtonTheme, FaIcon} from 'ui/components';
 
 
 interface TimelineProps {
@@ -19,8 +19,6 @@ interface TimelineProps {
 export class Timeline extends Component<TimelineProps, any> {
 
   public render() {
-    const {className} = this.props;
-
     return (
       <div className={this.getClasses()}>
         <TimelineButtonRow />
@@ -38,7 +36,7 @@ export class Timeline extends Component<TimelineProps, any> {
       <div className={Styles.IsPlayingOverlay}>
         <div className={Styles.PauseBtnWrapper}>
           <Button onClick={this.onPause} theme={ButtonTheme.Beige} className={Styles.PauseBtn}>
-            <FaIcon svg={require('fa/faPause')}/>
+            <FaIcon svg={require('fa/faPause')} />
           </Button>
         </div>
       </div>
@@ -46,7 +44,7 @@ export class Timeline extends Component<TimelineProps, any> {
   }
 
   private getClasses () {
-    const {className, timelineState} = this.props;
+    const {className} = this.props;
     return classnames(
       Styles.Timeline,
       className,

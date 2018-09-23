@@ -53,16 +53,20 @@ export class Settings extends Component<SettingsProps, any> {
 
     return (
       <div className={classes}>
-        <TabObject className={classnames(
-          Styles.AnimatedTab,
-          getActiveClass(!isGlobalActive),
-          Styles.TabObject
-        )}/>
-        <TabGlobal className={classnames(
-          Styles.AnimatedTab,
-          getActiveClass(isGlobalActive),
-          Styles.TabGlobal
-        )}/>
+        <TabObject
+          className={classnames(
+            Styles.AnimatedTab,
+            getActiveClass(!isGlobalActive),
+            Styles.TabObject
+          )}
+        />
+        <TabGlobal
+          className={classnames(
+            Styles.AnimatedTab,
+            getActiveClass(isGlobalActive),
+            Styles.TabGlobal
+          )}
+        />
       </div>
     );
   }

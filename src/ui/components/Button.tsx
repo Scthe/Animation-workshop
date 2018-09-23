@@ -1,4 +1,4 @@
-import {h, Component} from 'preact';
+import {h} from 'preact';
 import {classnames, cancelEvent} from 'ui/utils';
 const Styles = require('./Button.scss');
 

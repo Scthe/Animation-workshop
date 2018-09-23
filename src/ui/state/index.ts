@@ -1,4 +1,4 @@
-import {observable, computed, action} from 'mobx';
+import {observable, computed} from 'mobx';
 import {Keyframe} from 'viewport/animation';
 import {GizmoType} from 'viewport/gizmo';
 import {clamp} from 'ui/utils';

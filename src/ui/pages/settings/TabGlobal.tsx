@@ -37,6 +37,7 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
       position: TooltipPosition.Left,
     };
 
+    /* tslint:disable:jsx-alignment */
     return (
       <div className={this.getClasses()}>
 

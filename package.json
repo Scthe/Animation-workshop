@@ -9,7 +9,8 @@
     "start": "webpack-dev-server --port 9000 --inline --progress --profile --colors --watch --content-base src/ --mode development",
     "build": "webpack --config webpack.config.js --mode production",
     "build.prod": "webpack --config webpack.config.js -p",
-    "tslint": "tslint -p tslint.json \"src/**/*.ts\""
+    "tslint": "tslint --project tsconfig.json \"src/**/*.{ts,tsx}\"",
+    "tslint:fix": "tslint --fix --project tsconfig.json \"src/**/*.{ts,tsx}\""
   },
   "devDependencies": {
     "@types/lodash": "^4.14.116",
@@ -23,8 +24,9 @@
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.3",
     "style-loader": "^0.23.0",
-    "tslint": "^5.10.0",
+    "tslint": "5.10.0",
     "tslint-loader": "^3.6.0",
+    "tslint-react": "^3.6.0",
     "typescript": "^3.0.3",
     "webpack": "^4.12.0",
     "webpack-cli": "^3.0.8",

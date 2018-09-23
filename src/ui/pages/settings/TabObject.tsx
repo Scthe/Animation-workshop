@@ -24,11 +24,11 @@ const ROTATION_FIELDS = [
   {prepend: 'w', className: Styles.InputAxisW, name: 'rotation[3]', disabled: true},
 ];
 
-const SCALE_FIELDS = [
+/*const SCALE_FIELDS = [
   {prepend: 'x', className: Styles.InputAxisX, name: 'scale[0]'},
   {prepend: 'y', className: Styles.InputAxisY, name: 'scale[1]'},
   {prepend: 'z', className: Styles.InputAxisZ, name: 'scale[2]'},
-];
+];*/
 
 
 interface TabObjectProps {
@@ -54,14 +54,14 @@ export class TabObject extends Component<TabObjectProps, any> {
 
         <h2 className={Styles.ObjectName}>
           {obj.isBone
-            ? <FaIcon svg={require('fa/faBone')}/>
-            : <FaIcon svg={require('fa/faCube')}/>}
+            ? <FaIcon svg={require('fa/faBone')} />
+            : <FaIcon svg={require('fa/faCube')} />}
           {obj.name}
         </h2>
 
         {obj.hasKeyframeAtCurrentFrame
           ? (<p className={Styles.KeyframeInfoYes}>
-              <FaIcon svg={require('fa/faKey')}/>
+              <FaIcon svg={require('fa/faKey')} />
               Keyframe
             </p>)
           : <p className={Styles.KeyframeInfoNo}>Interpolated frame</p>}
@@ -72,7 +72,7 @@ export class TabObject extends Component<TabObjectProps, any> {
             this.renderInput(obj, fieldMeta, this.onPosRotScaleChange))}
         </Section>
 
-        <Section title='Rotation' icon={require('fa/faUndo')} initFolded>
+        <Section title='Rotation' icon={require('fa/faUndo')} initFolded={true}>
           <p className={Styles.QuaternionWarning}>
             Rotation is represented as quaternion. Any changes would be ill-advised
           </p>
