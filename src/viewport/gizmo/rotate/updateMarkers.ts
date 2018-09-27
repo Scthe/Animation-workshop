@@ -1,7 +1,7 @@
 import {vec3, fromValues as vec3_Create, normalize, distance} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
-import {Axis, AxisList, createModelMatrix} from '../../../gl-utils';
-import {GlState} from '../../GlState';
+import {Axis, AxisList, createModelMatrix} from 'gl-utils';
+import {FrameEnv} from 'viewport/main';
 import {createMarkerPosition, MarkerType, MarkerPosition} from '../../marker';
 import {GizmoDrawOpts, AXIS_COLORS} from '../index';
 
@@ -57,17 +57,18 @@ const getClosestMarkerPosition = (cameraPos: vec3, mvp: mat4, modelMat: mat4, ax
   return markerPositions.reduce(getClosest, undefined);
 };
 
-export const updateMarkers = (glState: GlState, opts: GizmoDrawOpts) => {
+export const updateMarkers = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
+  const {scene, glState} = frameEnv;
   const {origin, size} = opts;
   const markerPos = origin.position.position3d;
 
   // similar matrix to one used in draw, but no rotation
   const rotMat = mat4_Create();
   const modelMatrix = createModelMatrix(markerPos, rotMat, size);
-  const mvp = glState.getMVP(modelMatrix);
+  const mvp = glState.getMVP(modelMatrix, scene.camera);
 
   AxisList.forEach(axis => {
-    const markerPos = getClosestMarkerPosition(glState.camera.getPosition(), mvp, modelMatrix, axis);
+    const markerPos = getClosestMarkerPosition(scene.camera.getPosition(), mvp, modelMatrix, axis);
     const markerName = Axis[axis];
     const marker = glState.updateMarker(markerName, MarkerType.GizmoRotate, markerPos);
     marker.color = AXIS_COLORS[axis];

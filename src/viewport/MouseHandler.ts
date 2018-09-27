@@ -1,6 +1,7 @@
 import {vec2, fromValues as vec2_Create} from 'gl-vec2';
 import {GlState} from './GlState';
 import {Marker, getMarkerAt} from './marker';
+import {Scene} from 'viewport/scene';
 
 
 const MOUSE_LEFT_BTN = 0; // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
@@ -36,6 +37,7 @@ export class MouseHandler {
   private firstClick = vec2_Create(0, 0); // click position that started MOUSE_MOVE
   private onMarkerClickedHandler?: ClickHandler;
   private onMarkerDraggedHandler?: DragHandler;
+  public scene: Scene;
 
   constructor (
     private readonly canvas: HTMLCanvasElement,
@@ -88,7 +90,7 @@ export class MouseHandler {
     switch (this.clickedState) {
 
       case ClickedState.Camera: {
-        this.glState.camera.onMouseMove(ev);
+        this.scene.camera.onMouseMove(ev);
         break;
       }
 

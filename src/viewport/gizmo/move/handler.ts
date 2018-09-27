@@ -1,6 +1,6 @@
 import {MouseDragEvent} from '../../MouseHandler';
 import {addMoveToSelectedObject} from '../../../UI_State';
-import {Axis, getAxisVector} from '../../../gl-utils';
+import {Axis, getAxisVector} from 'gl-utils';
 
 export const applyGizmoMove = (ev: MouseDragEvent, axis: Axis) => {
   const axisVec = getAxisVector(axis);

@@ -1,16 +1,17 @@
 import {GltfAsset} from 'gltf-loader-ts';
 import {create as mat4_Create, identity, fromXRotation, fromZRotation} from 'gl-mat4';
-import {Shader, setUniforms, toRadians, Axis, AxisList, createModelMatrix} from '../../../gl-utils';
-import {GlState, ObjectGeometry} from '../../GlState';
-import {readObject} from '../../readGltfObject';
+import {Shader, setUniforms, toRadians, Axis, AxisList, createModelMatrix} from 'gl-utils';
+import {GlState} from 'viewport/GlState';
+import {FrameEnv} from 'viewport/main';
 import {AXIS_COLORS, GizmoDrawOpts} from '../index';
 import {updateMarkers} from './updateMarkers';
+import {Mesh, getNode, loadMesh} from 'viewport/scene';
 
 
 // TODO make this draw as true local rotation it is, just premultiply getRotationMatrix's result
 // TODO rotate gizmo should have triangle/quad cross-cut
 
-let ROTATE_GIZMO_OBJ: ObjectGeometry = undefined;
+let ROTATE_GIZMO_OBJ: Mesh = undefined;
 
 
 //////////
@@ -20,7 +21,8 @@ let ROTATE_GIZMO_OBJ: ObjectGeometry = undefined;
 const MESH_NAME = 'GizmoRotation';
 
 export const initRotationGizmoDraw = async (gl: Webgl, shader: Shader, asset: GltfAsset) => {
-  ROTATE_GIZMO_OBJ = await readObject(gl, asset, shader, MESH_NAME, {
+  const node = getNode(asset, MESH_NAME);
+  ROTATE_GIZMO_OBJ = await loadMesh(gl, shader, asset, node.mesh, {
     'POSITION': 'a_Position'
   });
 };
@@ -51,29 +53,30 @@ const getModelMatrix = (glState: GlState, axis: Axis, opts: GizmoDrawOpts) => {
   return createModelMatrix(markerPos, getRotationMatrix(axis), size);
 };
 
-const drawRotateAxis = (glState: GlState, shader: Shader, opts: GizmoDrawOpts) => (axis: Axis) => {
+const drawRotateAxis = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) => (axis: Axis) => {
+  const {scene, glState} = frameEnv;
   const {gl} = glState;
-  const {indicesGlType, triangleCnt} = ROTATE_GIZMO_OBJ;
+  const {indexGlType, triangleCnt} = ROTATE_GIZMO_OBJ;
 
   const modelMatrix = getModelMatrix(glState, axis, opts);
-  const mvp = glState.getMVP(modelMatrix);
+  const mvp = glState.getMVP(modelMatrix, scene.camera);
 
   setUniforms(gl, shader, {
     'g_Color': AXIS_COLORS[axis],
     'g_MVP': mvp,
   }, true);
-  gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indicesGlType, 0);
+  gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indexGlType, 0);
 };
 
-export const drawRotateGizmo = (glState: GlState, shader: Shader, opts: GizmoDrawOpts) => {
-  const {gl} = glState;
+export const drawRotateGizmo = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) => {
+  const {gl} = frameEnv.glState;
   const {vao, indexBuffer} = ROTATE_GIZMO_OBJ;
 
   shader.use(gl);
   vao.bind(gl);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
-  const drawAxis = drawRotateAxis(glState, shader, opts);
+  const drawAxis = drawRotateAxis(frameEnv, shader, opts);
   AxisList.map(drawAxis);
-  updateMarkers(glState, opts);
+  updateMarkers(frameEnv, opts);
 };

@@ -2,19 +2,11 @@ import {GltfAsset, gltf} from 'gltf-loader-ts';
 import {mat4, invert} from 'gl-mat4';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {fromValues as quat_Create} from 'gl-quat';
-import {BYTES} from '../gl-utils';
-import {Bone} from './armature';
+import {BYTES} from 'gl-utils';
+import {Bone} from 'viewport/armature';
+import {POSITION_0, ROTATION_0, SCALE_0} from 'viewport/animation';
 
 const MAT4_ELEMENTS = 16;
-const DEFAULT_TRANSLATION = vec3_Create(0, 0, 0);
-const DEFAULT_ROTATION = quat_Create(0, 1, 0, 0);
-const DEFAULT_SCALE = vec3_Create(1, 1, 1);
-
-const getSkinByNodeName = (asset: GltfAsset, name: string) => {
-  const gltf = asset.gltf;
-  const node = gltf.nodes.filter(n => n.name === name)[0];
-  return node && node.skin !== undefined ?  gltf.skins[node.skin] : undefined;
-};
 
 const createBone = (node: gltf.Node, invBindMat: mat4, getBoneIdxForNodeId: Function) => {
   const bindMat = new Float32Array(16);
@@ -28,16 +20,17 @@ const createBone = (node: gltf.Node, invBindMat: mat4, getBoneIdxForNodeId: Func
     });
   }
 
-  const tra = node.translation ? vec3_Create.apply(null, node.translation) : DEFAULT_TRANSLATION;
-  const rot = node.rotation ? quat_Create.apply(null, node.rotation) : DEFAULT_ROTATION;
-  const scale = node.scale ? vec3_Create.apply(null, node.scale) : DEFAULT_SCALE;
+  const tra = node.translation ? vec3_Create.apply(null, node.translation) : POSITION_0;
+  const rot = node.rotation ? quat_Create.apply(null, node.rotation) : ROTATION_0;
+  const scale = node.scale ? vec3_Create.apply(null, node.scale) : SCALE_0;
 
   return new Bone(node.name, bindMat, invBindMat, children, tra, rot, scale);
 };
 
 // nodeName is name of node that contains 'skin' key
-export const readArmature = async (asset: GltfAsset, nodeName: string) => {
-  const skin = getSkinByNodeName(asset, nodeName);
+export const loadBones = async (asset: GltfAsset, node: gltf.Node) => {
+  const gltf = asset.gltf;
+  const skin = gltf.skins[node.skin];
   const dataRaw = await asset.bufferViewData(skin.inverseBindMatrices);
 
   const getBoneIdxForNodeId = (nodeId: number) => {
@@ -49,7 +42,7 @@ export const readArmature = async (asset: GltfAsset, nodeName: string) => {
 
   let bufferOffset = 0;
   const bones = skin.joints.map((nodeId: number) => {
-    const node = asset.gltf.nodes[nodeId];
+    const node = gltf.nodes[nodeId];
     const invBindMat = new Float32Array(dataRaw.buffer, dataRaw.byteOffset + bufferOffset, MAT4_ELEMENTS);
     bufferOffset += MAT4_ELEMENTS * BYTES.FLOAT;
 

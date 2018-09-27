@@ -7,7 +7,7 @@ import {create as quat_Create, multiply as qMul} from 'gl-quat';
 import {AnimState} from '../main';
 import {getMove, getRotation} from '../../UI_State';
 import {Armature} from './index';
-import {createModelMatrix} from '../../gl-utils';
+import {createModelMatrix} from 'gl-utils';
 
 /*
  *  In this file we update bone matrices for animation.

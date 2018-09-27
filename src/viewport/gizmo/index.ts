@@ -1,7 +1,7 @@
 import {GltfLoader} from 'gltf-loader-ts';
 import {fromValues as vec3_Create} from 'gl-vec3';
-import {Shader, DrawParameters, DepthTest, CullingMode} from '../../gl-utils';
-import {GlState} from '../GlState';
+import {Shader, DrawParameters, DepthTest, CullingMode} from 'gl-utils';
+import {FrameEnv} from 'viewport/main';
 import {Marker} from '../marker';
 import {initMoveGizmoDraw, drawMoveGizmo} from './move/draw';
 import {initRotationGizmoDraw, drawRotateGizmo} from './rotate/draw';
@@ -59,21 +59,21 @@ export interface GizmoDrawOpts {
   origin: Marker;
 }
 
-export const drawGizmo = (glState: GlState, opts: GizmoDrawOpts) => {
+export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   if (!opts.origin) { return; }
 
   const dp = new DrawParameters();
   dp.depth.write = false;
   dp.depth.test = DepthTest.AlwaysPass;
   dp.culling = CullingMode.None;
-  glState.setDrawState(dp);
+  frameEnv.glState.setDrawState(dp);
 
   switch (opts.type) {
     case GizmoType.Move:
-      drawMoveGizmo(glState, GIZMO_SHADER, opts);
+      drawMoveGizmo(frameEnv, GIZMO_SHADER, opts);
       break;
     case GizmoType.Rotate:
-      drawRotateGizmo(glState, GIZMO_SHADER, opts);
+      drawRotateGizmo(frameEnv, GIZMO_SHADER, opts);
       break;
     // case GizmoType.Scale:
       // drawScaleGizmo(glState, GIZMO_SHADER, opts);

@@ -1,11 +1,11 @@
-import {NDCtoPixels} from '../../gl-utils';
+import {NDCtoPixels} from 'gl-utils';
 import {GlState} from '../GlState';
 import {Marker, getMarkerRadius} from './index';
 
 
 export const getMarkerAt = (glState: GlState, pixelX: number, pixelY: number) => {
   // console.log(`Clicked (${pixelX}, ${pixelY})`);
-  const {width, height} = glState.getViewport();
+  const [width, height] = glState.getViewport();
   const markers = glState.getMarkers();
 
   const wasClicked = (marker: Marker, i: number) => {

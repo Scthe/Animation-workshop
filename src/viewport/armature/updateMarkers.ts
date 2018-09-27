@@ -1,9 +1,9 @@
 import {mat4} from 'gl-mat4';
 import {create as vec3_Create} from 'gl-vec3';
-import {transformPointByMat4} from '../../gl-utils';
+import {transformPointByMat4} from 'gl-utils';
 import {Armature, Bone} from '../armature';
 import {MarkerType, createMarkerPosition} from '../marker';
-import {GlState} from '../GlState';
+import {FrameEnv} from 'viewport/main';
 
 const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) => (bone: Bone, boneMat: mat4) => {
   const bonePos = bone.translation; // relative to parent
@@ -17,8 +17,9 @@ const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) 
   return createMarkerPosition(mvp, modelMatrix, localPos);
 };
 
-export const updateArmatureMarkers = (glState: GlState, armature: Armature, boneTransforms: mat4[], modelMatrix: mat4) => {
-  const mvp = glState.getMVP(modelMatrix);
+export const updateArmatureMarkers = (frameEnv: FrameEnv, armature: Armature, boneTransforms: mat4[], modelMatrix: mat4) => {
+  const {scene, glState} = frameEnv;
+  const mvp = glState.getMVP(modelMatrix, scene.camera);
   const getMarkerFromBone_ = getMarkerPosFromBone(armature, mvp, modelMatrix);
 
   return boneTransforms.forEach((boneMat, idx) => {

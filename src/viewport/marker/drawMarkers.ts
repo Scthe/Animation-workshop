@@ -2,7 +2,7 @@ import {
   DrawParameters, DepthTest, CullingMode,
   Shader, setUniforms, hexToVec3,
   Vao, VaoAttrInit
-} from '../../gl-utils';
+} from 'gl-utils';
 import {MarkerType, Marker, getMarkerRadius} from './index';
 import {GlState} from '../GlState';
 import {AnimState} from '../main';
@@ -53,7 +53,7 @@ const getMarkerColor = (marker: Marker) => {
 
 const setMarkerUniforms = (animState: AnimState, glState: GlState, markers: Marker[]) => {
   const {gl} = glState;
-  const {width, height} = glState.getViewport();
+  const [width, height] = glState.getViewport();
 
   setUniforms(gl, MARKER_SHADER, {
     'g_Viewport': [width, height],

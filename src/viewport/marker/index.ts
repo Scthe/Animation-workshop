@@ -1,7 +1,7 @@
 import {mat4} from 'gl-mat4';
 import {vec3, create as vec3_Create} from 'gl-vec3';
 import {vec2, fromValues as vec2_Create} from 'gl-vec2';
-import {transformPointByMat4} from '../../gl-utils';
+import {transformPointByMat4} from 'gl-utils';
 
 export * from './drawMarkers';
 export * from './getMarkerRadius';

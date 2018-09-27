@@ -1,7 +1,7 @@
 import {create as quat_Create, setAxisAngle} from 'gl-quat';
 import {MouseDragEvent} from '../../MouseHandler';
 import {addRotationToSelectedObject} from '../../../UI_State';
-import {toRadians, Axis, getAxisVector} from '../../../gl-utils';
+import {toRadians, Axis, getAxisVector} from 'gl-utils';
 
 // TODO for global, just premultiply by ~boneQuat or smth.
 

@@ -1,9 +1,9 @@
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {mat4} from 'gl-mat4';
-import {NDCtoPixels, transformPointByMat4} from '../../../gl-utils';
+import {NDCtoPixels, transformPointByMat4} from 'gl-utils';
 import {GlState} from '../../GlState';
 import {Marker, MarkerType, createMarkerPosition} from '../../marker';
-import {Axis} from '../../../gl-utils';
+import {Axis} from 'gl-utils';
 
 /// Move gizmo uses weird shape - arrow. Implmenting picking requires
 /// some special code.
@@ -25,7 +25,7 @@ const getMarkerRadius = (glState: GlState, mvp: mat4, marker: Marker) => {
   // and [0, 1, 0], which is exact arrow tip
   // ugh, I actually want to do normal object picking ATM...
 
-  const {width, height} = glState.getViewport();
+  const [width, height] = glState.getViewport();
   const markerPos = marker.position.positionNDC;
   const m1 = NDCtoPixels(markerPos, width, height, false);
 

@@ -20,8 +20,8 @@ import {Settings} from './pages/settings';
 //       to <canvas> and app may crash. (Though probably
 //       just context lost)
 
-const initViewport = () => {
-  init()
+const initViewport = (canvas: HTMLCanvasElement) => {
+  init(canvas)
     .then((onDraw: Function) => {
       onDraw(0);
     })
@@ -55,6 +55,7 @@ interface AppState {
 @observer
 export class App extends Component<any, AppState> {
 
+  private canvasRef = createRef();
   private timelineRef = createRef();
 
   state = {
@@ -62,7 +63,7 @@ export class App extends Component<any, AppState> {
   };
 
   public componentDidMount () {
-    initViewport();
+    initViewport(this.canvasRef.current);
 
     const timelineEl = this.timelineRef.current;
     if (!timelineEl) { throw 'There were problems getting ref for <Timeline>'; }
@@ -84,7 +85,7 @@ export class App extends Component<any, AppState> {
       <div className={this.getClasses()}>
 
         <div className={Styles.CanvasWrapper}>
-          <canvas id='anim-canvas' className={Styles.AnimCanvas} />
+          <canvas id='anim-canvas' className={Styles.AnimCanvas} ref={this.canvasRef} />
         </div>
 
         <Provider appState={appState} timelineState={timelineState}>

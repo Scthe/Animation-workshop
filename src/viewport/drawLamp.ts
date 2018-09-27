@@ -1,13 +1,14 @@
-import {GlState} from './GlState';
-import {AnimState} from './main';
-import {Shader, setUniforms, DrawParameters, DepthTest} from '../gl-utils';
+import {Shader, setUniforms, DrawParameters, DepthTest} from 'gl-utils';
 import {mat4} from 'gl-mat4';
+import {FrameEnv} from './main';
 
-const setLampUniforms = (glState: GlState, shader: Shader, modelMatrix: mat4, boneTransforms: mat4[]) => {
-  const {gl, camera} = glState;
-  const {width, height} = glState.getViewport();
+const setLampUniforms = (frameEnv: FrameEnv, shader: Shader, modelMatrix: mat4, boneTransforms: mat4[]) => {
+  const {glState, scene} = frameEnv;
+  const {gl} = glState;
+  const {camera} = scene;
+  const [width, height] = glState.getViewport();
 
-  setUniforms(gl, shader, {
+  setUniforms(gl, shader, { // TODO just single MVP?
     'g_Pmatrix': camera.getProjectionMatrix(width, height),
     'g_Vmatrix': camera.getViewMatrix(),
     'g_Mmatrix': modelMatrix,
@@ -20,17 +21,19 @@ const setLampUniforms = (glState: GlState, shader: Shader, modelMatrix: mat4, bo
   });
 };
 
-export const drawLamp = (animState: AnimState, glState: GlState, boneTransforms: mat4[], modelMatrix: mat4) => {
-  const {gl, lampShader: shader, lampObject: geo} = glState;
-  const {vao, indicesGlType, indexBuffer, triangleCnt} = geo;
+export const drawLamp = (frameEnv: FrameEnv, boneTransforms: mat4[], modelMatrix: mat4) => {
+  const {glState, scene} = frameEnv;
+  const {gl} = glState;
+  const {materialWithArmature: shader, lampMesh: geo} = scene;
+  const {vao, indexGlType, indexBuffer, triangleCnt} = geo;
 
   const dp = new DrawParameters();
   dp.depth.test = DepthTest.IfLessOrEqual;
   glState.setDrawState(dp);
 
   shader.use(gl);
-  setLampUniforms(glState, shader, modelMatrix, boneTransforms);
+  setLampUniforms(frameEnv, shader, modelMatrix, boneTransforms);
   vao.bind(gl);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indicesGlType, 0);
+  gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indexGlType, 0);
 };
