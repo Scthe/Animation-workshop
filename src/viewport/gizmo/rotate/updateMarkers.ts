@@ -2,7 +2,7 @@ import {vec3, fromValues as vec3_Create, normalize, distance} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Axis, AxisList, createModelMatrix} from 'gl-utils';
 import {FrameEnv} from 'viewport/main';
-import {createMarkerPosition, MarkerType, MarkerPosition} from '../../marker';
+import {createMarkerPosition, MarkerType, MarkerPosition} from 'viewport/marker';
 import {GizmoDrawOpts, AXIS_COLORS} from '../index';
 
 // TODO when rotation, rotate gizmo too (or hide alltogether)
@@ -65,7 +65,7 @@ export const updateMarkers = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   // similar matrix to one used in draw, but no rotation
   const rotMat = mat4_Create();
   const modelMatrix = createModelMatrix(markerPos, rotMat, size);
-  const mvp = glState.getMVP(modelMatrix, scene.camera);
+  const mvp = scene.getMVP(modelMatrix);
 
   AxisList.forEach(axis => {
     const markerPos = getClosestMarkerPosition(scene.camera.getPosition(), mvp, modelMatrix, axis);

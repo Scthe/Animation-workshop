@@ -62,12 +62,11 @@ const getModelMatrix = (scene: Scene, axis: Axis, opts: GizmoDrawOpts) => {
 };
 
 const drawMoveArrow = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) => (axis: Axis) => {
-  const {scene, glState} = frameEnv;
-  const {gl} = glState;
+  const {scene, glState: {gl}} = frameEnv;
   const {indexGlType, triangleCnt} = MOVE_GIZMO_OBJ;
 
   const modelMatrix = getModelMatrix(scene, axis, opts);
-  const mvp = glState.getMVP(modelMatrix, scene.camera);
+  const mvp = scene.getMVP(modelMatrix);
 
   setUniforms(gl, shader, {
     'g_Color': AXIS_COLORS[axis],
@@ -76,7 +75,7 @@ const drawMoveArrow = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) 
   gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indexGlType, 0);
 
   // marker:
-  updateMarkers(glState, mvp, modelMatrix, axis);
+  updateMarkers(frameEnv.glState, mvp, modelMatrix, axis);
 };
 
 export const drawMoveGizmo = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) => {

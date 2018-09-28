@@ -2,7 +2,7 @@ import {GltfLoader} from 'gltf-loader-ts';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {Shader, DrawParameters, DepthTest, CullingMode} from 'gl-utils';
 import {FrameEnv} from 'viewport/main';
-import {Marker} from '../marker';
+import {Marker} from 'viewport/marker';
 import {initMoveGizmoDraw, drawMoveGizmo} from './move/draw';
 import {initRotationGizmoDraw, drawRotateGizmo} from './rotate/draw';
 

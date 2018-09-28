@@ -1,4 +1,4 @@
-import {MouseDragEvent} from '../../MouseHandler';
+import {MouseDragEvent} from 'viewport/MouseHandler';
 import {addMoveToSelectedObject} from '../../../UI_State';
 import {Axis, getAxisVector} from 'gl-utils';
 

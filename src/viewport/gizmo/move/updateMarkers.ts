@@ -1,8 +1,8 @@
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {mat4} from 'gl-mat4';
 import {NDCtoPixels, transformPointByMat4} from 'gl-utils';
-import {GlState} from '../../GlState';
-import {Marker, MarkerType, createMarkerPosition} from '../../marker';
+import {GlState} from 'viewport/GlState';
+import {Marker, MarkerType, createMarkerPosition} from 'viewport/marker';
 import {Axis} from 'gl-utils';
 
 /// Move gizmo uses weird shape - arrow. Implmenting picking requires

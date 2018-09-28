@@ -54,12 +54,11 @@ const getModelMatrix = (glState: GlState, axis: Axis, opts: GizmoDrawOpts) => {
 };
 
 const drawRotateAxis = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) => (axis: Axis) => {
-  const {scene, glState} = frameEnv;
-  const {gl} = glState;
+  const {scene, glState: {gl}} = frameEnv;
   const {indexGlType, triangleCnt} = ROTATE_GIZMO_OBJ;
 
-  const modelMatrix = getModelMatrix(glState, axis, opts);
-  const mvp = glState.getMVP(modelMatrix, scene.camera);
+  const modelMatrix = getModelMatrix(frameEnv.glState, axis, opts);
+  const mvp = scene.getMVP(modelMatrix);
 
   setUniforms(gl, shader, {
     'g_Color': AXIS_COLORS[axis],

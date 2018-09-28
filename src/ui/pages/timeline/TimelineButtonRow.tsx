@@ -65,7 +65,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
         {/* GENERAL PLAYBACK */}
         <ButtonGroup className={Styles.ButtonSpacing}>
-          <Tooltip text='Go to previous frame [f]' className={Styles.Tooltip} />
+          <Tooltip text='Go to previous frame [F]' className={Styles.Tooltip} />
           <Button onClick={this.onPrevFrame} theme={ButtonTheme.Beige}>
             <FaIcon svg={require('fa/faAngleLeft')} />
           </Button>
@@ -81,7 +81,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
             <FaIcon svg={require('fa/faStop')} />
           </Button>
 
-          <Tooltip text='Go to next frame [g]' className={Styles.Tooltip} />
+          <Tooltip text='Go to next frame [G]' className={Styles.Tooltip} />
           <Button onClick={this.onNextFrame} theme={ButtonTheme.Beige}>
             <FaIcon svg={require('fa/faAngleRight')} />
           </Button>

@@ -4,8 +4,8 @@ import {
   Vao, VaoAttrInit
 } from 'gl-utils';
 import {MarkerType, Marker, getMarkerRadius} from './index';
-import {GlState} from '../GlState';
-import {AnimState} from '../main';
+import {GlState} from 'viewport/GlState';
+import {AnimState} from 'viewport/main';
 
 
 let MARKER_VAO: Vao = undefined;

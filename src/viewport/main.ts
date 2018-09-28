@@ -1,6 +1,5 @@
 import {GlState} from './GlState';
-import {create as mat4_Create, identity} from 'gl-mat4';
-import {drawLamp} from './drawLamp';
+import {drawObject3d} from './drawObject3d';
 import {drawGizmo, GizmoType} from './gizmo';
 import {drawMarkers} from './marker';
 import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
@@ -50,14 +49,11 @@ export interface FrameEnv {
   scene: Scene;
 }
 
-const identityMatrix = (() => {
-  const m = mat4_Create();
-  return identity(m);
-})();
+
 
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
-  const {camera, lampBones} = scene;
+  const {camera, lamp} = scene;
 
   const frameEnv = { timing: createAnimState(time), glState, scene, };
 
@@ -67,8 +63,8 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const [width, height] = glState.getViewport();
   gl.viewport(0.0, 0.0, width, height);
 
-  const boneTransforms = calculateBoneMatrices(frameEnv.timing, lampBones);
-  drawLamp(frameEnv, boneTransforms, identityMatrix);
+  calculateBoneMatrices(frameEnv.timing, lamp.bones);
+  drawObject3d(frameEnv, scene.lamp);
 
   drawGizmo(frameEnv, {
     type: GizmoType.Rotate,
@@ -78,7 +74,7 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   });
 
   // markers
-  updateArmatureMarkers(frameEnv, lampBones, boneTransforms, identityMatrix);
+  updateArmatureMarkers(frameEnv, lamp);
   drawMarkers(frameEnv.timing, glState);
 };
 
@@ -93,7 +89,7 @@ export const init = async (canvas: HTMLCanvasElement) => {
   glState.gl.clearColor(0.5, 0.5, 0.5, 1.0);
   glState.gl.clearDepth(1.0);
 
-  const scene = await createScene(glState.gl);
+  const scene = await createScene(glState);
   glState.mouseHander.scene = scene;
 
   const onDraw = (time: number) => {

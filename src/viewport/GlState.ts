@@ -1,4 +1,3 @@
-import {mat4, multiply, create as mat4_Create} from 'gl-mat4';
 import {Marker, MarkerType, MarkerPosition} from './marker';
 import {
   createWebGlContext, Axis,
@@ -100,17 +99,6 @@ export class GlState {
     return [this.canvas.width, this.canvas.height];
   }
 
-  getMVP (modelMatrix: mat4, camera: any) { // TODO move
-    const [width, height] = this.getViewport();
-
-    const vp = mat4_Create();
-    multiply(vp, camera.getProjectionMatrix(width, height), camera.getViewMatrix());
-
-    const mvp = mat4_Create();
-    multiply(mvp, vp, modelMatrix);
-
-    return mvp;
-  }
 
   // Markers:
 

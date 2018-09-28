@@ -3,6 +3,8 @@ import {Shader} from 'gl-utils';
 import {CameraFPS} from 'viewport/camera-fps';
 import {Scene, getNode, loadBones, loadMesh} from 'viewport/scene';
 import {isMeshNode} from 'viewport/scene/loader/_utils';
+import {create as mat4_Create} from 'gl-mat4';
+import {GlState} from 'viewport/GlState';
 
 
 const CAMERA_SETTINGS = {
@@ -26,7 +28,8 @@ const getMeshNode = (asset: GltfAsset, rootNodeName: string) => {
   return childNodes.filter(isMeshNode)[0];
 };
 
-export const createScene = async (gl: Webgl) => {
+export const createScene = async (glState: GlState) => {
+  const {gl} = glState;
   const materialWithArmature = new Shader(gl, SHADERS.LAMP_VERT, SHADERS.LAMP_FRAG);
 
   const loader = new GltfLoader();
@@ -43,9 +46,9 @@ export const createScene = async (gl: Webgl) => {
   const camera = new CameraFPS(CAMERA_SETTINGS);
 
   return new Scene(
+    glState,
     camera,
     materialWithArmature,
-    lampMesh,
-    lampBones
+    {mesh: lampMesh, bones: lampBones, modelMatrix: mat4_Create()},
   );
 };

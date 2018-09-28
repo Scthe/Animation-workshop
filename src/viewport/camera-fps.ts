@@ -1,7 +1,6 @@
 import {
   transpose,
   create as mat4_Create,
-  identity,
   translate,
   rotateX,
   rotateY,
@@ -65,10 +64,8 @@ export class CameraFPS {
     const rotMat = this.getRotationMat();
     const pos = this.getPosition();
 
-    let result = mat4_Create();
-    identity(result);
+    const result = mat4_Create();
     translate(result, rotMat, [-pos[0], -pos[1], -pos[2]]);
-
     return result;
   }
 

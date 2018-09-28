@@ -1,5 +1,5 @@
 import {NDCtoPixels} from 'gl-utils';
-import {GlState} from '../GlState';
+import {GlState} from 'viewport/GlState';
 import {Marker, getMarkerRadius} from './index';
 
 

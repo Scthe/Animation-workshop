@@ -1,12 +1,14 @@
 import {mat4} from 'gl-mat4';
 import {create as vec3_Create} from 'gl-vec3';
 import {transformPointByMat4} from 'gl-utils';
-import {Armature, Bone} from '../armature';
-import {MarkerType, createMarkerPosition} from '../marker';
+import {Armature, Bone} from 'viewport/armature';
+import {MarkerType, createMarkerPosition} from 'viewport/marker';
 import {FrameEnv} from 'viewport/main';
+import {Object3d} from 'viewport/scene';
 
-const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) => (bone: Bone, boneMat: mat4) => {
-  const bonePos = bone.translation; // relative to parent
+const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) => (bone: Bone) => {
+  const boneMat = bone.$_frameCache;
+  const bonePos = bone.data.translation; // relative to parent
 
   // same steps as normal bone calculations, but on CPU this time
   const pos = vec3_Create(); // reverse bone transform
@@ -17,14 +19,14 @@ const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) 
   return createMarkerPosition(mvp, modelMatrix, localPos);
 };
 
-export const updateArmatureMarkers = (frameEnv: FrameEnv, armature: Armature, boneTransforms: mat4[], modelMatrix: mat4) => {
+export const updateArmatureMarkers = (frameEnv: FrameEnv, object: Object3d) => {
   const {scene, glState} = frameEnv;
-  const mvp = glState.getMVP(modelMatrix, scene.camera);
-  const getMarkerFromBone_ = getMarkerPosFromBone(armature, mvp, modelMatrix);
+  const {modelMatrix, bones} = object;
+  const mvp = scene.getMVP(modelMatrix);
+  const getMarkerFromBone_ = getMarkerPosFromBone(bones, mvp, modelMatrix);
 
-  return boneTransforms.forEach((boneMat, idx) => {
-    const bone = armature[idx];
-    const newPosition = getMarkerFromBone_(bone, boneMat);
+  bones.forEach((bone: Bone, idx: number) => {
+    const newPosition = getMarkerFromBone_(bone);
     glState.updateMarker(bone.name, MarkerType.Armature, newPosition);
   });
 };

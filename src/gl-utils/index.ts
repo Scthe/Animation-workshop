@@ -124,3 +124,11 @@ export const createModelMatrix = (pos: vec3, rotation: quat | mat4, scale: numbe
   const result = mat4_Create();
   return multiply(result, rotationMoveMat, scaleMat);
 };
+
+export const getMVP = (m: mat4, v: mat4, p: mat4) => {
+  const vp = mat4_Create();
+  const mvp = mat4_Create();
+  multiply(vp, p, v);
+  multiply(mvp, vp, m);
+  return mvp;
+};
