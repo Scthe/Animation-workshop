@@ -56,7 +56,7 @@ const getRotationMatrix = (scene: Scene, axis: Axis, markerPos: vec3) => {
 
 const getModelMatrix = (scene: Scene, axis: Axis, opts: GizmoDrawOpts) => {
   const {origin, size} = opts;
-  const markerPos = origin.position.position3d;
+  const markerPos = origin.$_framePosition.position3d;
   const rotateAxisMat = getRotationMatrix(scene, axis, markerPos);
   return createModelMatrix(markerPos, rotateAxisMat, size);
 };
@@ -75,7 +75,7 @@ const drawMoveArrow = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) 
   gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indexGlType, 0);
 
   // marker:
-  updateMarkers(frameEnv.glState, mvp, modelMatrix, axis);
+  updateMarkers(frameEnv, mvp, modelMatrix, axis);
 };
 
 export const drawMoveGizmo = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) => {

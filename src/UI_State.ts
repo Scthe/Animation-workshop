@@ -1,7 +1,8 @@
 import {Marker} from './viewport/marker';
-import {fromValues as vec3_Create, add as vAdd} from 'gl-vec3';
+import {vec3, fromValues as vec3_Create, add as vAdd} from 'gl-vec3';
 import {quat, create as quat_Create, multiply as qMul} from 'gl-quat';
 
+/*
 let selectedObject: Marker;
 
 export const setSelectedObject = (obj: Marker) => {
@@ -10,56 +11,50 @@ export const setSelectedObject = (obj: Marker) => {
 
 export const getSelectedObject = () => {
   return selectedObject;
-};
+};*/
 
 ////////////////////
 /// KEYFRAME STORAGE
 ////////////////////
 
 let modMap: any = {};
+(window as any).modMap = modMap;
 
 const createEmptyKeyFrame = () => ({
   translation: vec3_Create(0, 0, 0),
   rotation: quat_Create(),
 });
 
-const getKeyframe = () => {
-  const selectedObject  = getSelectedObject();
-  if (!selectedObject) { return; }
-
-  if (!modMap[selectedObject.name]) {
-    modMap[selectedObject.name] = createEmptyKeyFrame();
+const getKeyframe = (objName: string) => {
+  if (!modMap[objName]) {
+    modMap[objName] = createEmptyKeyFrame();
   }
 
-  return modMap[selectedObject.name];
+  return modMap[objName];
 };
 
 ////////////////////
 /// MOVE
 ////////////////////
 
-export const addMoveToSelectedObject = (moveVec: number[]) => {
-  const keyframe = getKeyframe();
-  vAdd(keyframe.translation, keyframe.translation, moveVec as any);
+export const addMove = (objName: string, moveVec: vec3) => {
+  const keyframe = getKeyframe(objName);
+  vAdd(keyframe.translation, keyframe.translation, moveVec);
 };
 
 export const getMove = (marker: Marker) => {
-  const mod = modMap[marker.name];
-  if (!mod) { return vec3_Create(0, 0, 0); }
-  return mod.translation;
+  return getKeyframe(marker.name).translation;
 };
 
 ////////////////////
 /// ROTATE
 ////////////////////
 
-export const addRotationToSelectedObject = (rotateQuat: quat) => {
-  const keyframe = getKeyframe();
+export const addRotation = (objName: string, rotateQuat: quat) => {
+  const keyframe = getKeyframe(objName);
   qMul(keyframe.rotation, keyframe.rotation, rotateQuat);
 };
 
 export const getRotation = (marker: Marker) => {
-  const mod = modMap[marker.name];
-  if (!mod) { return quat_Create(); }
-  return mod.rotation;
+  return getKeyframe(marker.name).rotation;
 };

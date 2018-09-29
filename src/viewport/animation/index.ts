@@ -19,6 +19,7 @@ export interface Keyframe {
 
 export type Timeline = Keyframe[];
 
+// NOTE: we can't freeze TypedArrays, cause they can be slices
 export const POSITION_0 = vec3_Create(0, 0, 0);
 export const ROTATION_0 = quat_Create(0, 1, 0, 0);
 export const SCALE_0 = vec3_Create(1, 1, 1);
@@ -28,3 +29,4 @@ export const POS_ROT_SCALE_0 = {
   rotation: ROTATION_0,
   scale: SCALE_0,
 };
+Object.freeze(POS_ROT_SCALE_0);

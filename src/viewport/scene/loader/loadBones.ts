@@ -1,10 +1,12 @@
 import {GltfAsset, gltf} from 'gltf-loader-ts';
-import {mat4, create as mat4_Create, invert} from 'gl-mat4';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {fromValues as quat_Create} from 'gl-quat';
+import {mat4, create as mat4_Create, invert} from 'gl-mat4';
 import {BYTES} from 'gl-utils';
+
 import {Bone} from 'viewport/armature';
 import {POSITION_0, ROTATION_0, SCALE_0} from 'viewport/animation';
+import {Marker} from 'viewport/marker';
 
 const MAT4_ELEMENTS = 16;
 
@@ -21,26 +23,25 @@ const getExistingChildren = (node: gltf.Node, getBoneIdxForNodeId: Function) => 
   return children;
 };
 
-const createBone = (node: gltf.Node, invBindMat: mat4, getBoneIdxForNodeId: Function) => {
+const createBoneData = (node: gltf.Node, invBindMat: mat4) => {
   const bindMat = mat4_Create();
   invert(bindMat, invBindMat);
 
+  // can't use spread for non `func (args: Type[])` in TS
+  // (spread has unknown args count, which does not typecheck well)
   const tra = node.translation ? vec3_Create.apply(null, node.translation) : POSITION_0;
   const rot = node.rotation ? quat_Create.apply(null, node.rotation) : ROTATION_0;
   const scale = node.scale ? vec3_Create.apply(null, node.scale) : SCALE_0;
 
-  return new Bone (
-    node.name, getExistingChildren(node, getBoneIdxForNodeId),
-    {
-      bindMatrix: bindMat,
-      inverseBindMatrix: invBindMat,
-      translation: tra,
-      rotation: rot,
-      scale: scale,
-    },
-    mat4_Create(),
-  );
+  return {
+    bindMatrix: bindMat,
+    inverseBindMatrix: invBindMat,
+    translation: tra,
+    rotation: rot,
+    scale: scale,
+  };
 };
+
 
 // nodeName is name of node that contains 'skin' key
 export const loadBones = async (asset: GltfAsset, node: gltf.Node) => {
@@ -59,6 +60,14 @@ export const loadBones = async (asset: GltfAsset, node: gltf.Node) => {
     const invBindMat = new Float32Array(dataRaw.buffer, dataRaw.byteOffset + bufferOffset, MAT4_ELEMENTS);
     bufferOffset += MAT4_ELEMENTS * BYTES.FLOAT;
 
-    return createBone(node, invBindMat, getBoneIdxForNodeId);
+    const bone = new Bone (
+      node.name,
+      getExistingChildren(node, getBoneIdxForNodeId),
+      createBoneData(node, invBindMat),
+      new Marker(),
+      mat4_Create(),
+    );
+    bone.marker.owner = bone;
+    return bone;
   });
 };

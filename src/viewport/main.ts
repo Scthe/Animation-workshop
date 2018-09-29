@@ -1,16 +1,32 @@
+import {requestAnimFrame, handleResize} from 'gl-utils';
+
 import {GlState} from './GlState';
 import {drawObject3d} from './drawObject3d';
 import {drawGizmo, GizmoType} from './gizmo';
-import {drawMarkers} from './marker';
+import {Marker, MarkerType, drawMarkers} from './marker';
 import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
-import {requestAnimFrame, handleResize} from 'gl-utils';
-import {getSelectedObject} from '../UI_State';
 import {Scene, createScene} from './scene';
-
-// TODO verify if move gizmo is not clickable when rotate is selected
+import {MouseHandler, MouseDragEvent} from './MouseHandler';
+import {initGizmoDraw, applyGizmoMove, applyGizmoRotate} from './gizmo';
 
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
+
+// refactor:
+// TODO unify API (always take FrameEnv etc.)
+// TODO move AnimState to /animation
+// TODO move 'show debug markers' to 'Dsiplay' seciton
+// TODO color selected object
+
+// gizmo:
+// TODO gizmo/updateMarker should return MarkerPosition[], so color and radius can be set for both Move/Rotate
+// TODO display only correct axis in gizmo
+
+// TODO final glb
+// TODO connect ui with viewport (drawMarkers, gizmo/marker size etc.)
+// TODO connect config with viewport
+
+
 
 //////////
 /// Anim state
@@ -55,7 +71,11 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
   const {camera, lamp} = scene;
 
-  const frameEnv = { timing: createAnimState(time), glState, scene, };
+  const frameEnv = {
+    timing: createAnimState(time),
+    glState,
+    scene,
+  };
 
   camera.update(frameEnv.timing.deltaTime, CAMERA_MOVE_SPEED, CAMERA_ROTATE_SPEED, pressedKeys);
 
@@ -66,31 +86,79 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   calculateBoneMatrices(frameEnv.timing, lamp.bones);
   drawObject3d(frameEnv, scene.lamp);
 
-  drawGizmo(frameEnv, {
-    type: GizmoType.Rotate,
-    // type: GizmoType.Move,
-    size: 0.5,
-    origin: getSelectedObject(),
-  });
+  const {currentObject: objName, draggedGizmo} = glState.selection;
+  const currentObject = scene.getMarker(objName);
+  if (currentObject) {
+    drawGizmo(frameEnv, {
+      type: draggedGizmo,
+      size: 0.5,
+      origin: currentObject,
+    });
+  }
 
   // markers
-  updateArmatureMarkers(frameEnv, lamp);
-  drawMarkers(frameEnv.timing, glState);
+  updateArmatureMarkers(scene, lamp);
+  drawMarkers(frameEnv); // TODO set some gizmo markers as invisible
 };
 
 //////////
 /// Some init stuff
 //////////
 
+let glState: GlState = undefined;
+let scene: Scene = undefined;
+let mouseHandler: MouseHandler = undefined;
+
+const onMarkerClicked = (marker: Marker) => {
+  // console.log(`Clicked marker '${marker.name}': `, marker);
+
+  switch (marker.type) {
+    case MarkerType.Bone:
+      glState.selection.currentObject = marker.name;
+      glState.selection.draggedAxis = undefined;
+      break;
+    case MarkerType.Gizmo:
+      glState.selection.draggedAxis = marker.owner as any;
+      break;
+  }
+};
+
+const onMarkerDragged = (ev: MouseDragEvent) => {
+  const {currentObject: objName, draggedAxis, draggedGizmo} = glState.selection;
+  // const currentObject = scene.getMarker(objName);
+  if (!objName || draggedAxis === undefined) { return; }
+
+  switch (draggedGizmo) {
+    case GizmoType.Move:
+      applyGizmoMove(objName, ev, draggedAxis);
+      break;
+    case GizmoType.Rotate:
+      applyGizmoRotate(objName, ev, draggedAxis);
+      break;
+  }
+};
+
+const onMarkerUnclicked = () => {
+  // console.log(`Unclicked axis: ${glState.selection.draggedAxis}`);
+  if (glState.isDragging()) {
+    glState.selection.draggedAxis = undefined;
+  }
+};
+
 export const init = async (canvas: HTMLCanvasElement) => {
-  const glState = new GlState();
+  glState = new GlState();
   await glState.init(canvas);
 
   glState.gl.clearColor(0.5, 0.5, 0.5, 1.0);
   glState.gl.clearDepth(1.0);
 
-  const scene = await createScene(glState);
-  glState.mouseHander.scene = scene;
+  scene = await createScene(glState);
+  await initGizmoDraw(glState.gl);
+
+  mouseHandler = new MouseHandler(canvas, glState, scene);
+  mouseHandler.setOnMarkerClicked(onMarkerClicked);
+  mouseHandler.setOnMarkerDragged(onMarkerDragged);
+  mouseHandler.setOnMarkerUnclicked(onMarkerUnclicked);
 
   const onDraw = (time: number) => {
     handleResize(glState.gl);

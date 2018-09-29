@@ -8,7 +8,7 @@ import {updateMarkers} from './updateMarkers';
 import {Mesh, getNode, loadMesh} from 'viewport/scene';
 
 
-// TODO make this draw as true local rotation it is, just premultiply getRotationMatrix's result
+// TODO make this draw as true local rotation it is, just premultiply getRotationMatrix's result (or bone.frameMatrix * AxisMatrix)
 // TODO rotate gizmo should have triangle/quad cross-cut
 
 let ROTATE_GIZMO_OBJ: Mesh = undefined;
@@ -49,7 +49,7 @@ const getRotationMatrix = (axis: Axis) => {
 
 const getModelMatrix = (glState: GlState, axis: Axis, opts: GizmoDrawOpts) => {
   const {origin, size} = opts;
-  const markerPos = origin.position.position3d;
+  const markerPos = origin.$_framePosition.position3d;
   return createModelMatrix(markerPos, getRotationMatrix(axis), size);
 };
 
@@ -68,7 +68,7 @@ const drawRotateAxis = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts)
 };
 
 export const drawRotateGizmo = (frameEnv: FrameEnv, shader: Shader, opts: GizmoDrawOpts) => {
-  const {gl} = frameEnv.glState;
+  const {glState: {gl}, scene} = frameEnv;
   const {vao, indexBuffer} = ROTATE_GIZMO_OBJ;
 
   shader.use(gl);
@@ -77,5 +77,5 @@ export const drawRotateGizmo = (frameEnv: FrameEnv, shader: Shader, opts: GizmoD
 
   const drawAxis = drawRotateAxis(frameEnv, shader, opts);
   AxisList.map(drawAxis);
-  updateMarkers(frameEnv, opts);
+  updateMarkers(scene, opts);
 };

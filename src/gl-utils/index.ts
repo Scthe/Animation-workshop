@@ -132,3 +132,9 @@ export const getMVP = (m: mat4, v: mat4, p: mat4) => {
   multiply(mvp, vp, m);
   return mvp;
 };
+
+export const getDist2 = (a: vec2, b: vec2, doSqrt = false) => {
+  const delta = [a[0] - b[0], a[1] - b[1]];
+  const res = delta[0] * delta[0] + delta[1] * delta[1];
+  return doSqrt ? Math.sqrt(res) : res;
+};

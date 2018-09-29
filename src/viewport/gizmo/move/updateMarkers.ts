@@ -1,9 +1,10 @@
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {mat4} from 'gl-mat4';
-import {NDCtoPixels, transformPointByMat4} from 'gl-utils';
+import {NDCtoPixels, transformPointByMat4, getDist2} from 'gl-utils';
 import {GlState} from 'viewport/GlState';
-import {Marker, MarkerType, createMarkerPosition} from 'viewport/marker';
+import {Marker, createMarkerPosition} from 'viewport/marker';
 import {Axis} from 'gl-utils';
+import {FrameEnv} from 'viewport/main';
 
 /// Move gizmo uses weird shape - arrow. Implmenting picking requires
 /// some special code.
@@ -26,7 +27,7 @@ const getMarkerRadius = (glState: GlState, mvp: mat4, marker: Marker) => {
   // ugh, I actually want to do normal object picking ATM...
 
   const [width, height] = glState.getViewport();
-  const markerPos = marker.position.positionNDC;
+  const markerPos = marker.$_framePosition.positionNDC;
   const m1 = NDCtoPixels(markerPos, width, height, false);
 
   const radiuses = GIZMO_RADIUS_TEST_VECTORS.map(ar => {
@@ -36,18 +37,17 @@ const getMarkerRadius = (glState: GlState, mvp: mat4, marker: Marker) => {
 
     // calculate difference in pixels as radius
     const m2 = NDCtoPixels(markerTmp, width, height, false);
-    const deltaTmp = [m1[0] - m2[0], m1[1] - m2[1]];
-    return Math.sqrt(deltaTmp[0] * deltaTmp[0] + deltaTmp[1] * deltaTmp[1]);
+    return getDist2(m1, m2, true);
   });
 
   return radiuses.reduce((acc, r) => Math.max(acc, r), 0);
 };
 
-export const updateMarkers = (glState: GlState, mvp: mat4, modelMatrix: mat4, axis: Axis) => {
-  const markerName = Axis[axis];
+export const updateMarkers = (frameEnv: FrameEnv, mvp: mat4, modelMatrix: mat4, axis: Axis) => {
+  const {glState, scene} = frameEnv;
 
   // update position and radius
   const markerPos = createMarkerPosition(mvp, modelMatrix, GIZMO_MOVE_TIP);
-  const marker = glState.updateMarker(markerName, MarkerType.GizmoMove, markerPos);
+  const marker = scene.updateMarker(axis, markerPos);
   marker.radius = getMarkerRadius(glState, mvp, marker);
 };

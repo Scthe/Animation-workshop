@@ -1,11 +1,11 @@
 import {vec3, fromValues as vec3_Create, normalize, distance} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Axis, AxisList, createModelMatrix} from 'gl-utils';
-import {FrameEnv} from 'viewport/main';
-import {createMarkerPosition, MarkerType, MarkerPosition} from 'viewport/marker';
+import {Scene} from 'viewport/scene';
+import {createMarkerPosition, MarkerPosition} from 'viewport/marker';
 import {GizmoDrawOpts, AXIS_COLORS} from '../index';
 
-// TODO when rotation, rotate gizmo too (or hide alltogether)
+// TODO when drag-rotating, rotate gizmo too (or hide alltogether)
 
 // marker for axis X is at [0,1,1] etc.
 const MARKER_VECTOR_BY_AXIS = (
@@ -57,10 +57,9 @@ const getClosestMarkerPosition = (cameraPos: vec3, mvp: mat4, modelMat: mat4, ax
   return markerPositions.reduce(getClosest, undefined);
 };
 
-export const updateMarkers = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
-  const {scene, glState} = frameEnv;
+export const updateMarkers = (scene: Scene, opts: GizmoDrawOpts) => {
   const {origin, size} = opts;
-  const markerPos = origin.position.position3d;
+  const markerPos = origin.$_framePosition.position3d;
 
   // similar matrix to one used in draw, but no rotation
   const rotMat = mat4_Create();
@@ -69,8 +68,7 @@ export const updateMarkers = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
 
   AxisList.forEach(axis => {
     const markerPos = getClosestMarkerPosition(scene.camera.getPosition(), mvp, modelMatrix, axis);
-    const markerName = Axis[axis];
-    const marker = glState.updateMarker(markerName, MarkerType.GizmoRotate, markerPos);
+    const marker = scene.updateMarker(axis, markerPos);
     marker.color = AXIS_COLORS[axis];
   });
 };

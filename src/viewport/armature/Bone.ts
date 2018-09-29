@@ -3,6 +3,7 @@ import {vec3} from 'gl-vec3';
 import {quat} from 'gl-quat';
 import {includes} from 'lodash';
 import {Armature} from './index';
+import {Marker} from 'viewport/marker';
 
 interface BoneData {
   bindMatrix: mat4; // used when drawing markers
@@ -18,7 +19,7 @@ export class Bone {
     public readonly children: number[],
     public readonly data: BoneData,
     // public readonly cfg: BoneConfigEntry;
-    // public marker: Marker;
+    public marker: Marker,
     public $_frameCache: mat4, // ! watch out !
   ) { }
 
