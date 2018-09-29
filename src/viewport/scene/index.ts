@@ -26,7 +26,20 @@ export interface Object3d {
 }
 
 
-// interface SceneGizmo { mesh: Mesh; markers[]; }
+// does not hold info about markers, just some aux stuff to render
+interface MarkerMeta {
+  shader: Shader;
+  instancingVAO: Vao; // single attr: [0, ..., VertCnt]
+}
+
+// does not hold info about gizmo, just some aux stuff to render
+// markers are mostly per-frame cache, tho they have hardcoded per-axis colors
+interface GizmoMeta {
+  shader: Shader;
+  moveMesh: Mesh;
+  rotateMesh: Mesh;
+  markers: Marker[]; // only 3, but no Array<Marker, 3> in TS
+}
 
 
 /*
@@ -42,9 +55,8 @@ export class Scene {
     public readonly camera: CameraFPS,
     public readonly materialWithArmature: Shader,
     public readonly lamp: Object3d,
-    public readonly markerMaterial: Shader,
-    public readonly instancingVAO: Vao, // single attr: [0, ..., VertCnt]
-    public readonly gizmoMarkers: Marker[], // only 3, but no Array<Marker, 3> in TS
+    public readonly markerMeta: MarkerMeta,
+    public readonly gizmoMeta: GizmoMeta,
   ) {}
 
   getMVP (modelMatrix: mat4) {
@@ -60,7 +72,7 @@ export class Scene {
   getMarkers () {
     return [
       ...this.lamp.bones.map(b => b.marker),
-      ...this.gizmoMarkers,
+      ...this.gizmoMeta.markers,
     ];
   }
 
@@ -83,7 +95,7 @@ export class Scene {
         return bone.marker;
       }
     } else {
-      return this.gizmoMarkers[name];
+      return this.gizmoMeta.markers[name];
     }
 
     return undefined;

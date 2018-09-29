@@ -7,7 +7,7 @@ import {Marker, MarkerType, drawMarkers} from './marker';
 import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
 import {Scene, createScene} from './scene';
 import {MouseHandler, MouseDragEvent} from './MouseHandler';
-import {initGizmoDraw, applyGizmoMove, applyGizmoRotate} from './gizmo';
+import {applyGizmoMove, applyGizmoRotate} from './gizmo';
 
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
@@ -153,7 +153,6 @@ export const init = async (canvas: HTMLCanvasElement) => {
   glState.gl.clearDepth(1.0);
 
   scene = await createScene(glState);
-  await initGizmoDraw(glState.gl);
 
   mouseHandler = new MouseHandler(canvas, glState, scene);
   mouseHandler.setOnMarkerClicked(onMarkerClicked);

@@ -1,17 +1,14 @@
-import {GltfLoader} from 'gltf-loader-ts';
 import {fromValues as vec3_Create} from 'gl-vec3';
-import {Shader, DrawParameters, DepthTest, CullingMode} from 'gl-utils';
+import {DrawParameters, DepthTest, CullingMode} from 'gl-utils';
 import {FrameEnv} from 'viewport/main';
-import {Marker} from 'viewport/marker';
-import {initMoveGizmoDraw, drawMoveGizmo} from './move/draw';
-import {initRotationGizmoDraw, drawRotateGizmo} from './rotate/draw';
+import {Marker, MarkerType} from 'viewport/marker';
+import {drawMoveGizmo} from './move/draw';
+import {drawRotateGizmo} from './rotate/draw';
 
 export * from './move/draw';
 export * from './move/handler';
 export * from './rotate/draw';
 export * from './rotate/handler';
-
-// TODO combine gltf files
 
 
 export enum GizmoType {
@@ -24,43 +21,17 @@ export const AXIS_COLORS = [
   vec3_Create(0, 0, 1)
 ];
 
-let GIZMO_SHADER: Shader = undefined;
-
-
-//////////
-/// Some init stuff
-//////////
-
-const GIZMO_VERT = require('shaders/gizmo.vert.glsl');
-const GIZMO_FRAG = require('shaders/lampShader.frag.glsl');
-const GIZMO_GLTF_URL = require('assets/gizmos.glb');
-
-export const initGizmoDraw = async (gl: Webgl) => {
-  GIZMO_SHADER = new Shader(gl, GIZMO_VERT, GIZMO_FRAG);
-
-  const loader = new GltfLoader();
-  const asset = await loader.load(GIZMO_GLTF_URL);
-  // console.log('gizmo-asset', asset);
-  // console.log('gizmo-gltf', asset.gltf);
-
-  await initMoveGizmoDraw(gl, GIZMO_SHADER, asset);
-  await initRotationGizmoDraw(gl, GIZMO_SHADER, asset);
-};
-
-
-//////////
-/// Actual drawing
-/// NOTE: no instancing in webgl 1.0, have to use 3 draw calls (could mimic with uniforms, but meh..)
-//////////
 
 export interface GizmoDrawOpts {
   size: number;
   type: GizmoType;
-  origin: Marker;
+  origin: Marker; // need whole marker for rotation
 }
 
 export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
-  if (!opts.origin) { return; }
+  if (opts.origin.type !== MarkerType.Bone) {
+    throw `Could not draw gizmo at unsupported origin (expected MarkerType.Bone)`;
+  }
 
   const dp = new DrawParameters();
   dp.depth.write = false;
@@ -70,10 +41,10 @@ export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
 
   switch (opts.type) {
     case GizmoType.Move:
-      drawMoveGizmo(frameEnv, GIZMO_SHADER, opts);
+      drawMoveGizmo(frameEnv, opts);
       break;
     case GizmoType.Rotate:
-      drawRotateGizmo(frameEnv, GIZMO_SHADER, opts);
+      drawRotateGizmo(frameEnv, opts);
       break;
     // case GizmoType.Scale:
       // drawScaleGizmo(glState, GIZMO_SHADER, opts);

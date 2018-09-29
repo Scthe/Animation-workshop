@@ -21,10 +21,16 @@ const SHADERS = {
   LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
   MARKER_VERT: require('shaders/marker.vert.glsl'),
   MARKER_FRAG: require('shaders/marker.frag.glsl'),
+  GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
+  GIZMO_FRAG: require('shaders/lampShader.frag.glsl'),
 };
 const GLTF_URL = require('assets/TestScene.glb');
 const LAMP_ROOT_NODE = 'SkeletonTest_rig';
 const MARKER_VAO_SIZE = 255;
+
+const GIZMO_GLTF_URL = require('assets/gizmos.glb');
+const GIZMO_MESH_NAME_MOVE = 'GizmoArrow';
+const GIZMO_MESH_NAME_ROTATE = 'GizmoRotation';
 
 
 const getMeshNode = (asset: GltfAsset, rootNodeName: string) => {
@@ -43,6 +49,35 @@ const createInstancingVao = (gl: Webgl, shader: Shader, size: number) => {
   return new Vao(gl, shader, [
     new VaoAttrInit('a_VertexId_f', data, 0, 0),
   ]);
+};
+
+const createMarkerMeta = (gl: Webgl) => {
+  const shader =  new Shader(gl, SHADERS.MARKER_VERT, SHADERS.MARKER_FRAG);
+  const instancingVAO = createInstancingVao(gl, shader, MARKER_VAO_SIZE);
+  return { shader, instancingVAO, };
+};
+
+const loadGizmoMesh = async (gl: Webgl, shader: Shader, asset: GltfAsset, meshName: string) => {
+  const node = getNode(asset, meshName);
+  return await loadMesh(gl, shader, asset, node.mesh, {
+    'POSITION': 'a_Position'
+  });
+};
+
+const createGizmoMeta = async (gl: Webgl) => {
+  const markers = AxisList.map(axis => new Marker({
+    owner: axis,
+    color: AXIS_COLORS[axis],
+  }));
+
+  const shader = new Shader(gl, SHADERS.GIZMO_VERT, SHADERS.GIZMO_FRAG);
+
+  const loader = new GltfLoader();
+  const asset = await loader.load(GIZMO_GLTF_URL);
+  const moveMesh = await loadGizmoMesh(gl, shader, asset, GIZMO_MESH_NAME_MOVE);
+  const rotateMesh = await loadGizmoMesh(gl, shader, asset, GIZMO_MESH_NAME_ROTATE);
+
+  return { shader, moveMesh, rotateMesh, markers, };
 };
 
 export const createScene = async (glState: GlState) => {
@@ -64,21 +99,12 @@ export const createScene = async (glState: GlState) => {
   // camera
   const camera = new CameraFPS(CAMERA_SETTINGS);
 
-  // markers
-  const markerMaterial =  new Shader(gl, SHADERS.MARKER_VERT, SHADERS.MARKER_FRAG);
-  const instancingVAO = createInstancingVao(gl, markerMaterial, MARKER_VAO_SIZE);
-  const gizmoMarkers = AxisList.map(axis => new Marker({
-    owner: axis,
-    color: AXIS_COLORS[axis],
-  }));
-
   return new Scene(
     glState,
     camera,
     materialWithArmature,
     {mesh: lampMesh, bones: lampBones, modelMatrix: mat4_Create()},
-    markerMaterial,
-    instancingVAO,
-    gizmoMarkers,
+    createMarkerMeta(gl),
+    await createGizmoMeta(gl),
   );
 };

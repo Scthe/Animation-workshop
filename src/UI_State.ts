@@ -2,17 +2,6 @@ import {Marker} from './viewport/marker';
 import {vec3, fromValues as vec3_Create, add as vAdd} from 'gl-vec3';
 import {quat, create as quat_Create, multiply as qMul} from 'gl-quat';
 
-/*
-let selectedObject: Marker;
-
-export const setSelectedObject = (obj: Marker) => {
-  selectedObject = obj;
-};
-
-export const getSelectedObject = () => {
-  return selectedObject;
-};*/
-
 ////////////////////
 /// KEYFRAME STORAGE
 ////////////////////
