@@ -17,7 +17,7 @@ export enum MarkerType { Bone, Gizmo }
 
 // changes per frame
 export interface MarkerPosition {
-  position3d: vec3; // used for gizmo placement
+  position3d: vec3; // world space (point * modelMatrix), used for gizmo placement
   positionNDC: vec2; // NOTE: in NDC(!!!): [-1, 1] x [-1, 1]
 }
 
