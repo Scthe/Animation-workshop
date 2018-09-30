@@ -8,6 +8,7 @@ import {GlState} from 'viewport/GlState';
 import {Marker} from 'viewport/marker';
 import {Scene, getNode, loadBones, loadMesh} from './index';
 import {isMeshNode} from 'viewport/scene/loader/_utils';
+import {generateMoveGizmo, generateRotateGizmo} from './_generateGizmoMeshes';
 
 
 const CAMERA_SETTINGS = {
@@ -27,10 +28,6 @@ const SHADERS = {
 const GLTF_URL = require('assets/TestScene.glb');
 const LAMP_ROOT_NODE = 'SkeletonTest_rig';
 const MARKER_VAO_SIZE = 255;
-
-const GIZMO_GLTF_URL = require('assets/gizmos.glb');
-const GIZMO_MESH_NAME_MOVE = 'GizmoArrow';
-const GIZMO_MESH_NAME_ROTATE = 'GizmoRotation';
 
 
 const getMeshNode = (asset: GltfAsset, rootNodeName: string) => {
@@ -57,28 +54,19 @@ const createMarkerMeta = (gl: Webgl) => {
   return { shader, instancingVAO, };
 };
 
-const loadGizmoMesh = async (gl: Webgl, shader: Shader, asset: GltfAsset, meshName: string) => {
-  const node = getNode(asset, meshName);
-  return await loadMesh(gl, shader, asset, node.mesh, {
-    'POSITION': 'a_Position'
-  });
-};
-
-const createGizmoMeta = async (gl: Webgl) => {
+const createGizmoMeta = (gl: Webgl) => {
   const markers = AxisList.map(axis => new Marker({
     owner: axis,
     color: AXIS_COLORS[axis],
   }));
 
   const shader = new Shader(gl, SHADERS.GIZMO_VERT, SHADERS.GIZMO_FRAG);
-
-  const loader = new GltfLoader();
-  const asset = await loader.load(GIZMO_GLTF_URL);
-  const moveMesh = await loadGizmoMesh(gl, shader, asset, GIZMO_MESH_NAME_MOVE);
-  const rotateMesh = await loadGizmoMesh(gl, shader, asset, GIZMO_MESH_NAME_ROTATE);
+  const moveMesh = generateMoveGizmo(gl, shader);
+  const rotateMesh = generateRotateGizmo(gl, shader);
 
   return { shader, moveMesh, rotateMesh, markers, };
 };
+
 
 export const createScene = async (glState: GlState) => {
   const {gl} = glState;
@@ -105,6 +93,6 @@ export const createScene = async (glState: GlState) => {
     materialWithArmature,
     {mesh: lampMesh, bones: lampBones, modelMatrix: mat4_Create()},
     createMarkerMeta(gl),
-    await createGizmoMeta(gl),
+    createGizmoMeta(gl),
   );
 };

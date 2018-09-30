@@ -53,8 +53,6 @@ const createAnimState = ((timeOld: number, frameId: number) => (time: number) =>
   return animState;
 })(0, 0);
 
-
-
 //////////
 /// Per frame update
 //////////
@@ -64,8 +62,6 @@ export interface FrameEnv {
   glState: GlState;
   scene: Scene;
 }
-
-
 
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;

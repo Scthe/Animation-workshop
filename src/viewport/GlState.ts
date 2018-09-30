@@ -44,7 +44,7 @@ export class GlState {
   private static createSelection () {
     return {
       draggedAxis: undefined as Axis,
-      draggedGizmo: GizmoType.Rotate,
+      draggedGizmo: GizmoType.Move,
       currentObject: undefined as string,
     };
   }

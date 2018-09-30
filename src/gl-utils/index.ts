@@ -15,6 +15,7 @@ export * from './Shader';
 export * from './uniforms';
 export * from './vao';
 export * from './axis';
+export * from './shapes';
 
 // https://github.com/KhronosGroup/WebGLDeveloperTools/blob/master/src/debug/webgl-debug.js#L492
 

@@ -5,7 +5,7 @@ import {Scene} from 'viewport/scene';
 import {createMarkerPosition, MarkerPosition} from 'viewport/marker';
 import {GizmoDrawOpts, AXIS_COLORS} from '../index';
 
-// TODO when drag-rotating, rotate gizmo too (or hide alltogether)
+// TODO when drag-rotating, rotate gizmo too (OR hide alltogether OR just whow axis that is beeing dragged)
 
 // marker for axis X is at [0,1,1] etc.
 const MARKER_VECTOR_BY_AXIS = (
