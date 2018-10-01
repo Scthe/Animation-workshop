@@ -1,8 +1,8 @@
 import {mat4, create as mat4_Create, multiply, identity} from 'gl-mat4';
-import {fromValues as vec3_Create, add} from 'gl-vec3';
+import {create as vec3_Create, add} from 'gl-vec3';
 import {create as quat_Create, multiply as qMul} from 'gl-quat';
-import {AnimState} from 'viewport/main';
-import {getMove, getRotation} from '../../UI_State';
+import {AnimTimings} from 'viewport/animation';
+import {getMove, getRotation} from '../../UI_Bridge';
 import {Armature} from './index';
 import {createModelMatrix} from 'gl-utils';
 
@@ -19,7 +19,7 @@ import {createModelMatrix} from 'gl-utils';
 
 // some util struct to ease moving params
 interface BoneTransformsCfg {
-  animState: AnimState;
+  animState: AnimTimings;
   bones: Armature;
 }
 
@@ -29,7 +29,7 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const boneData = bone.data;
   const marker = {name: bone.name} as any;
 
-  const translation = vec3_Create(0, 0, 0);
+  const translation = vec3_Create();
   const deltaFromAnim = getMove(marker);
   add(translation, boneData.translation, deltaFromAnim);
 
@@ -60,9 +60,8 @@ const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: 
   const bone = cfg.bones[boneId];
 
   const animationTransform = getAnimationTransform(cfg, boneId);
-  const globalTransform = mat4_Create();
   identity(bone.$_frameCache);
-  multiply(globalTransform, parentTransfrom, animationTransform);
+  const globalTransform = multiply(mat4_Create(), parentTransfrom, animationTransform);
   multiply(bone.$_frameCache, globalTransform, bone.data.inverseBindMatrix);
 
   bone.children.forEach(childIdx => {
@@ -70,7 +69,7 @@ const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: 
   });
 };
 
-export const calculateBoneMatrices = (animState: AnimState, bones: Armature) => {
+export const calculateBoneMatrices = (animState: AnimTimings, bones: Armature) => {
   const cfg = { animState, bones, };
   const root = mat4_Create();
   calculateBone(cfg, 0, root);

@@ -10,10 +10,10 @@ const getMarkerPosFromBone = (armature: Armature, mvp: mat4, modelMatrix: mat4) 
   const bonePos = bone.data.translation; // relative to parent
 
   // same steps as normal bone calculations, but on CPU this time
-  const pos = vec3_Create(); // reverse bone transform
-  transformPointByMat4(pos, bonePos, bone.getParentBindMatrix(armature));
-  const localPos = vec3_Create(); // apply new bone transform
-  transformPointByMat4(localPos, pos, boneMat);
+  // reverse bone transform
+  const pos = transformPointByMat4(vec3_Create(), bonePos, bone.getParentBindMatrix(armature));
+  // apply new bone transform
+  const localPos = transformPointByMat4(vec3_Create(), pos, boneMat);
 
   return createMarkerPosition(mvp, modelMatrix, localPos);
 };

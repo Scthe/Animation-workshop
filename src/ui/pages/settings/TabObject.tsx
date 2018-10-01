@@ -46,7 +46,11 @@ export class TabObject extends Component<TabObjectProps, any> {
     const obj = appState.currentObject;
 
     if (!obj) {
-      return <p>No object selected?</p>;
+      return (
+        <div className={this.getClasses(false)}>
+          <p className={Styles.NoObjectSelected}>No object selected</p>
+        </div>
+      );
     }
 
     return (

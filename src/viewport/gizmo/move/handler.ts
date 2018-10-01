@@ -1,5 +1,5 @@
 import {MouseDragEvent} from 'viewport/MouseHandler';
-import {addMove} from '../../../UI_State';
+import {addMove} from '../../../UI_Bridge';
 import {Axis, getAxisVector} from 'gl-utils';
 
 export const applyGizmoMove = (objName: string, ev: MouseDragEvent, axis: Axis) => {

@@ -3,10 +3,10 @@ import {
   DrawParameters, applyDrawParams
 } from 'gl-utils';
 import {GizmoType} from './gizmo';
+import {uiBridge, appStateGetter} from '../UI_Bridge';
 
-interface SelectionStatus {
-  // TODO add here draggedDisplacement: Keyframe for tmp. move/rotate while dragging?
-  currentObject?: string;
+// TODO add here draggedDisplacement: Keyframe for tmp. move/rotate while dragging?
+interface DraggingStatus {
   // when we are moving/rotating/scaling
   draggedAxis?: Axis;
   // we can drag and switch gizmo using key-shortcut. this is local copy for such cases
@@ -16,9 +16,9 @@ interface SelectionStatus {
 export class GlState {
 
   public gl: Webgl;
-  private canvas: HTMLCanvasElement;
+  public canvas: HTMLCanvasElement;
   private drawParams: DrawParameters;
-  public selection: SelectionStatus;
+  public draggingStatus: DraggingStatus;
   // IO
   public pressedKeys: boolean[] = new Array(128); // keycode => bool
 
@@ -30,7 +30,7 @@ export class GlState {
     this.drawParams = new DrawParameters();
     applyDrawParams(this.gl, this.drawParams, undefined, true);
 
-    this.selection = GlState.createSelection();
+    this.draggingStatus = GlState.createSelection();
 
     // IO
     window.addEventListener('keydown', event => {
@@ -44,8 +44,8 @@ export class GlState {
   private static createSelection () {
     return {
       draggedAxis: undefined as Axis,
-      // draggedGizmo: GizmoType.Move,
-      draggedGizmo: GizmoType.Rotate,
+      draggedGizmo: GizmoType.Move,
+      // draggedGizmo: GizmoType.Rotate,
       currentObject: undefined as string,
     };
   }
@@ -60,7 +60,14 @@ export class GlState {
   }
 
   isDragging () {
-    return this.selection.draggedAxis !== undefined;
+    return this.draggingStatus.draggedAxis !== undefined;
+  }
+
+  get selectedObject () {
+    const {selectedObject} = uiBridge.getFromUI(
+      appStateGetter('selectedObject')
+    );
+    return selectedObject as string;
   }
 
 }

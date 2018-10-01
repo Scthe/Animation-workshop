@@ -13,7 +13,7 @@ export const getMarkerAt = (viewport: number[], markers: Marker[], pixel: vec2) 
     const markerPosPx = getMarkerPositionPx(viewport, marker);
     const dist2 = getDist2(markerPosPx, pixel);
     const r = marker.radius;
-    return dist2 < (r * r);
+    return marker.clickable && dist2 < (r * r);
   };
 
   return markers.find(wasClicked);

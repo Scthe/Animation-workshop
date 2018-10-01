@@ -24,8 +24,7 @@ const getExistingChildren = (node: gltf.Node, getBoneIdxForNodeId: Function) => 
 };
 
 const createBoneData = (node: gltf.Node, invBindMat: mat4) => {
-  const bindMat = mat4_Create();
-  invert(bindMat, invBindMat);
+  const bindMat = invert(mat4_Create(), invBindMat);
 
   // can't use spread for non `func (args: Type[])` in TS
   // (spread has unknown args count, which does not typecheck well)

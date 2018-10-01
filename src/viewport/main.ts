@@ -1,4 +1,4 @@
-import {requestAnimFrame, handleResize} from 'gl-utils';
+import {requestAnimFrame, handleResize, AxisList} from 'gl-utils';
 
 import {GlState} from './GlState';
 import {drawObject3d} from './drawObject3d';
@@ -8,93 +8,114 @@ import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
 import {Scene, createScene} from './scene';
 import {MouseHandler, MouseDragEvent} from './MouseHandler';
 import {applyGizmoMove, applyGizmoRotate} from './gizmo';
+import {AnimTimings, createAnimTimings} from './animation';
+import {uiBridge, appStateGetter, appStateSetter} from '../UI_Bridge';
 
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
 
-// refactor:
-// TODO unify API (always take FrameEnv etc.)
-// TODO move AnimState to /animation
-// TODO move 'show debug markers' to 'Dsiplay' seciton
-// TODO color selected object
-
-// gizmo:
-// TODO gizmo/updateMarker should return MarkerPosition[], so color and radius can be set for both Move/Rotate
-// TODO display only correct axis in gizmo
-
-// TODO final glb
-// TODO connect ui with viewport (drawMarkers, gizmo/marker size etc.)
 // TODO connect config with viewport
 
+// TODO fix gizmo/handlers
+// TODO final glb
 
-
-//////////
-/// Anim state
-//////////
-
-/** Animation timing etc. */
-export interface AnimState {
-  deltaTime: number; // previous -> this frame
-  // animationFrameId: number; // frame to render, used for interpolation etc.
-  frameId: number; // id of current frame
-
-  // fromAnimStartMs: number
-  // fromAnimStartFrame: number
-}
-
-const createAnimState = ((timeOld: number, frameId: number) => (time: number) => {
-  const animState = {
-    deltaTime: time - timeOld,
-    frameId,
-  };
-  timeOld = time;
-  ++frameId;
-
-  return animState;
-})(0, 0);
 
 //////////
 /// Per frame update
 //////////
 
 export interface FrameEnv {
-  timing: AnimState;
+  timing: AnimTimings;
   glState: GlState;
   scene: Scene;
 }
+
+const resetGizmoMarkers = (scene: Scene) => {
+  scene.gizmoMeta.markers.forEach(m => {
+    m.visible = false;
+    m.clickable = false;
+  });
+};
+
+const createGizmoDrawOpts = (glState: GlState) => {
+  const {draggedGizmo, draggedAxis} = glState.draggingStatus;
+  const currentObject = scene.getMarker(glState.selectedObject);
+  const {gizmoSize, showDebug} = uiBridge.getFromUI(
+    appStateGetter('gizmoSize', 'showDebug')
+  );
+  const isDragging = glState.isDragging();
+
+  return currentObject ? {
+    gizmoType: draggedGizmo,
+    size: gizmoSize / 100, // just go with it..
+    origin: currentObject,
+    forceDrawMarkers: showDebug,
+    // TODO selectedObject.cfg.allowedAxis(draggedGizmo)
+    allowedAxis: isDragging ? [draggedAxis] : AxisList,
+    isDragging,
+  } : undefined;
+};
+
+const tryChangeGizmo = (glState: GlState, scene: Scene) => {
+  if (glState.isDragging()) { // can't change midway
+    return;
+  }
+
+  const {draggingStatus} = glState;
+  const {currentGizmo} = uiBridge.getFromUI(
+    appStateGetter('currentGizmo')
+  );
+  if (draggingStatus.draggedGizmo !== currentGizmo) {
+    draggingStatus.draggedGizmo = currentGizmo;
+    scene.gizmoMeta.markers.forEach(m => m.radius = undefined);
+  }
+};
 
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
   const {camera, lamp} = scene;
 
   const frameEnv = {
-    timing: createAnimState(time),
+    timing: createAnimTimings(time),
     glState,
     scene,
-  };
+  } as FrameEnv; // typecheck this pls
 
-  camera.update(frameEnv.timing.deltaTime, CAMERA_MOVE_SPEED, CAMERA_ROTATE_SPEED, pressedKeys);
+  // camera
+  const {cameraMoveSpeed, cameraRotateSpeed} = uiBridge.getFromUI(
+    appStateGetter('cameraMoveSpeed', 'cameraRotateSpeed')
+  );
+  camera.update(
+    frameEnv.timing.deltaTime,
+    CAMERA_MOVE_SPEED * cameraMoveSpeed / 10, // just go with it..
+    CAMERA_ROTATE_SPEED * cameraRotateSpeed / 10, // just go with it..
+    pressedKeys
+  );
 
+  // clear + viewport
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   const [width, height] = glState.getViewport();
   gl.viewport(0.0, 0.0, width, height);
 
+  // lamp: bones + draw
   calculateBoneMatrices(frameEnv.timing, lamp.bones);
   drawObject3d(frameEnv, scene.lamp);
 
-  const {currentObject: objName, draggedGizmo} = glState.selection;
-  const currentObject = scene.getMarker(objName);
-  if (currentObject) {
-    drawGizmo(frameEnv, {
-      type: draggedGizmo,
-      size: 0.5,
-      origin: currentObject,
-    });
+  // gizmo
+  tryChangeGizmo(glState, scene);
+  const gizmoDrawOpts = createGizmoDrawOpts(glState);
+  if (gizmoDrawOpts) {
+    drawGizmo(frameEnv, gizmoDrawOpts); // this also sets markers
+  } else {
+    resetGizmoMarkers(scene);
   }
 
   // markers
   updateArmatureMarkers(scene, lamp);
-  drawMarkers(frameEnv); // TODO set some gizmo markers as invisible
+  const {markerSize} = uiBridge.getFromUI(
+    appStateGetter('markerSize')
+  );
+  drawMarkers(frameEnv, markerSize / 10.0); // just go with it..
 };
 
 //////////
@@ -110,26 +131,26 @@ const onMarkerClicked = (marker: Marker) => {
 
   switch (marker.type) {
     case MarkerType.Bone:
-      glState.selection.currentObject = marker.name;
-      glState.selection.draggedAxis = undefined;
+      glState.draggingStatus.draggedAxis = undefined;
+      uiBridge.setOnUI(appStateSetter('selectedObject', marker.name));
       break;
     case MarkerType.Gizmo:
-      glState.selection.draggedAxis = marker.owner as any;
+      glState.draggingStatus.draggedAxis = marker.owner as any;
       break;
   }
 };
 
 const onMarkerDragged = (ev: MouseDragEvent) => {
-  const {currentObject: objName, draggedAxis, draggedGizmo} = glState.selection;
-  // const currentObject = scene.getMarker(objName);
-  if (!objName || draggedAxis === undefined) { return; }
+  const {draggedAxis, draggedGizmo} = glState.draggingStatus;
+  const selectedObject = glState.selectedObject;
+  if (!selectedObject || draggedAxis === undefined) { return; }
 
   switch (draggedGizmo) {
     case GizmoType.Move:
-      applyGizmoMove(objName, ev, draggedAxis);
+      applyGizmoMove(selectedObject, ev, draggedAxis);
       break;
     case GizmoType.Rotate:
-      applyGizmoRotate(objName, ev, draggedAxis);
+      applyGizmoRotate(selectedObject, ev, draggedAxis);
       break;
   }
 };
@@ -137,7 +158,7 @@ const onMarkerDragged = (ev: MouseDragEvent) => {
 const onMarkerUnclicked = () => {
   // console.log(`Unclicked axis: ${glState.selection.draggedAxis}`);
   if (glState.isDragging()) {
-    glState.selection.draggedAxis = undefined;
+    glState.draggingStatus.draggedAxis = undefined;
   }
 };
 

@@ -8,11 +8,8 @@ export * from './drawMarkers';
 export * from './getMarkerAt';
 
 export const createMarkerPosition = (mvp: mat4, modelMatrix: mat4, pos: vec3) => {
-  const resultNDC = vec3_Create();
-  transformPointByMat4(resultNDC, pos, mvp);
-
-  const position3d = vec3_Create();
-  transformPointByMat4(position3d, pos, modelMatrix);
+  const resultNDC = transformPointByMat4(vec3_Create(), pos, mvp);
+  const position3d = transformPointByMat4(vec3_Create(), pos, modelMatrix);
 
   return {
     position3d,

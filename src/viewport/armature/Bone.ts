@@ -1,4 +1,4 @@
-import {mat4, create as mat4_Create, identity, copy} from 'gl-mat4';
+import {mat4, create as mat4_Create, copy} from 'gl-mat4';
 import {vec3} from 'gl-vec3';
 import {quat} from 'gl-quat';
 import {includes} from 'lodash';
@@ -35,11 +35,10 @@ export class Bone {
     const bindMat = mat4_Create();
     const parentBone = this.getParent(bones);
 
-    if (!parentBone) {
-      identity(bindMat);
-    } else {
+    if (parentBone) {
       copy(bindMat, parentBone.data.bindMatrix);
     }
+
     return bindMat;
   }
 

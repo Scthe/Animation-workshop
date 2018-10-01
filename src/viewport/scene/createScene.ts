@@ -85,7 +85,7 @@ export const createScene = async (glState: GlState) => {
   });
 
   // camera
-  const camera = new CameraFPS(CAMERA_SETTINGS);
+  const camera = new CameraFPS(CAMERA_SETTINGS, glState.canvas);
 
   return new Scene(
     glState,

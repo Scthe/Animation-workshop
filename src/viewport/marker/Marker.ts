@@ -1,5 +1,5 @@
-import {vec3, fromValues as vec3_Create} from 'gl-vec3';
-import {vec2, fromValues as vec2_Create} from 'gl-vec2';
+import {vec3, create as vec3_Create} from 'gl-vec3';
+import {vec2, create as vec2_Create} from 'gl-vec2';
 import {Axis, hexToVec3} from 'gl-utils';
 import {Bone} from 'viewport/armature';
 import {get} from 'lodash';
@@ -9,6 +9,10 @@ import {get} from 'lodash';
 // rendered as dot in viewport, indicates e.g. selectable bone or object
 // Used also for gizmo click-handling etc.
 
+const BONE_COLOR = hexToVec3('#7a3ab9');
+export const SELECTED_BONE_COLOR = hexToVec3('#935ac6'); // not handled here
+const GIZMO_COLOR = hexToVec3('#b93a46'); // actually, will use per-axis colors;
+const DEFAULT_COLOR = hexToVec3('#4fee55'); // unused
 
 
 type MarkerOwner = Bone | Axis;
@@ -25,6 +29,8 @@ export interface MarkerPosition {
 export class Marker {
   public owner: MarkerOwner;
   public $_framePosition: MarkerPosition; // ! watch out !
+  public visible = true;
+  public clickable = true;
   private _radius?: number;
   private _color?: vec3;
 
@@ -33,8 +39,8 @@ export class Marker {
     this._radius = get(protoObj, 'radius', undefined);
     this._color = get(protoObj, 'color', undefined);
     this.$_framePosition = {
-      position3d: vec3_Create(0, 0, 0),
-      positionNDC: vec2_Create(0, 0),
+      position3d: vec3_Create(),
+      positionNDC: vec2_Create(),
     };
   }
 
@@ -64,9 +70,9 @@ export class Marker {
     }
 
     switch (this.type) {
-      case MarkerType.Bone: return hexToVec3('#823ab9');
-      case MarkerType.Gizmo: return hexToVec3('#b93a46'); // actually, will use per-axis colors
-      default: return hexToVec3('#4fee55');
+      case MarkerType.Bone: return BONE_COLOR;
+      case MarkerType.Gizmo: return GIZMO_COLOR;
+      default: return DEFAULT_COLOR;
     }
   }
 

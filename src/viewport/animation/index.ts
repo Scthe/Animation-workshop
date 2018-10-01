@@ -2,6 +2,7 @@ import {fromValues as vec3_Create} from 'gl-vec3';
 import {fromValues as quat_Create} from 'gl-quat';
 
 export * from './getNeighbourKeyframes';
+export * from './AnimTimings';
 
 // this is not displayed fps, this internal value how densly the keyframes
 // are stored.

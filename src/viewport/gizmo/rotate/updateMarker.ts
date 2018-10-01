@@ -9,8 +9,7 @@ import {createMarkerPosition, MarkerPosition} from 'viewport/marker';
  * shit 100% of the time
  */
 const norm = (vec: vec3) => {
-  const result = vec3_Create(0, 0, 0);
-  return normalize(result, vec);
+  return normalize(vec3_Create(0, 0, 0), vec);
 };
 
 /**

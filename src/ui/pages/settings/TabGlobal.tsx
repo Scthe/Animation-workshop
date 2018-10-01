@@ -7,10 +7,12 @@ import {
   Dropdown, DropdownItem,
   Tooltip, TooltipPosition
 } from 'ui/components';
-import {AppState, TimelineState, MAX_MARKER_SIZE, MAX_GIZMO_SIZE} from 'ui/state';
+import {
+  AppState, TimelineState,
+  MAX_MARKER_SIZE, MAX_GIZMO_SIZE,
+  MAX_CAMERA_MOVE_SPEED, MAX_CAMERA_ROTATE_SPEED,
+} from 'ui/state';
 
-// TODO save/load/reset
-// TODO input: max frames
 
 const QUAT_INTERPOLATIONS = [
   {name: 'LERP', value: 'LERP'},
@@ -84,8 +86,27 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
           />
         </Section>
 
-        {/* Display */}
-        <Section title='Display' icon={require('fa/faEye')}>
+        {/* Viewport */}
+        <Section title='Viewport' icon={require('fa/faEye')}>
+          {/* camera */}
+          <Tooltip text='Camera movement speed with [WSAD]' {...tooltipProps} />
+          <Slider
+            onChange={this.onCameraMoveSpeed}
+            name='camera-move-size'
+            label='Camera move speed'
+            min={MAX_CAMERA_MOVE_SPEED / 10} max={MAX_CAMERA_MOVE_SPEED}
+            value={appState.cameraMoveSpeed}
+          />
+          <Tooltip text='Camera rotate speed with mouse' {...tooltipProps} />
+          <Slider
+            onChange={this.onCameraRotateSpeed}
+            name='camera-rotate-size'
+            label='Camera rotate speed'
+            min={MAX_CAMERA_ROTATE_SPEED / 10} max={MAX_CAMERA_ROTATE_SPEED}
+            value={appState.cameraRotateSpeed}
+          />
+
+          {/* sizes */}
           <Tooltip text='Size of selection circle' {...tooltipProps} />
           <Slider
             onChange={this.onMarkerSize}
@@ -100,11 +121,11 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
             label='Gizmo size'
             min={MAX_GIZMO_SIZE / 10} max={MAX_GIZMO_SIZE} value={appState.gizmoSize}
           />
-        </Section>
 
-        <Checkbox id='debug-markers' value={appState.showDebug} onChecked={this.onDebugMarkers}>
-          Show debug markers
-        </Checkbox>
+          <Checkbox id='debug-markers' value={appState.showDebug} onChecked={this.onDebugMarkers}>
+            Show debug markers
+          </Checkbox>
+        </Section>
 
       </div>
     );
@@ -173,6 +194,16 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
   private resetPreviewRange = () => {
     const {timelineState} = this.props;
     timelineState.previewRange = [0, timelineState.frameCount];
+  }
+
+  private onCameraMoveSpeed = (nextValue: number) => {
+    const {appState} = this.props;
+    appState.cameraMoveSpeed = nextValue;
+  }
+
+  private onCameraRotateSpeed = (nextValue: number) => {
+    const {appState} = this.props;
+    appState.cameraRotateSpeed = nextValue;
   }
 
 }

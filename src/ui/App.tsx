@@ -3,13 +3,16 @@ import {Provider, observer, inject} from 'mobx-preact';
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./App.scss');
 import {Button, FaIcon} from 'ui/components';
-import {init} from 'viewport/main';
 import {appState, timelineState} from './state';
 import {Timeline} from './pages/timeline';
 import {Settings} from './pages/settings';
+import {init} from 'viewport/main'; // NOTE: order of this matters!
 
 
-// TODO tslint
+// TODO add github btn
+// TODO optimize lodash in prod build
+// TODO save/load/reset
+
 // TODO put font in cache
 // TODO responsive, or at least disallow mobile
 // TODO use mini-css-extract-plugin to extract css to file?

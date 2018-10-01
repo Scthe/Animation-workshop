@@ -21,12 +21,14 @@ import {GizmoType, AXIS_COLORS} from './index';
 
 export interface GizmoDrawOpts {
   size: number;
-  type: GizmoType;
+  gizmoType: GizmoType;
   origin: Marker; // need whole marker for rotation
+  forceDrawMarkers: boolean;
+  allowedAxis: Axis[];
+  isDragging: boolean;
 }
 
 // TODO depending on the camera position, move the gizmo points into positive/negative direction
-// TODO when drag-rotating, rotate gizmo too (OR hide alltogether OR just show axis that is beeing dragged)
 
 const ANGLE_90_DGR = toRadians(90);
 
@@ -88,9 +90,8 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
 
 const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: mat4, modelMatrix: mat4) => {
   const {scene, glState} = frameEnv;
-  // TODO set .clickable etc.
 
-  switch (opts.type) {
+  switch (opts.gizmoType) {
     case GizmoType.Move:
     case GizmoType.Scale: {
       const markerPos = updateMarker_Move(mvp, modelMatrix);
@@ -106,11 +107,19 @@ const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: 
   }
 };
 
+const getAxisStatus = (opts: GizmoDrawOpts, axis: Axis, isDragging: boolean) => {
+  const {allowedAxis, gizmoType} = opts;
+  const isAxisDraggable = allowedAxis.indexOf(axis) !== -1;
+  const markerVisible = !isDragging && isAxisDraggable && gizmoType === GizmoType.Rotate;
+  return { isAxisDraggable, markerVisible, };
+};
+
 export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   if (opts.origin.type !== MarkerType.Bone) {
     throw `Could not draw gizmo at unsupported origin (expected MarkerType.Bone)`;
   }
 
+  const {gizmoType, forceDrawMarkers, isDragging} = opts;
   const {scene, glState: {gl}} = frameEnv;
 
   const dp = new DrawParameters();
@@ -120,14 +129,21 @@ export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   frameEnv.glState.setDrawState(dp);
 
   const shader = getShader(frameEnv);
-  const {vao, indexBuffer, indexGlType, triangleCnt} = getMesh(frameEnv, opts.type);
+  const {vao, indexBuffer, indexGlType, triangleCnt} = getMesh(frameEnv, gizmoType);
 
   shader.use(gl);
   vao.bind(gl);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
   AxisList.forEach((axis: Axis) => {
-    // TODO check if axis should be visible
+    const {isAxisDraggable, markerVisible} = getAxisStatus(opts, axis, isDragging);
+    const marker = scene.getMarker(axis);
+    marker.clickable = isAxisDraggable;
+    marker.visible = markerVisible || forceDrawMarkers;
+    if (!isAxisDraggable) { // no reason to draw inactive axis
+      return;
+    }
+
     const modelMatrix = getModelMatrix(axis, frameEnv, opts);
     const mvp = scene.getMVP(modelMatrix);
 
