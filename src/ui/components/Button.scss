@@ -9,6 +9,7 @@
   }
   &.Disabled {
     background-color: darken($color-bg, 20%) !important;
+    color: $color-text !important;
   }
   &.Active {
     background-color: lighten($color-bg, 20%);

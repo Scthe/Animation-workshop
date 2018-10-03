@@ -10,6 +10,7 @@ import {
 } from 'ui/components';
 import {AppState, TimelineState} from 'ui/state';
 import {GizmoType} from 'viewport/gizmo';
+import {isAnyAxisAllowed} from 'viewport/scene';
 
 
 const TRANSFORM_SPACES = [
@@ -54,9 +55,11 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     const tfxSpace = (appState.isUseLocalSpace
       ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
 
+    const obj = appState.currentObjectData;
+
     const getGizmoProps = (type: GizmoType) => ({
       theme: ButtonTheme.Blue,
-      disabled: !appState.isGizmoAllowed(type),
+      disabled: !obj || !isAnyAxisAllowed(type, obj.constraints),
       active: appState.currentGizmo === type,
     });
 
@@ -240,13 +243,13 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
 
   /* MANIPULATORS + TRANSFORM SPACE */
-  private trySetGizmo (type: GizmoType) {
+  private trySetGizmo (gizmoType: GizmoType) {
     // we are allowed to change gizmo during playback,
     // as it is not visible anyway
     const {appState} = this.props;
-    if (appState.isGizmoAllowed(type)) {
-      // hmm.., could use attributes to skip onMove, onRotate etc.
-      appState.currentGizmo = type;
+    const obj = appState.currentObjectData;
+    if (obj && isAnyAxisAllowed(gizmoType, obj.constraints)) {
+      appState.currentGizmo = gizmoType;
     }
   }
 

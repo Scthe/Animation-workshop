@@ -3,23 +3,22 @@ import {Marker, MarkerType, SELECTED_BONE_COLOR} from './index';
 import {FrameEnv} from 'viewport/main';
 
 const getMarkerColor = (frameEnv: FrameEnv, marker: Marker) => {
-  const selectedObj = frameEnv.glState.selectedObject;
-  return selectedObj === marker.name ? SELECTED_BONE_COLOR : marker.color;
+  const selectedObj = frameEnv.selectedObject;
+  return selectedObj && selectedObj.name === marker.name ? SELECTED_BONE_COLOR : marker.color;
 };
 
 const setMarkerUniforms = (frameEnv: FrameEnv, markers: Marker[], scale: number) => {
   const {glState: {gl}, scene: {markerMeta}} = frameEnv;
   const {shader} = markerMeta;
 
-  // has to be separate expr., cause setUniforms does not check types
+  // has to be separate expr., cause setUniforms does not check types.
+  // Otherwise, it would have been legal to return {width, height} as object
   const [width, height] = frameEnv.glState.getViewport();
   setUniforms(gl, shader, {
     'g_Viewport': [width, height],
   }, true);
 
-  for (let i = 0; i < markers.length; i++) {
-    const marker = markers[i];
-
+  markers.forEach((marker, i) => {
     const posName = `g_MarkerPositions[${i}]`;
     const position = marker.$_framePosition.positionNDC;
     gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), position);
@@ -30,7 +29,7 @@ const setMarkerUniforms = (frameEnv: FrameEnv, markers: Marker[], scale: number)
     const radName = `g_MarkerRadius[${i}]`; // col/pos are vec3, this is [single number]
     const mScale = marker.type === MarkerType.Bone ? scale : 1.0;
     gl.uniform1fv(gl.getUniformLocation(shader.glId, radName), [marker.radius * mScale]);
-  }
+  });
 };
 
 

@@ -1,11 +1,11 @@
-import {requestAnimFrame, handleResize, AxisList} from 'gl-utils';
+import {requestAnimFrame, handleResize} from 'gl-utils';
 
 import {GlState} from './GlState';
 import {drawObject3d} from './drawObject3d';
 import {drawGizmo, GizmoType} from './gizmo';
 import {Marker, MarkerType, drawMarkers} from './marker';
 import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
-import {Scene, createScene} from './scene';
+import {Scene, createScene, BoneConfigEntry, getBoneConfig} from './scene';
 import {MouseHandler, MouseDragEvent} from './MouseHandler';
 import {applyGizmoMove, applyGizmoRotate} from './gizmo';
 import {AnimTimings, createAnimTimings} from './animation';
@@ -14,10 +14,10 @@ import {uiBridge, appStateGetter, appStateSetter} from '../UI_Bridge';
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
 
-// TODO connect config with viewport
 
 // TODO fix gizmo/handlers
 // TODO final glb
+// TODO gizmo should always draw on top. use stencil?
 
 
 //////////
@@ -28,6 +28,8 @@ export interface FrameEnv {
   timing: AnimTimings;
   glState: GlState;
   scene: Scene;
+  selectedObject: Marker;
+  selectedObjectCfg: BoneConfigEntry;
 }
 
 const resetGizmoMarkers = (scene: Scene) => {
@@ -37,21 +39,20 @@ const resetGizmoMarkers = (scene: Scene) => {
   });
 };
 
-const createGizmoDrawOpts = (glState: GlState) => {
-  const {draggedGizmo, draggedAxis} = glState.draggingStatus;
-  const currentObject = scene.getMarker(glState.selectedObject);
+const createGizmoDrawOpts = (frameEnv: FrameEnv) => {
+  const {glState, selectedObject} = frameEnv;
+  const {draggedGizmo} = glState.draggingStatus;
+
   const {gizmoSize, showDebug} = uiBridge.getFromUI(
     appStateGetter('gizmoSize', 'showDebug')
   );
   const isDragging = glState.isDragging();
 
-  return currentObject ? {
-    gizmoType: draggedGizmo,
+  return selectedObject ? {
     size: gizmoSize / 100, // just go with it..
-    origin: currentObject,
+    gizmoType: draggedGizmo,
+    origin: selectedObject,
     forceDrawMarkers: showDebug,
-    // TODO selectedObject.cfg.allowedAxis(draggedGizmo)
-    allowedAxis: isDragging ? [draggedAxis] : AxisList,
     isDragging,
   } : undefined;
 };
@@ -71,6 +72,16 @@ const tryChangeGizmo = (glState: GlState, scene: Scene) => {
   }
 };
 
+const getSelectedObject = (scene: Scene) => {
+  const {selectedObject} = uiBridge.getFromUI(
+    appStateGetter('selectedObject')
+  );
+  return {
+    selectedObject: scene.getMarker(selectedObject as string),
+    selectedObjectCfg: getBoneConfig(selectedObject as string),
+  };
+};
+
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
   const {camera, lamp} = scene;
@@ -79,6 +90,7 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
     timing: createAnimTimings(time),
     glState,
     scene,
+    ...getSelectedObject(scene),
   } as FrameEnv; // typecheck this pls
 
   // camera
@@ -103,7 +115,7 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
 
   // gizmo
   tryChangeGizmo(glState, scene);
-  const gizmoDrawOpts = createGizmoDrawOpts(glState);
+  const gizmoDrawOpts = createGizmoDrawOpts(frameEnv);
   if (gizmoDrawOpts) {
     drawGizmo(frameEnv, gizmoDrawOpts); // this also sets markers
   } else {
@@ -142,7 +154,11 @@ const onMarkerClicked = (marker: Marker) => {
 
 const onMarkerDragged = (ev: MouseDragEvent) => {
   const {draggedAxis, draggedGizmo} = glState.draggingStatus;
-  const selectedObject = glState.selectedObject;
+
+  const {selectedObject} = uiBridge.getFromUI(
+    appStateGetter('selectedObject')
+  );
+
   if (!selectedObject || draggedAxis === undefined) { return; }
 
   switch (draggedGizmo) {

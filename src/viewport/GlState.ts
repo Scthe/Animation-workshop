@@ -3,7 +3,6 @@ import {
   DrawParameters, applyDrawParams
 } from 'gl-utils';
 import {GizmoType} from './gizmo';
-import {uiBridge, appStateGetter} from '../UI_Bridge';
 
 // TODO add here draggedDisplacement: Keyframe for tmp. move/rotate while dragging?
 interface DraggingStatus {
@@ -61,13 +60,6 @@ export class GlState {
 
   isDragging () {
     return this.draggingStatus.draggedAxis !== undefined;
-  }
-
-  get selectedObject () {
-    const {selectedObject} = uiBridge.getFromUI(
-      appStateGetter('selectedObject')
-    );
-    return selectedObject as string;
   }
 
 }

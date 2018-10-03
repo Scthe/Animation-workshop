@@ -29,13 +29,11 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const boneData = bone.data;
   const marker = {name: bone.name} as any;
 
-  const translation = vec3_Create();
   const deltaFromAnim = getMove(marker);
-  add(translation, boneData.translation, deltaFromAnim);
+  const translation = add(vec3_Create(), boneData.translation, deltaFromAnim);
 
-  const rotation = quat_Create();
   const qAnim = getRotation(marker);
-  qMul(rotation, qAnim, boneData.rotation);
+  const rotation = qMul(quat_Create(), qAnim, boneData.rotation);
 
   const scale = 0.95; // TODO remove, ATM prevents flickering
   return createModelMatrix(translation, rotation, scale);

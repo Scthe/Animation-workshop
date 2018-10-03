@@ -16,6 +16,7 @@ import {
 } from './move/updateMarker';
 import {updateMarker as updateMarker_Rot} from './rotate/updateMarker';
 import {GizmoType, AXIS_COLORS} from './index';
+import {isAxisAllowed} from 'viewport/scene';
 // yep, 20 lines of imports.
 
 
@@ -24,7 +25,6 @@ export interface GizmoDrawOpts {
   gizmoType: GizmoType;
   origin: Marker; // need whole marker for rotation
   forceDrawMarkers: boolean;
-  allowedAxis: Axis[];
   isDragging: boolean;
 }
 
@@ -107,12 +107,12 @@ const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: 
   }
 };
 
-const getAxisStatus = (opts: GizmoDrawOpts, axis: Axis, isDragging: boolean) => {
-  const {allowedAxis, gizmoType} = opts;
-  const isAxisDraggable = allowedAxis.indexOf(axis) !== -1;
+const getAxisStatus = (frameEnv: FrameEnv, gizmoType: GizmoType, axis: Axis, isDragging: boolean) => {
+  const isAxisDraggable = isAxisAllowed(axis, gizmoType, frameEnv.selectedObjectCfg.constraints);
   const markerVisible = !isDragging && isAxisDraggable && gizmoType === GizmoType.Rotate;
   return { isAxisDraggable, markerVisible, };
 };
+
 
 export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   if (opts.origin.type !== MarkerType.Bone) {
@@ -136,7 +136,7 @@ export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
   AxisList.forEach((axis: Axis) => {
-    const {isAxisDraggable, markerVisible} = getAxisStatus(opts, axis, isDragging);
+    const {isAxisDraggable, markerVisible} = getAxisStatus(frameEnv, opts.gizmoType, axis, isDragging);
     const marker = scene.getMarker(axis);
     marker.clickable = isAxisDraggable;
     marker.visible = markerVisible || forceDrawMarkers;

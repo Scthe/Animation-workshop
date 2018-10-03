@@ -1,5 +1,6 @@
 import {observable, computed} from 'mobx';
 import {GizmoType} from 'viewport/gizmo';
+import {getBoneConfig} from 'viewport/scene';
 
 
 // consts
@@ -26,31 +27,31 @@ export class AppState {
   @observable markerSize = MAX_MARKER_SIZE / 2;
   @observable useSlerp = true;
   @observable showTimeAsSeconds = true;
-  @observable showDebug = true;
-
-  isGizmoAllowed (gizmoType: GizmoType) {
-    return gizmoType !== GizmoType.Scale;
-  }
+  @observable showDebug = false;
 
   @computed
-  get currentObject () {
-    return this.selectedObject ? {
+  get currentObjectData () {
+    const name = this.selectedObject;
+    if (!name) { return undefined; }
+
+    const cfg = getBoneConfig(name);
+
+    return {
+      name,
+      isBone: true,
+      constraints: cfg.constraints,
       hasKeyframeAtCurrentFrame: false,
-      keyframe: {
-        frameId: 0,
-        position: [0, 1, 2],
-        rotation: [0, 1, 2, 3],
-        scale: [0, 1, 2],
-      },
-      // TODO remove:
-      name: this.selectedObject,
-      isBone: true, // one of {Bone, Object3d}
-      /*constraints: {
-        position: AllowAll,
-        rotation: [Constraint.Disallow, Constraint.Allow, Constraint.Disallow],
-        scale:    DisallowAll,
-      },*/
-    } : undefined;
+      keyframe: this.getCurrentObjectKeyframe(),
+    };
+  }
+
+  private getCurrentObjectKeyframe () {
+    return {
+      frameId: 0,
+      position: [0, 1, 2],
+      rotation: [0, 1, 2, 3],
+      scale: [0, 1, 2],
+    };
   }
 
 }
