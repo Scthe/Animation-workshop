@@ -15,6 +15,7 @@ export * from './Shader';
 export * from './uniforms';
 export * from './vao';
 export * from './axis';
+export * from './shapes';
 
 // https://github.com/KhronosGroup/WebGLDeveloperTools/blob/master/src/debug/webgl-debug.js#L492
 
@@ -123,4 +124,18 @@ export const createModelMatrix = (pos: vec3, rotation: quat | mat4, scale: numbe
 
   const result = mat4_Create();
   return multiply(result, rotationMoveMat, scaleMat);
+};
+
+export const getMVP = (m: mat4, v: mat4, p: mat4) => {
+  const vp = mat4_Create();
+  const mvp = mat4_Create();
+  multiply(vp, p, v);
+  multiply(mvp, vp, m);
+  return mvp;
+};
+
+export const getDist2 = (a: vec2, b: vec2, doSqrt = false) => {
+  const delta = [a[0] - b[0], a[1] - b[1]];
+  const res = delta[0] * delta[0] + delta[1] * delta[1];
+  return doSqrt ? Math.sqrt(res) : res;
 };

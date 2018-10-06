@@ -22,28 +22,33 @@ $border: 1px solid $brown;
   box-shadow: none;
   padding: 5px 8px;
   border: $border;
+  width: 0;
+  flex-grow: 1;
 }
 
 .InputDisabled {
   background-color: #bababa;
 }
 
-%input-label {
+@mixin input-label {
   background: $label-bg;
   margin: 0;
   border: $border;
   line-height: 26px;
   text-align: center;
+  flex-shrink: 0;
+
+  svg { margin-top: 5px; } // too lazy to handle as classname prop
 }
 
 .InputPrepend {
-  @extend %input-label;
+  @include input-label;
   @include with-border-radius(left, $border-radius);
   border-right-style: none;
 }
 
 .InputAppend {
-  @extend %input-label;
+  @include input-label;
   @include with-border-radius(right, $border-radius);
   border-left-style: none;
 }

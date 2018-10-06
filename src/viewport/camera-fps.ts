@@ -1,14 +1,13 @@
 import {
   transpose,
   create as mat4_Create,
-  identity,
   translate,
   rotateX,
   rotateY,
   perspective
 } from 'gl-mat4';
-import {fromValues as vec3_Create} from 'gl-vec3';
-import {transformPointByMat4, toRadians} from '../gl-utils';
+import {vec3, fromValues as vec3_Create} from 'gl-vec3';
+import {transformPointByMat4, toRadians} from 'gl-utils';
 import {MouseDragEvent} from './MouseHandler';
 
 const KEY_FORWARD = 'W'.charCodeAt(0);
@@ -18,6 +17,8 @@ const KEY_RIGHT   = 'D'.charCodeAt(0);
 const KEY_DOWN    = 'Z'.charCodeAt(0);
 const KEY_UP      = 32; // Space, moves up
 
+const WHEEL_SENSITIVITY = 0.3;
+
 interface CameraSettings {
   fovDgr: number;
   zNear: number;
@@ -26,10 +27,11 @@ interface CameraSettings {
 
 export class CameraFPS {
   private angles = [0, 0]; // angles like in polar coords
-  private position = [0, 0, 2]; // xyz
+  private position = vec3_Create(0, 0, 2);
   private rotateSpeed = 0;
 
-  constructor (public settings: CameraSettings) {
+  constructor (public settings: CameraSettings, canvas: HTMLElement) {
+    canvas.addEventListener('wheel', this.onMouseWheel);
   }
 
   update (deltaTime: number, moveSpeed: number, rotateSpeed: number, keyState: boolean[]) {
@@ -37,17 +39,12 @@ export class CameraFPS {
 
     const speed = moveSpeed * deltaTime;
     const moveDir = this.calculateMovementDirectionFromKeys(keyState, speed);
+    this.applyMove(moveDir);
+  }
 
-    if (moveDir[0] !== 0 || moveDir[1] !== 0 || moveDir[2] !== 0) {
-      let rotationMat = this.getRotationMat();
-      rotationMat = transpose(rotationMat, rotationMat);
-      let moveDirLocal = vec3_Create(0, 0, 0);
-      moveDirLocal = transformPointByMat4(moveDirLocal, moveDir, rotationMat);
-
-    for (let i = 0; i < this.position.length; i++) {
-        this.position[i] += moveDirLocal[i];
-      }
-    }
+  private onMouseWheel = (e: any) => {
+    const delta = Math.sign(e.deltaY) * WHEEL_SENSITIVITY;
+    this.applyMove(vec3_Create(0, 0, delta));
   }
 
   private calculateMovementDirectionFromKeys (keyState: boolean[], speed: number) {
@@ -61,15 +58,23 @@ export class CameraFPS {
     return moveDir;
   }
 
+  private applyMove (moveDir: vec3) {
+    if (moveDir[0] !== 0 || moveDir[1] !== 0 || moveDir[2] !== 0) {
+      const rotationMat = transpose(mat4_Create(), this.getRotationMat());
+      const moveDirLocal = transformPointByMat4(vec3_Create(0, 0, 0), moveDir, rotationMat);
+
+
+      for (let i = 0; i < 3; i++) {
+        this.position[i] += moveDirLocal[i];
+      }
+    }
+  }
+
   getViewMatrix () {
     const rotMat = this.getRotationMat();
     const pos = this.getPosition();
 
-    let result = mat4_Create();
-    identity(result);
-    translate(result, rotMat, [-pos[0], -pos[1], -pos[2]]);
-
-    return result;
+    return translate(mat4_Create(), rotMat, [-pos[0], -pos[1], -pos[2]]);
   }
 
   private getRotationMat () {

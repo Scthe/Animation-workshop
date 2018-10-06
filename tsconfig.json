@@ -15,7 +15,8 @@
     "baseUrl": "./src",
     "paths": {
       "ui/*": ["./ui/*"],
-      "viewport/*": ["./viewport/*"]
+      "viewport/*": ["./viewport/*"],
+      "gl-utils/*": ["./gl-utils/*"]
     }
   },
   "include": [

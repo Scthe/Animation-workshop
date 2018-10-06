@@ -1,6 +1,7 @@
 import {GltfAsset} from 'gltf-loader-ts';
-import {Shader, Vao, VaoAttrInit, BYTES} from '../gl-utils';
-import {ObjectGeometry} from './GlState';
+import {Shader, Vao, VaoAttrInit, BYTES} from 'gl-utils';
+import {reinterpretRawBytes} from './_utils';
+import {Mesh} from '../index';
 
 /*
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray
@@ -10,16 +11,6 @@ import {ObjectGeometry} from './GlState';
  *   Webgl shaders do no accept ints/shorts. We have to convert all to floats.
  */
 
-/**
- * Reinterpret raw data from binary part of gltf. Returned array does not have to have same length!
- * e.g (256 of u8) make (128 of u16) or (64 of u32) etc.
- */
-const reinterpretRawBytes = (srcBuffer: Uint8Array, TargetType: Function, targetTypeBytes: number) => {
-  const {buffer, byteOffset, length} = srcBuffer;
-  const newLength = length / targetTypeBytes; // e.g. (256 of u8) make (128 of u16) etc.
-  return new (TargetType as any)(buffer, byteOffset, newLength) as any;
-};
-
 const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number) => {
   const accessor = asset.gltf.accessors[accessorId];
   const rawData = await asset.accessorData(accessorId);
@@ -27,8 +18,7 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
   // componentType: 5120 | 5121 | 5122 | 5123 | 5125 | 5126 | number
   switch (accessor.componentType) {
     case gl.FLOAT: // 5126
-      // console.log(`PRINT_REINTERPRET: ${accessor.name}`, reinterpretRawBytes(rawData, Float32Array, BYTES.FLOAT));
-      return rawData; // will be accepted no problem
+      return rawData; // will be accepted no problem - just raw data
 
     case gl.UNSIGNED_SHORT: { // 5123
       const dataAsU16 = reinterpretRawBytes(rawData, Uint16Array, BYTES.SHORT);
@@ -57,23 +47,24 @@ const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: 
   }
 
   const dataRaw = await asset.bufferViewData(accessor.bufferView);
-  // console.log(`INDEX_BUFFER`, dataRaw);
   const buffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, dataRaw, gl.STATIC_DRAW);
 
   return {
-    type: gl.UNSIGNED_BYTE,
-    buffer,
+    indexGlType: gl.UNSIGNED_BYTE,
+    indexBuffer: buffer,
     triangleCnt: accessor.count / 3,
   };
 };
 
 type GltfAttrToShaderAttrMap = {[gltfAttrKey: string]: string};
 
-export const readObject = async (gl: Webgl, asset: GltfAsset, shader: Shader, meshName: string, attrMap: GltfAttrToShaderAttrMap) => {
-  const meshDesc = asset.gltf.meshes.filter(e => e.name === meshName)[0];
-  if (!meshDesc) { throw `Could not find lamp object (looked for ${meshName})`; }
+export const loadMesh = async (
+  gl: Webgl, shader: Shader, asset: GltfAsset, meshIdx: number,
+  attrMap: GltfAttrToShaderAttrMap
+) => {
+  const meshDesc = asset.gltf.meshes[meshIdx];
 
   // each attribute refers to accessor
   const mesh = meshDesc.primitives[0]; // might as well
@@ -82,7 +73,7 @@ export const readObject = async (gl: Webgl, asset: GltfAsset, shader: Shader, me
 
   for (let gltfAttrName in attrMap) {
     if (!(gltfAttrName in attributes)) {
-      throw `Could not find ${meshName}.${gltfAttrName} attribute in glft file`;
+      throw `Could not find ${meshDesc.name}.${gltfAttrName} attribute in glft file`;
     }
 
     const shaderAttrName = attrMap[gltfAttrName];
@@ -92,5 +83,5 @@ export const readObject = async (gl: Webgl, asset: GltfAsset, shader: Shader, me
 
   const vao = new Vao(gl, shader, attrInitOpts);
   const indexBuffer = await createIndexBuffer(gl, asset, mesh.indices);
-  return new ObjectGeometry(vao, indexBuffer.type, indexBuffer.buffer, indexBuffer.triangleCnt);
+  return { vao, ...indexBuffer } as Mesh;
 };

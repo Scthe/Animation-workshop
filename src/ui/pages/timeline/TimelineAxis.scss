@@ -32,9 +32,6 @@ $preview-border: rgba($brown, 0.4);
     padding-left: 4px;
     font-size: 10px;
     z-index: 500;
-    background: linear-gradient(
-      rgba($body-bg, 0.7),
-      rgba($body-bg, 0.0));
   }
 
   &.TickKeyframe {

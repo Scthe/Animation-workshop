@@ -10,6 +10,7 @@ import {TabObject} from './TabObject';
 
 const TABS = [
   {name: 'Object', icon: require('fa/faCube')},
+  // {name: 'Keyframe', icon: require('fa/faKey')}, // Object is general (material/light etc.), keyframe is interpolated
   {name: 'Global', icon: require('fa/faGlobeAfrica')},
 ];
 

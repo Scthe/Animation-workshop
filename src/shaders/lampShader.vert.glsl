@@ -8,15 +8,13 @@ attribute vec3 a_Position;
 attribute vec4 a_BoneIDs;
 attribute vec4 a_Weights; // always (1,0,0,0), cause only 1 bone influences ATM
 
-uniform mat4 g_Pmatrix;
-uniform mat4 g_Vmatrix;
-uniform mat4 g_Mmatrix;
+uniform mat4 g_MVP;
 uniform mat4 g_BoneTransforms[MAX_BONE_COUNT];
 
 varying vec3 vColor;
 
 void main() {
-   vColor = vec3(a_BoneIDs.x) / 3.0;
+   vColor = vec3(0.0, 0.0, 0.2) + (vec3(a_BoneIDs.x) / 3.0);
 
    vec4 localPos = vec4(0.0);
    vec4 localNormal = vec4(0.0);
@@ -29,6 +27,5 @@ void main() {
      // localNormal += worldNormal * a_Weights[i];
    }
 
-   mat4 mvp = g_Pmatrix * g_Vmatrix * g_Mmatrix;
-   gl_Position = mvp * localPos; // TODO divide by w
+   gl_Position = g_MVP * localPos; // TODO divide by w
 }

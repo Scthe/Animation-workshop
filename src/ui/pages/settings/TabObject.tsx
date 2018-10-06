@@ -1,34 +1,39 @@
 import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
-import {get, set, has} from 'lodash';
+import {get} from 'lodash';
 import {classnames} from 'ui/utils';
 const Styles = require('./TabObject.scss');
+
 import {Section, Input, InputValidate, FaIcon} from 'ui/components';
 import {AppState} from 'ui/state';
+import {isAxisAllowed} from 'viewport/scene';
+import {GizmoType} from 'viewport/gizmo';
+import {Axis} from 'gl-utils';
+
 
 // TODO add material settings
 // TODO add light settings
+// TODO when overflow, make only subpanel scrollable, not whole <Settings>
 
-const CHANGE_EPS = 0.001;
+interface TransformInputProps {
+  type?: GizmoType;
+  axis: Axis;
+  name: string;
+  disabled?: boolean;
+}
 
 const POSITION_FIELDS = [
-  {prepend: 'x', className: Styles.InputAxisX, name: 'position[0]'},
-  {prepend: 'y', className: Styles.InputAxisY, name: 'position[1]'},
-  {prepend: 'z', className: Styles.InputAxisZ, name: 'position[2]'},
+  {type: GizmoType.Move, axis: Axis.AxisX, name: 'position[0]'},
+  {type: GizmoType.Move, axis: Axis.AxisY, name: 'position[1]'},
+  {type: GizmoType.Move, axis: Axis.AxisZ, name: 'position[2]'},
 ];
 
 const ROTATION_FIELDS = [
-  {prepend: 'x', className: Styles.InputAxisX, name: 'rotation[0]', disabled: true},
-  {prepend: 'y', className: Styles.InputAxisY, name: 'rotation[1]', disabled: true},
-  {prepend: 'z', className: Styles.InputAxisZ, name: 'rotation[2]', disabled: true},
-  {prepend: 'w', className: Styles.InputAxisW, name: 'rotation[3]', disabled: true},
+  {type: GizmoType.Rotate, axis: Axis.AxisX, name: 'rotation[0]', disabled: true},
+  {type: GizmoType.Rotate, axis: Axis.AxisY, name: 'rotation[1]', disabled: true},
+  {type: GizmoType.Rotate, axis: Axis.AxisZ, name: 'rotation[2]', disabled: true},
+  {type: GizmoType.Rotate, axis: undefined , name: 'rotation[3]', disabled: true},
 ];
-
-/*const SCALE_FIELDS = [
-  {prepend: 'x', className: Styles.InputAxisX, name: 'scale[0]'},
-  {prepend: 'y', className: Styles.InputAxisY, name: 'scale[1]'},
-  {prepend: 'z', className: Styles.InputAxisZ, name: 'scale[2]'},
-];*/
 
 
 interface TabObjectProps {
@@ -43,10 +48,14 @@ export class TabObject extends Component<TabObjectProps, any> {
 
   public render () {
     const {appState} = this.props;
-    const obj = appState.currentObject;
+    const obj = appState.currentObjectData;
 
     if (!obj) {
-      return <p>No object selected?</p>;
+      return (
+        <div className={this.getClasses(false)}>
+          <p className={Styles.NoObjectSelected}>No object selected</p>
+        </div>
+      );
     }
 
     return (
@@ -69,24 +78,17 @@ export class TabObject extends Component<TabObjectProps, any> {
 
         <Section title='Position' icon={require('fa/faArrowsAlt')}>
           {POSITION_FIELDS.map(fieldMeta =>
-            this.renderInput(obj, fieldMeta, this.onPosRotScaleChange))}
+            this.renderInput(obj, fieldMeta, this.onTransformChange))}
         </Section>
 
-        <Section title='Rotation' icon={require('fa/faUndo')} initFolded={true}>
+        {/* initFolded={true} */}
+        <Section title='Rotation' icon={require('fa/faUndo')}>
           <p className={Styles.QuaternionWarning}>
             Rotation is represented as quaternion. Any changes would be ill-advised
           </p>
           {ROTATION_FIELDS.map(fieldMeta =>
-            this.renderInput(obj, fieldMeta, this.onPosRotScaleChange))}
+            this.renderInput(obj, fieldMeta, this.onTransformChange))}
         </Section>
-
-        {/*
-          TODO when overflow, make only subpanel scrollable, not whole <Settings>
-        <Section title='Scale' icon={require('fa/faExpand')}>
-          {SCALE_FIELDS.map(fieldMeta =>
-            this.renderInput(obj, fieldMeta, this.onPosRotScaleChange))}
-        </Section>
-         */}
 
       </div>
     );
@@ -101,10 +103,27 @@ export class TabObject extends Component<TabObjectProps, any> {
     );
   }
 
-  private renderInput = (obj: any, fieldMeta: any, cb: Function) => {
+  private renderInput = (obj: any, fieldMeta: TransformInputProps, cb: Function) => {
+    const {type, axis, name, disabled} = fieldMeta;
+
+    let prepend, className;
+    switch (axis) {
+      case Axis.AxisX: prepend = 'x'; className = Styles.InputAxisX; break;
+      case Axis.AxisY: prepend = 'y'; className = Styles.InputAxisY; break;
+      case Axis.AxisZ: prepend = 'z'; className = Styles.InputAxisZ; break;
+      default:         prepend = 'w'; className = Styles.InputAxisW; break;
+    }
+
+    const {constraints} = obj;
+    const locked = disabled || !isAxisAllowed(axis, type, constraints);
+
     return (
       <Input
-        {...fieldMeta}
+        prepend={prepend}
+        append={locked ? <FaIcon svg={require('fa/faBan')} /> : undefined}
+        className={className}
+        name={name}
+        disabled={locked}
         value={get(obj, `keyframe.${fieldMeta.name}`)}
         onInput={cb}
         validate={InputValidate.NumberFloat}
@@ -113,20 +132,26 @@ export class TabObject extends Component<TabObjectProps, any> {
   }
 
   private updateKeyframeProperty (propName: string, value: number) {
+    // method to update position[0], rotation[2], scale[1] etc.
     if (isNaN(value)) { return; }
 
+    /*
     const {appState} = this.props;
-    const obj = appState.currentObject;
+    const obj = appState.selectedObject;
     const keyframe = { ...obj.keyframe };
+    if (!has(keyframe, propName)) { return; }
 
     const valPrev = get(keyframe, propName);
-    if (has(keyframe, propName) && Math.abs(valPrev - value) > CHANGE_EPS) {
+    const changedEnough = Math.abs(valPrev - value) > CHANGE_EPS;
+    if (changedEnough) {
       set(keyframe, propName, value);
       console.log(`SET (${propName}=${value}) will have: `, keyframe);
     }
+    */
+    console.log(`SET (${propName}=${value}) will have: `);
   }
 
-  private onPosRotScaleChange = (nextVal: string, e: any) => {
+  private onTransformChange = (nextVal: string, e: any) => {
     const propName = e.target.name;
     const val = parseFloat(nextVal);
     this.updateKeyframeProperty(propName, val);

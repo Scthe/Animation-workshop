@@ -1,22 +1,20 @@
-import {NDCtoPixels} from '../../gl-utils';
-import {GlState} from '../GlState';
-import {Marker, getMarkerRadius} from './index';
+import {vec2} from 'gl-vec2';
+import {NDCtoPixels, getDist2} from 'gl-utils';
+import {Marker} from './index';
 
 
-export const getMarkerAt = (glState: GlState, pixelX: number, pixelY: number) => {
-  // console.log(`Clicked (${pixelX}, ${pixelY})`);
-  const {width, height} = glState.getViewport();
-  const markers = glState.getMarkers();
+const getMarkerPositionPx = (viewport: number[], marker: Marker) => {
+  const {positionNDC} = marker.$_framePosition;
+  return NDCtoPixels(positionNDC, viewport[0], viewport[1], true);
+};
 
-  const wasClicked = (marker: Marker, i: number) => {
-    const {positionNDC} = marker.position;
-    const radius = getMarkerRadius(marker);
-    const [posX, posY] = NDCtoPixels(positionNDC, width, height, true);
-    const delta = [pixelX - posX, pixelY - posY];
-    const dist2 = delta[0] * delta[0] + delta[1] * delta[1];
-    // console.log(`Marker[${i}] (x=${posX}, y=${posY}) dist: ${Math.sqrt(dist2)}`);
-    return dist2 < (radius * radius);
+export const getMarkerAt = (viewport: number[], markers: Marker[], pixel: vec2) => {
+  const wasClicked = (marker: Marker) => {
+    const markerPosPx = getMarkerPositionPx(viewport, marker);
+    const dist2 = getDist2(markerPosPx, pixel);
+    const r = marker.radius;
+    return marker.clickable && dist2 < (r * r);
   };
 
-  return markers.filter(wasClicked)[0];
+  return markers.find(wasClicked);
 };

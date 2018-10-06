@@ -3,13 +3,16 @@ import {Provider, observer, inject} from 'mobx-preact';
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./App.scss');
 import {Button, FaIcon} from 'ui/components';
-import {init} from 'viewport/main';
 import {appState, timelineState} from './state';
 import {Timeline} from './pages/timeline';
 import {Settings} from './pages/settings';
+import {init} from 'viewport/main'; // NOTE: order of this matters!
 
 
-// TODO tslint
+// TODO add github btn
+// TODO optimize lodash in prod build
+// TODO save/load/reset
+
 // TODO put font in cache
 // TODO responsive, or at least disallow mobile
 // TODO use mini-css-extract-plugin to extract css to file?
@@ -20,8 +23,8 @@ import {Settings} from './pages/settings';
 //       to <canvas> and app may crash. (Though probably
 //       just context lost)
 
-const initViewport = () => {
-  init()
+const initViewport = (canvas: HTMLCanvasElement) => {
+  init(canvas)
     .then((onDraw: Function) => {
       onDraw(0);
     })
@@ -55,6 +58,7 @@ interface AppState {
 @observer
 export class App extends Component<any, AppState> {
 
+  private canvasRef = createRef();
   private timelineRef = createRef();
 
   state = {
@@ -62,7 +66,7 @@ export class App extends Component<any, AppState> {
   };
 
   public componentDidMount () {
-    initViewport();
+    initViewport(this.canvasRef.current);
 
     const timelineEl = this.timelineRef.current;
     if (!timelineEl) { throw 'There were problems getting ref for <Timeline>'; }
@@ -84,7 +88,7 @@ export class App extends Component<any, AppState> {
       <div className={this.getClasses()}>
 
         <div className={Styles.CanvasWrapper}>
-          <canvas id='anim-canvas' className={Styles.AnimCanvas} />
+          <canvas id='anim-canvas' className={Styles.AnimCanvas} ref={this.canvasRef} />
         </div>
 
         <Provider appState={appState} timelineState={timelineState}>
