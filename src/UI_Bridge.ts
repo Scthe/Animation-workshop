@@ -1,6 +1,6 @@
 import {Marker} from './viewport/marker';
-import {vec3, create as vec3_Create, add as vAdd} from 'gl-vec3';
-import {quat, create as quat_Create, multiply as qMul} from 'gl-quat';
+import {vec3, create as vec3_Create, copy as vCopy} from 'gl-vec3';
+import {quat, create as quat_Create, copy as qCopy} from 'gl-quat';
 
 ////////////////////
 /// KEYFRAME STORAGE
@@ -28,7 +28,8 @@ const getKeyframe = (objName: string) => {
 
 export const addMove = (objName: string, moveVec: vec3) => {
   const keyframe = getKeyframe(objName);
-  vAdd(keyframe.translation, keyframe.translation, moveVec);
+  // vAdd(keyframe.translation, keyframe.translation, moveVec);
+  vCopy(keyframe.translation, moveVec);
 };
 
 export const getMove = (marker: Marker) => {
@@ -41,7 +42,8 @@ export const getMove = (marker: Marker) => {
 
 export const addRotation = (objName: string, rotateQuat: quat) => {
   const keyframe = getKeyframe(objName);
-  qMul(keyframe.rotation, keyframe.rotation, rotateQuat);
+  // qMul(keyframe.rotation, keyframe.rotation, rotateQuat);
+  qCopy(keyframe.rotation, rotateQuat);
 };
 
 export const getRotation = (marker: Marker) => {

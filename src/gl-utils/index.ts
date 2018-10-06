@@ -1,5 +1,6 @@
-import {fromValues as vec3_Create, vec3} from 'gl-vec3';
-import {fromValues as vec2_Create, vec2} from 'gl-vec2';
+import {fromValues as vec4_Create, dot as dot4} from 'gl-vec4';
+import {vec3, fromValues as vec3_Create, create as vec3_0, normalize, subtract} from 'gl-vec3';
+import {vec2, fromValues as vec2_Create} from 'gl-vec2';
 import {quat} from 'gl-quat';
 import {
   mat4, create as mat4_Create,
@@ -61,26 +62,19 @@ export const requestAnimFrame = ((window: any) => {
 
 export const toRadians = (degrees: number) => degrees * Math.PI / 180;
 
-const dot = (a: vec3, b: vec3) => {
-  return (
-    a[0] * b[0] +
-    a[1] * b[1] +
-    a[2] * b[2]);
-};
-
 export const transformPointByMat4 = (out: vec3, inVec_: vec3, m: mat4) => {
-  const inVec = vec3_Create(inVec_[0], inVec_[1], inVec_[2]); // prevent aliasing
-  const col1 = vec3_Create(m[0], m[4], m[8] );
-  const col2 = vec3_Create(m[1], m[5], m[9] );
-  const col3 = vec3_Create(m[2], m[6], m[10]);
-  const col4 = vec3_Create(m[3], m[7], m[11]);
+  const inVec = vec4_Create(inVec_[0], inVec_[1], inVec_[2], 1.0); // prevent aliasing
+  const col1 = vec4_Create(m[0], m[4], m[8] , m[12] );
+  const col2 = vec4_Create(m[1], m[5], m[9] , m[13] );
+  const col3 = vec4_Create(m[2], m[6], m[10], m[14]);
+  const col4 = vec4_Create(m[3], m[7], m[11], m[15]);
 
-  let w = dot(inVec, col4) + m[15];
-  w = w === 0 ? 1.0 : w;
+  let w = dot4(inVec, col4);
+  w = w === 0 ? 0.0001 : w; // prevent divide by 0
 
-  out[0] = (dot(inVec, col1) + m[12]) / w;
-  out[1] = (dot(inVec, col2) + m[13]) / w;
-  out[2] = (dot(inVec, col3) + m[14]) / w;
+  out[0] = dot4(inVec, col1) / w;
+  out[1] = dot4(inVec, col2) / w;
+  out[2] = dot4(inVec, col3) / w;
   return out;
 };
 
@@ -139,3 +133,5 @@ export const getDist2 = (a: vec2, b: vec2, doSqrt = false) => {
   const res = delta[0] * delta[0] + delta[1] * delta[1];
   return doSqrt ? Math.sqrt(res) : res;
 };
+
+export const subtractNorm = (a: vec3, b: vec3) => normalize(vec3_0(), subtract(vec3_0(), a, b));

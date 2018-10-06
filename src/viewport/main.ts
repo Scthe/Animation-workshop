@@ -155,18 +155,28 @@ const onMarkerClicked = (marker: Marker) => {
 const onMarkerDragged = (ev: MouseDragEvent) => {
   const {draggedAxis, draggedGizmo} = glState.draggingStatus;
 
-  const {selectedObject} = uiBridge.getFromUI(
-    appStateGetter('selectedObject')
-  );
+  const frameEnv = {
+    timing: undefined, // no timing for handler - use mouse delta
+    glState,
+    scene,
+    ...getSelectedObject(scene),
+  } as FrameEnv; // typecheck this pls
 
-  if (!selectedObject || draggedAxis === undefined) { return; }
+  if (!frameEnv.selectedObject || draggedAxis === undefined) {
+    return;
+  }
+
+  const dragEv = {
+    mouseEvent: ev,
+    axis: draggedAxis,
+  };
 
   switch (draggedGizmo) {
     case GizmoType.Move:
-      applyGizmoMove(selectedObject, ev, draggedAxis);
+      applyGizmoMove(frameEnv, dragEv);
       break;
     case GizmoType.Rotate:
-      applyGizmoRotate(selectedObject, ev, draggedAxis);
+      applyGizmoRotate(frameEnv, dragEv);
       break;
   }
 };
