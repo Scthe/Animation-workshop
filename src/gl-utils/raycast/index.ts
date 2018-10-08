@@ -33,7 +33,7 @@ export const generateRayFromCamera = (camera: CameraDesc, mousePosPx: vec2) => {
 
   const vpInverse = invert(mat4_Create(), vp);
   const p0 = vec3_Create(mousePosNDC[0], mousePosNDC[1], 0); // zMin = 0
-  const p1 = vec3_Create(mousePosNDC[0], mousePosNDC[1], 1); // zMax = 1
+  const p1 = vec3_Create(mousePosNDC[0], mousePosNDC[1], 1); // zMax = 1, does not matter, just get `dir`
   const rayOrigin = transformPointByMat4(vec3_0(), p0, vpInverse);
   const rayEnd    = transformPointByMat4(vec3_0(), p1, vpInverse);
 
@@ -59,16 +59,16 @@ export interface Plane {
   d: number;
 }
 
-/** Assuming infinte plane, get intersection, where ray crosses the plane. returns t for ray */
+/**
+ * Assuming infinte plane, get intersection, where ray crosses the plane. returns t for ray
+ * @see https://stackoverflow.com/questions/23975555/how-to-do-ray-plane-intersection
+ * @see https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld017.htm
+ */
 export const planeRayIntersectionDistance = (plane: Plane, ray: Ray) => {
   const nom = plane.d + dot(ray.origin, plane.normal);
   const denom = dot(ray.dir, plane.normal); // project to get how fast we closing in
   return -nom / denom;
 };
-/*console.log(planeRayIntersection(
-{normal: vec3_Create(0, 0, -1), d: 0},
-{origin: vec3_Create(0, 0, 1), dir: vec3_Create(0, 0, -1)}, // TODO normalize!
-));*/
 
 /** Assuming infinte plane, get intersection, where ray crosses the plane. returns 3d point */
 export const planeRayIntersection = (plane: Plane, ray: Ray) => {

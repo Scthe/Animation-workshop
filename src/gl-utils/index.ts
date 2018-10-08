@@ -61,16 +61,17 @@ export const requestAnimFrame = ((window: any) => {
 })(window);
 
 export const toRadians = (degrees: number) => degrees * Math.PI / 180;
+export const toDegrees = (radians: number) => radians / Math.PI * 180;
 
-export const transformPointByMat4 = (out: vec3, inVec_: vec3, m: mat4) => {
+export const transformPointByMat4 = (out: vec3, inVec_: vec3, m: mat4, ignoreW = false) => {
   const inVec = vec4_Create(inVec_[0], inVec_[1], inVec_[2], 1.0); // prevent aliasing
   const col1 = vec4_Create(m[0], m[4], m[8] , m[12] );
   const col2 = vec4_Create(m[1], m[5], m[9] , m[13] );
   const col3 = vec4_Create(m[2], m[6], m[10], m[14]);
   const col4 = vec4_Create(m[3], m[7], m[11], m[15]);
 
-  let w = dot4(inVec, col4);
-  w = w === 0 ? 0.0001 : w; // prevent divide by 0
+  let w = ignoreW ? 1.0 : dot4(inVec, col4);
+  if (Math.abs(w) < 0.0001) { w = 0.0001; } // prevent divide by 0
 
   out[0] = dot4(inVec, col1) / w;
   out[1] = dot4(inVec, col2) / w;
@@ -113,19 +114,14 @@ export const createModelMatrix = (pos: vec3, rotation: quat | mat4, scale: numbe
     multiply(rotationMoveMat, moveMat, rotation);
   }
 
-  const scaleMat = mat4_Create();
-  fromScaling(scaleMat, vec3_Create(scale, scale, scale));
+  const scaleMat = fromScaling(mat4_Create(), vec3_Create(scale, scale, scale));
 
-  const result = mat4_Create();
-  return multiply(result, rotationMoveMat, scaleMat);
+  return multiply(mat4_Create(), rotationMoveMat, scaleMat);
 };
 
 export const getMVP = (m: mat4, v: mat4, p: mat4) => {
-  const vp = mat4_Create();
-  const mvp = mat4_Create();
-  multiply(vp, p, v);
-  multiply(mvp, vp, m);
-  return mvp;
+  const vp = multiply(mat4_Create(), p, v);
+  return multiply(mat4_Create(), vp, m);
 };
 
 export const getDist2 = (a: vec2, b: vec2, doSqrt = false) => {
@@ -135,3 +131,25 @@ export const getDist2 = (a: vec2, b: vec2, doSqrt = false) => {
 };
 
 export const subtractNorm = (a: vec3, b: vec3) => normalize(vec3_0(), subtract(vec3_0(), a, b));
+
+/*
+export const getAxesFromRotMatrix = (rotMat: mat3) => {
+  // TODO or just multiply rot matrix by [0,1,0] etc?
+  const createAxis = (idxA: number, idxB: number, idxC: number) => {
+    const v = vec3_Create(rotMat[idxA], rotMat[idxB], rotMat[idxC]);
+    return normalize(vec3_0(), v);
+  };
+
+  const axes = [
+    createAxis(0, 1, 2),
+    createAxis(3, 4, 5),
+    createAxis(6, 7, 8),
+  ];
+  const axes2 = [
+    createAxis(0, 3, 6),
+    createAxis(1, 4, 7),
+    createAxis(2, 5, 8),
+  ];
+  return axes2;
+};
+*/

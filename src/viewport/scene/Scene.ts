@@ -1,9 +1,9 @@
-import {Shader, Vao, getMVP, Axis} from 'gl-utils';
+import {Shader, Vao, getMVP, Axis, hexToVec3} from 'gl-utils';
 import {Armature} from 'viewport/armature';
 import {CameraFPS} from 'viewport/camera-fps';
-import {mat4} from 'gl-mat4';
+import {mat4, create as mat4_Create} from 'gl-mat4';
 import {GlState} from 'viewport/GlState';
-import {Marker, MarkerPosition} from 'viewport/marker';
+import {Marker, MarkerPosition, createMarkerPosition} from 'viewport/marker';
 // import {BoneConfigEntry} from './config';
 
 export interface Mesh {
@@ -35,6 +35,15 @@ interface GizmoMeta {
   markers: Marker[]; // only 3, but no Array<Marker, 3> in TS
 }
 
+// debug drag system
+interface DebugMarkers {
+  axis: Marker[];
+  dragStart: Marker;
+  dragNow: Marker;
+  dragNowOnPlane: Marker;
+}
+const DEBUG_AXIS_MARKERS_CNT = 10;
+
 
 /*
 contains:
@@ -44,6 +53,8 @@ contains:
 */
 export class Scene {
 
+  public readonly debugMarkers = {} as DebugMarkers;
+
   constructor (
     public readonly glState: GlState,
     public readonly camera: CameraFPS,
@@ -51,7 +62,20 @@ export class Scene {
     public readonly lamp: Object3d,
     public readonly markerMeta: MarkerMeta,
     public readonly gizmoMeta: GizmoMeta,
-  ) {}
+  ) {
+    const hd = this.debugMarkers;
+    const opts = ({ radius: 10, visible: true, clickable: false, color: hexToVec3('#eec64f')});
+    hd.dragStart      = new Marker(opts);
+    hd.dragNow        = new Marker(opts);
+    hd.dragNowOnPlane = new Marker(opts);
+
+    hd.axis = [] as Marker[];
+    for (let i = 0; i < DEBUG_AXIS_MARKERS_CNT; i++) {
+      const mark = new Marker({ radius: 2, visible: true, clickable: false, });
+      mark.$_framePosition.position3d[0] = -999; // hide
+      hd.axis.push(mark);
+    }
+  }
 
   getMVP (modelMatrix: mat4) {
     const [width, height] = this.glState.getViewport();
@@ -67,6 +91,7 @@ export class Scene {
     return [
       ...this.lamp.bones.map(b => b.marker),
       ...this.gizmoMeta.markers,
+      ...this.getDebugMarkers(),
     ];
   }
 
@@ -93,6 +118,26 @@ export class Scene {
     }
 
     return undefined;
+  }
+
+  updateDebugMarkers () {
+    const ident = mat4_Create();
+    const vpMat = this.getMVP(ident);
+
+    this.getDebugMarkers().forEach(m => {
+      const pos = m.$_framePosition.position3d;
+      // no, it will not override position3d (will return same)
+      m.$_framePosition = createMarkerPosition(vpMat, ident, pos);
+    });
+  }
+
+  private getDebugMarkers () {
+    return [
+      ...this.debugMarkers.axis,
+      this.debugMarkers.dragStart,
+      this.debugMarkers.dragNow,
+      this.debugMarkers.dragNowOnPlane,
+    ];
   }
 
 }

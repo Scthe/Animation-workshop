@@ -27,7 +27,7 @@ const SHADERS = {
 };
 const GLTF_URL = require('assets/TestScene.glb');
 const LAMP_ROOT_NODE = 'SkeletonTest_rig';
-const MARKER_VAO_SIZE = 255;
+const MARKER_VAO_SIZE = 256; // see also MAX_MARKERS in marker.vert.glsl
 
 
 const getMeshNode = (asset: GltfAsset, rootNodeName: string) => {

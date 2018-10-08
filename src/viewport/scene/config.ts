@@ -29,7 +29,7 @@ const boneConfigs = [
     name: 'SkeletonTest_rig_B_1',
     keyframe0: POS_ROT_SCALE_0,
     constraints: {
-      position: allowOnly(Axis.AxisY),
+      position: ALLOW_ALL,
       rotation: allowOnly(Axis.AxisY),
       scale:    DISALLOW_ALL,
     },
@@ -39,7 +39,7 @@ const boneConfigs = [
     name: 'SkeletonTest_rig_B_2',
     keyframe0: POS_ROT_SCALE_0,
     constraints: {
-      position: DISALLOW_ALL,
+      position: ALLOW_ALL,
       rotation: allowOnly(Axis.AxisY),
       scale:    DISALLOW_ALL,
     },

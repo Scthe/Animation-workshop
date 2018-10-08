@@ -18,6 +18,7 @@ const CAMERA_ROTATE_SPEED = 0.025 / 6;
 // TODO fix gizmo/handlers
 // TODO final glb
 // TODO gizmo should always draw on top. use stencil?
+// TODO when looking behind, the markers are still visible
 
 
 //////////
@@ -124,6 +125,7 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
 
   // markers
   updateArmatureMarkers(scene, lamp);
+  scene.updateDebugMarkers();
   const {markerSize} = uiBridge.getFromUI(
     appStateGetter('markerSize')
   );

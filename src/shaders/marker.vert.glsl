@@ -2,7 +2,7 @@ precision mediump float;
 
 #pragma glslify: getFullscreenPos = require('./_fullscreenQuad.vert.glsl')
 
-#define MAX_MARKERS (10)
+#define MAX_MARKERS (32)
 const int VERTICES_PER_MARKER = 6;
 
 attribute float a_VertexId_f;

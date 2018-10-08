@@ -55,18 +55,6 @@ const getAxisMatrix = (axis: Axis) => {
   }
 };
 
-/**
- * get bone matrix for current frame
- * It gives us correct position + rotation, just a couple things to fix later
- * (it can get funny if boneMat has scale build-in. oh, well!)
- */
-const getBoneMatrix = (marker: Marker) => {
-  const bone = marker.owner as Bone;
-  const boneMat = bone.$_frameCache;
-  const {bindMatrix} = bone.data;
-  return multiply(mat4_Create(), boneMat, bindMatrix);
-};
-
 const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   // NOTE: don't try to read this function, just assume it is correct.
   //       There is limited number of permutations for matrix multiply order,
@@ -81,7 +69,10 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
   const scaleMatrix = fromScaling(mat4_Create(), vec3_Create(opts.size, opts.size, opts.size));
 
   // matrix 3: bone matrix
-  const boneMatrix = getBoneMatrix(opts.origin);
+  // It gives us correct position + rotation, just a couple things to fix later
+  // (it can get funny if boneMat has scale build-in. oh, well!)
+  const bone = opts.origin.owner as Bone;
+  const boneMatrix = bone.getFrameMatrix();
 
   // combine
   const m = multiply(mat4_Create(), boneMatrix, axisRotationMatrix);

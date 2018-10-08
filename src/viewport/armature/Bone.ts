@@ -1,4 +1,4 @@
-import {mat4, create as mat4_Create, copy} from 'gl-mat4';
+import {mat4, create as mat4_Create, copy, multiply} from 'gl-mat4';
 import {vec3} from 'gl-vec3';
 import {quat} from 'gl-quat';
 import {includes} from 'lodash';
@@ -40,6 +40,13 @@ export class Bone {
     }
 
     return bindMat;
+  }
+
+  /** get bone matrix for current frame */
+  getFrameMatrix () {
+    const boneMat = this.$_frameCache;
+    const {bindMatrix} = this.data;
+    return multiply(mat4_Create(), boneMat, bindMatrix);
   }
 
 }
