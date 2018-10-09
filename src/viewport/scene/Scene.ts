@@ -1,10 +1,9 @@
+import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Shader, Vao, getMVP, Axis, hexToVec3} from 'gl-utils';
 import {Armature} from 'viewport/armature';
 import {CameraFPS} from 'viewport/camera-fps';
-import {mat4, create as mat4_Create} from 'gl-mat4';
 import {GlState} from 'viewport/GlState';
-import {Marker, MarkerPosition, createMarkerPosition} from 'viewport/marker';
-// import {BoneConfigEntry} from './config';
+import {Marker} from 'viewport/marker';
 
 export interface Mesh {
   vao: Vao;
@@ -72,7 +71,6 @@ export class Scene {
     hd.axis = [] as Marker[];
     for (let i = 0; i < DEBUG_AXIS_MARKERS_CNT; i++) {
       const mark = new Marker({ radius: 2, visible: true, clickable: false, });
-      mark.$_framePosition.position3d[0] = -999; // hide
       hd.axis.push(mark);
     }
   }
@@ -95,18 +93,6 @@ export class Scene {
     ];
   }
 
-  updateMarker (name: string | Axis, position: MarkerPosition) {
-    const marker = this.getMarker(name);
-
-    if (marker) {
-      marker.$_framePosition = position;
-    } else {
-      throw `Could not find marker for update. Searched by: '${name}'`;
-    }
-
-    return marker;
-  }
-
   getMarker (name: string | Axis) {
     if (typeof name === 'string') {
       const bone = this.lamp.bones.find(b => b.name === name);
@@ -124,11 +110,7 @@ export class Scene {
     const ident = mat4_Create();
     const vpMat = this.getMVP(ident);
 
-    this.getDebugMarkers().forEach(m => {
-      const pos = m.$_framePosition.position3d;
-      // no, it will not override position3d (will return same)
-      m.$_framePosition = createMarkerPosition(vpMat, ident, pos);
-    });
+    this.getDebugMarkers().forEach(m => m.recalcNDC(vpMat));
   }
 
   private getDebugMarkers () {

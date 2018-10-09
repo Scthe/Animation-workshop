@@ -6,6 +6,10 @@ export * from './draw';
 export * from './handler';
 
 
+// about right in the middle of the tip
+export const GIZMO_MOVE_TIP = vec3_Create(0, 0.9, 0);
+
+
 export enum GizmoType {
   Move, Rotate, Scale
 }

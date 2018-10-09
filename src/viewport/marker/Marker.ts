@@ -1,10 +1,9 @@
 import {vec3, create as vec3_Create} from 'gl-vec3';
-import {vec2, create as vec2_Create} from 'gl-vec2';
-import {Axis, hexToVec3} from 'gl-utils';
-import {Bone} from 'viewport/armature';
+import {vec2, fromValues as vec2_Create} from 'gl-vec2';
+import {mat4} from 'gl-mat4';
 import {get} from 'lodash';
-
-// TODO make $_framePosition:MarkerPosition private, expose as createMarkerPosition and recalcNDC(vp:mat4)
+import {Axis, hexToVec3, transformPointByMat4} from 'gl-utils';
+import {Bone} from 'viewport/armature';
 
 // Marker:
 // rendered as dot in viewport, indicates e.g. selectable bone or object
@@ -31,7 +30,7 @@ export interface MarkerPosition {
 
 export class Marker {
   public owner: MarkerOwner;
-  public $_framePosition: MarkerPosition; // ! watch out !
+  private $_framePosition: MarkerPosition; // ! watch out !
   public visible: boolean;
   public clickable: boolean;
   private _radius?: number;
@@ -45,7 +44,7 @@ export class Marker {
     this.clickable = get(protoObj, 'clickable', true);
     this.$_framePosition = {
       position3d: vec3_Create(),
-      positionNDC: vec2_Create(),
+      positionNDC: vec2_Create(0, 0),
     };
   }
 
@@ -89,6 +88,25 @@ export class Marker {
       default:
         throw `Invalid marker type in Marker.name: '${this.type}'`;
     }
+  }
+
+  set __$position3d (pos: vec3)  { this.$_framePosition.position3d = pos; } // debug only pls
+  get $position3d ()  { return this.$_framePosition.position3d; }
+  get $positionNDC () { return this.$_framePosition.positionNDC; }
+
+  // mvp: mat4, modelMatrix: mat4, pos: vec3
+  updatePosition (pos: vec3, modelMatrix: mat4, mvp: mat4) {
+    const $pos = this.$_framePosition;
+    $pos.position3d = transformPointByMat4(vec3_Create(), pos, modelMatrix);
+    const resultNDC = transformPointByMat4(vec3_Create(), pos, mvp); // mvp already contains modelMatrix, so cant use recalcNDC
+    $pos.positionNDC = vec2_Create(resultNDC[0], resultNDC[1]);
+  }
+
+  /** NOTE: takes vp, NOT mvp. !Dangerous! */
+  recalcNDC (vp: mat4) {
+    const $pos = this.$_framePosition;
+    const resultNDC = transformPointByMat4(vec3_Create(), $pos.position3d, vp);
+    $pos.positionNDC = vec2_Create(resultNDC[0], resultNDC[1]);
   }
 
 }

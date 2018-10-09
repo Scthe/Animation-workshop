@@ -7,16 +7,15 @@ import {
   Axis, AxisList, toRadians,
   setUniforms, DrawParameters, DepthTest, CullingMode
 } from 'gl-utils';
+
 import {Bone} from 'viewport/armature';
 import {FrameEnv} from 'viewport/main';
 import {Marker, MarkerType} from 'viewport/marker';
-import {
-  updateMarker as updateMarker_Move,
-  getMarkerRadius as getMarkerRadius_Move
-} from './move/updateMarker';
-import {updateMarker as updateMarker_Rot} from './rotate/updateMarker';
-import {GizmoType, AXIS_COLORS} from './index';
+import {GizmoType, AXIS_COLORS, GIZMO_MOVE_TIP} from './index';
 import {isAxisAllowed} from 'viewport/scene';
+
+import {getMarkerRadius as getMarkerRadius_Move} from './move/getMarkerRadius';
+import {calcDraggableHandlePos as calcDraggableHandlePos_Rot} from './rotate/calcDraggableHandlePos';
 // yep, 20 lines of imports.
 
 
@@ -81,18 +80,27 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
 
 const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: mat4, modelMatrix: mat4) => {
   const {scene, glState} = frameEnv;
+  const marker = scene.getMarker(axis);
 
   switch (opts.gizmoType) {
     case GizmoType.Move:
     case GizmoType.Scale: {
-      const markerPos = updateMarker_Move(mvp, modelMatrix);
-      const marker = scene.updateMarker(axis, markerPos);
+      /// Move gizmo uses weird shape - arrow. Implmenting picking requires
+      /// some special code.
+      ///
+      /// Basically, we are going to place circular markers at the end of the arrows.
+      /// When the marker is clicked, the move translation will occur (after drag)
+      marker.updatePosition(GIZMO_MOVE_TIP, modelMatrix, mvp);
       marker.radius = getMarkerRadius_Move(glState, mvp, opts.origin);
       break;
     }
     case GizmoType.Rotate: {
-      const markerPos = updateMarker_Rot(scene, mvp, modelMatrix);
-      scene.updateMarker(axis, markerPos);
+      const cameraPos = scene.camera.getPosition();
+      const draggableHandlePos_WS = calcDraggableHandlePos_Rot(modelMatrix, cameraPos);
+      // draggableHandlePos is already in WS, do not mul by modelMatrix again
+      const modelMatrix2 = mat4_Create();
+      const mvp2 = scene.getMVP(modelMatrix2);
+      marker.updatePosition(draggableHandlePos_WS, modelMatrix2, mvp2);
       break;
     }
   }

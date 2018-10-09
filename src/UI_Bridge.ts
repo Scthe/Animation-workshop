@@ -1,6 +1,7 @@
 import {Marker} from './viewport/marker';
 import {vec3, create as vec3_Create, copy as vCopy} from 'gl-vec3';
 import {quat, create as quat_Create, copy as qCopy} from 'gl-quat';
+import {pick} from 'lodash';
 
 ////////////////////
 /// KEYFRAME STORAGE
@@ -65,30 +66,35 @@ export interface UIState {
   timelineState: TimelineState;
 }
 
-type FromStateGetter<T> = <T> (uiState: UIState) => T;
 type FromStateSetter = (uiState: UIState) => void;
 
-export const appStateGetter = (...propNames: string[]) => {
-  return (uiState: UIState) => {
+type AppStateGetter = <K extends keyof AppState> (uis: UIState) => Pick<AppState, K>;
+type TimelineStateGetter = <K extends keyof TimelineState> (uis: UIState) => Pick<TimelineState, K>;
+type FromStateGetter = AppStateGetter | TimelineStateGetter;
+
+
+// https://blog.mariusschulz.com/2017/01/06/typescript-2-1-keyof-and-lookup-types
+// http://www.typescriptlang.org/docs/handbook/advanced-types.html#predefined-conditional-types
+export const appStateGetter = <K extends keyof AppState> (...propNames: K[]) => {
+  const g = (uiState: UIState) => {
     const {appState} = uiState; // You do not want to know what syntax TS forces to destructure this as parameter
-    // we forgo typing with this, but well...
-    const res = {} as any;
-    propNames.forEach(key => res[key] = (appState as any)[key]);
-    return res;
+    return pick(appState, propNames);
   };
+  return g as AppStateGetter; // this line seems to be required, can't cast in same line as return (uiState: ..)=>...
 };
 
-export const appStateSetter = (key: string, value: any) => {
+export const appStateSetter = <K extends keyof AppState, V>(key: K, value: AppState[K]) => {
   return (uiState: UIState) => {
     const {appState} = uiState;
-    (appState as any)[key] = value;
+    appState[key] = value;
   };
 };
 
 class UIBridge {
 
-  getFromUI <T> (getter: FromStateGetter<T>): T {
-    return getter(this.getStateAsObject());
+  getFromUI<fn extends FromStateGetter> (getter: fn) {
+    // https://dev.to/miracleblue/how-2-typescript-serious-business-with-typescripts-infer-keyword-40i5
+    return getter(this.getStateAsObject()) as ReturnType<fn>;
   }
 
   setOnUI (setter: FromStateSetter) {

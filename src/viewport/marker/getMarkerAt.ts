@@ -4,8 +4,7 @@ import {Marker} from './index';
 
 
 const getMarkerPositionPx = (viewport: number[], marker: Marker) => {
-  const {positionNDC} = marker.$_framePosition;
-  return NDCtoPixels(positionNDC, viewport[0], viewport[1], true);
+  return NDCtoPixels(marker.$positionNDC, viewport[0], viewport[1], true);
 };
 
 export const getMarkerAt = (viewport: number[], markers: Marker[], pixel: vec2) => {

@@ -20,8 +20,7 @@ const setMarkerUniforms = (frameEnv: FrameEnv, markers: Marker[], scale: number)
 
   markers.forEach((marker, i) => {
     const posName = `g_MarkerPositions[${i}]`;
-    const position = marker.$_framePosition.positionNDC;
-    gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), position);
+    gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), marker.$positionNDC);
 
     const colName = `g_MarkerColors[${i}]`;
     gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), getMarkerColor(frameEnv, marker));

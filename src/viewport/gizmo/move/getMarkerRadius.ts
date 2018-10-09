@@ -2,22 +2,10 @@ import {vec3, fromValues as vec3_Create} from 'gl-vec3';
 import {mat4} from 'gl-mat4';
 import {NDCtoPixels, transformPointByMat4, getDist2} from 'gl-utils';
 import {GlState} from 'viewport/GlState';
-import {Marker, createMarkerPosition} from 'viewport/marker';
-
-/// Move gizmo uses weird shape - arrow. Implmenting picking requires
-/// some special code.
-///
-/// Basically, we are going to place circular markers at the end of the arrows.
-/// When the marker is clicked, the move translation will occur (after drag)
+import {Marker} from 'viewport/marker';
 
 
-// about right in the middle of the tip
-const GIZMO_MOVE_TIP = vec3_Create(0, 0.9, 0);
-
-export const updateMarker = (mvp: mat4, modelMatrix: mat4) => {
-  return createMarkerPosition(mvp, modelMatrix, GIZMO_MOVE_TIP);
-};
-
+const GIZMO_MOVE_TIP = vec3_Create(0.0, 0.9, 0.0);
 
 // @see getMarkerRadius
 // fix problems when looking directly down the axis
