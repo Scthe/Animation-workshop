@@ -14,14 +14,19 @@ interface BoneData {
 }
 
 export class Bone {
+  public $_frameCache: mat4; // ! watch out !
+  public marker: Marker;
+  // public readonly cfg: BoneConfigEntry;
+
   constructor (
     public readonly name: string,
     public readonly children: number[],
     public readonly data: BoneData,
-    // public readonly cfg: BoneConfigEntry;
-    public marker: Marker,
-    public $_frameCache: mat4, // ! watch out !
-  ) { }
+  ) {
+    this.marker = new Marker();
+    this.marker.owner = this;
+    this.$_frameCache = mat4_Create();
+  }
 
   getParent (bones: Armature) {
     const selfIdx = bones.findIndex(bone => bone.name === this.name);

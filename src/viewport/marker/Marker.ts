@@ -97,7 +97,7 @@ export class Marker {
   // mvp: mat4, modelMatrix: mat4, pos: vec3
   updatePosition (pos: vec3, modelMatrix: mat4, mvp: mat4) {
     const $pos = this.$_framePosition;
-    $pos.position3d = transformPointByMat4(vec3_Create(), pos, modelMatrix);
+    transformPointByMat4($pos.position3d, pos, modelMatrix);
     const resultNDC = transformPointByMat4(vec3_Create(), pos, mvp); // mvp already contains modelMatrix, so cant use recalcNDC
     $pos.positionNDC = vec2_Create(resultNDC[0], resultNDC[1]);
   }

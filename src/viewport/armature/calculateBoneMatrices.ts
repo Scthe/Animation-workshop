@@ -35,7 +35,7 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
   const qAnim = getRotation(marker);
   const rotation = qMul(quat_Create(), qAnim, boneData.rotation);
 
-  const scale = 0.95; // TODO remove, ATM prevents flickering
+  const scale = 1.0;
   return createModelMatrix(translation, rotation, scale);
 };
 
@@ -57,8 +57,9 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
 const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: mat4) => {
   const bone = cfg.bones[boneId];
 
+  // transform for current frame
   const animationTransform = getAnimationTransform(cfg, boneId);
-  identity(bone.$_frameCache);
+
   const globalTransform = multiply(mat4_Create(), parentTransfrom, animationTransform);
   multiply(bone.$_frameCache, globalTransform, bone.data.inverseBindMatrix);
 
@@ -69,8 +70,7 @@ const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: 
 
 export const calculateBoneMatrices = (animState: AnimTimings, bones: Armature) => {
   const cfg = { animState, bones, };
-  const root = mat4_Create();
-  calculateBone(cfg, 0, root);
+  calculateBone(cfg, 0, mat4_Create());
 };
 
 

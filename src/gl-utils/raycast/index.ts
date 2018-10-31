@@ -1,7 +1,7 @@
 import {vec2, fromValues as vec2_Create} from 'gl-vec2';
 import {
   vec3, create as vec3_0, fromValues as vec3_Create,
-  cross, dot, scale, add
+  cross, dot, scale, add, normalize
 } from 'gl-vec3';
 import {mat4, create as mat4_Create, invert} from 'gl-mat4';
 import {subtractNorm, transformPointByMat4} from 'gl-utils';
@@ -88,7 +88,7 @@ export const getPlane_d = (n: vec3, point: vec3) => dot(n, point);
  *  - is perpendicular to camera
  */
 export const createPlaneAroundAxisAndTowardCamera = (axis: vec3, p: vec3, camera: vec3) => {
-  const toCamera = subtractNorm(camera, p);
+  const toCamera = subtractNorm(camera, p); // TODO would this be normal instead?
   // do cross twice - usuall thing to create plane normal
   // (plane includes rotation axis and is perpendicular to camera)
   const tangent = cross(vec3_0(), axis, toCamera);
@@ -96,5 +96,15 @@ export const createPlaneAroundAxisAndTowardCamera = (axis: vec3, p: vec3, camera
   return {
     normal: planeNormal,
     d: getPlane_d(planeNormal, p)
+  } as Plane;
+};
+
+export const createPlaneFromPoints = (a: vec3, b: vec3, c: vec3) => {
+  const ab = subtractNorm(a, b);
+  const bc = subtractNorm(b, c);
+  const n = normalize(vec3_0(), cross(vec3_0(), ab, bc));
+  return {
+    normal: n,
+    d: getPlane_d(n, a),
   } as Plane;
 };
