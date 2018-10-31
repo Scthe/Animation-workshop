@@ -1,4 +1,4 @@
-import {mat4, create as mat4_Create, multiply, identity} from 'gl-mat4';
+import {mat4, create as mat4_Create, multiply} from 'gl-mat4';
 import {create as vec3_Create, add} from 'gl-vec3';
 import {create as quat_Create, multiply as qMul} from 'gl-quat';
 import {AnimTimings} from 'viewport/animation';

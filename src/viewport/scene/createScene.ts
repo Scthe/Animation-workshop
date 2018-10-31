@@ -11,34 +11,11 @@ import {Scene, getNode, loadBones, loadMesh} from './index';
 import {isMeshNode} from 'viewport/scene/loader/_utils';
 import {generateMoveGizmo, generateRotateGizmo} from './_generateGizmoMeshes';
 
-/// SCENE
-const GLTF_URL = require('assets/TestScene.glb');
-const LAMP_ROOT_NODE = 'SkeletonTest_rig';
+import {
+  GLTF_URL, LAMP_ROOT_NODE,
+  SHADERS, CAMERA_SETTINGS
+} from './config';
 
-// const GLTF_URL = require('assets/test1.glb');
-// const GLTF_URL = require('assets/TestScene_Armature.glb');
-// const LAMP_ROOT_NODE = 'SkeletonTest_rig.001';
-
-// const GLTF_URL = require('assets/LampAnimScene.glb');
-// const LAMP_ROOT_NODE = 'SkeletonTest_rig';
-/// END: SCENE
-
-
-const SHADERS = {
-  LAMP_VERT: require('shaders/lampShader.vert.glsl'),
-  LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
-  MARKER_VERT: require('shaders/marker.vert.glsl'),
-  MARKER_FRAG: require('shaders/marker.frag.glsl'),
-  GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
-  GIZMO_FRAG: require('shaders/lampShader.frag.glsl'),
-};
-
-
-const CAMERA_SETTINGS = {
-  fovDgr: 90,
-  zNear: 0.1,
-  zFar: 100,
-};
 
 const MARKER_VAO_SIZE = 256; // see also MAX_MARKERS in marker.vert.glsl
 
@@ -96,7 +73,7 @@ export const createScene = async (glState: GlState) => {
 
   const loader = new GltfLoader();
   const asset = await loader.load(GLTF_URL);
-  console.log('asset', asset);
+  console.log('asset.gltf', asset.gltf);
 
   // lamp
   const meshNode = getMeshNode(asset, LAMP_ROOT_NODE);

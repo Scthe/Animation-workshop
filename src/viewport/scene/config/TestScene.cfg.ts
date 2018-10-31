@@ -1,6 +1,6 @@
 import {ALLOW_ALL, DISALLOW_ALL} from './constraints';
 import {POS_ROT_SCALE_0} from 'viewport/animation';
-import {BoneConfigEntry} from './index';
+import {BoneConfigEntry} from './boneConfig';
 
 export const BONE_CONFIG = [
 

@@ -1,35 +1,38 @@
-import {Constraints, ALLOW_ALL, DISALLOW_ALL} from './constraints';
-import {Transform, POS_ROT_SCALE_0} from 'viewport/animation';
-
 export {isAxisAllowed, isAnyAxisAllowed} from './constraints';
+export {BoneConfigEntry} from './boneConfig';
 
 
-// this module contains descriptor of scene.
-// tightly coupled to .glb file.
-// we have to specify constraints, default frame etc.
+/// SCENE
 
-import {BONE_CONFIG} from './TestScene.cfg';
-// import {BONE_CONFIG} from './LampAnimScene.cfg';
+// test object: simple mesh to test skinning
+// export const GLTF_URL = require('assets/TestScene.glb');
+// export const LAMP_ROOT_NODE = 'SkeletonTest_rig';
+// import {BONE_CONFIG} from './TestScene.cfg';
 
+// final object
+export const GLTF_URL = require('assets/LampAnimScene.glb');
+export const LAMP_ROOT_NODE = 'Armature.001';
+import {BONE_CONFIG} from './LampAnimScene.cfg';
 
-export interface BoneConfigEntry {
-  name: string;
-  keyframe0: Transform; // default values
-  constraints: Constraints;
-}
-
-const DEFAULT_CFG_VALUES = {
-  name: 'bone-not-found',
-  keyframe0: POS_ROT_SCALE_0,
-  constraints: {
-    position: ALLOW_ALL,
-    rotation: ALLOW_ALL,
-    scale:    DISALLOW_ALL,
-  },
-} as BoneConfigEntry;
+/// END: SCENE
 
 
-// I'd rather not expose content of this file as gigantic JSON
-export const getBoneConfig = (boneName: string) => {
-  return BONE_CONFIG.find(c => c.name === boneName) || DEFAULT_CFG_VALUES;
+import {getBoneConfig as getBoneConfig_} from './boneConfig';
+export const getBoneConfig = getBoneConfig_(BONE_CONFIG);
+
+
+export const SHADERS = {
+  LAMP_VERT: require('shaders/lampShader.vert.glsl'),
+  LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
+  MARKER_VERT: require('shaders/marker.vert.glsl'),
+  MARKER_FRAG: require('shaders/marker.frag.glsl'),
+  GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
+  GIZMO_FRAG: require('shaders/lampShader.frag.glsl'),
+};
+
+
+export const CAMERA_SETTINGS = {
+  fovDgr: 90,
+  zNear: 0.1,
+  zFar: 100,
 };
