@@ -34,8 +34,8 @@ export const generateRayFromCamera = (camera: CameraDesc, mousePosPx: vec2) => {
   const vpInverse = invert(mat4_Create(), vp);
   const p0 = vec3_Create(mousePosNDC[0], mousePosNDC[1], 0); // zMin = 0
   const p1 = vec3_Create(mousePosNDC[0], mousePosNDC[1], 1); // zMax = 1, does not matter, just get `dir`
-  const rayOrigin = transformPointByMat4(vec3_0(), p0, vpInverse);
-  const rayEnd    = transformPointByMat4(vec3_0(), p1, vpInverse);
+  const rayOrigin = transformPointByMat4(p0, vpInverse, false);
+  const rayEnd    = transformPointByMat4(p1, vpInverse, false);
 
   return {
     origin: rayOrigin,

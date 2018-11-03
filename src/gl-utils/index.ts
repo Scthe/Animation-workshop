@@ -63,8 +63,10 @@ export const requestAnimFrame = ((window: any) => {
 export const toRadians = (degrees: number) => degrees * Math.PI / 180;
 export const toDegrees = (radians: number) => radians / Math.PI * 180;
 
-export const transformPointByMat4 = (out: vec3, inVec_: vec3, m: mat4, ignoreW = false) => {
+export const transformPointByMat4 = (inVec_: vec3, m: mat4, ignoreW: boolean) => {
+  const out = vec3_Create(0, 0, 0);
   const inVec = vec4_Create(inVec_[0], inVec_[1], inVec_[2], 1.0); // prevent aliasing
+
   const col1 = vec4_Create(m[0], m[4], m[8] , m[12] );
   const col2 = vec4_Create(m[1], m[5], m[9] , m[13] );
   const col3 = vec4_Create(m[2], m[6], m[10], m[14]);

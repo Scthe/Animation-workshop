@@ -6,7 +6,7 @@ import {Shader, AxisList, Vao, VaoAttrInit} from 'gl-utils';
 import {CameraFPS} from 'viewport/camera-fps';
 import {AXIS_COLORS} from 'viewport/gizmo';
 import {GlState} from 'viewport/GlState';
-import {Marker} from 'viewport/marker';
+import {Marker, MarkerType} from 'viewport/marker';
 import {Scene, getNode, loadBones, loadMesh} from './index';
 import {isMeshNode} from 'viewport/scene/loader/_utils';
 import {generateMoveGizmo, generateRotateGizmo} from './_generateGizmoMeshes';
@@ -46,7 +46,7 @@ const createMarkerMeta = (gl: Webgl) => {
 };
 
 const createGizmoMeta = (gl: Webgl) => {
-  const markers = AxisList.map(axis => new Marker({
+  const markers = AxisList.map(axis => new Marker(MarkerType.Gizmo, {
     owner: axis,
     color: AXIS_COLORS[axis],
   }));

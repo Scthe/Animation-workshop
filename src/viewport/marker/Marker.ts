@@ -30,30 +30,25 @@ export interface MarkerPosition {
 
 export class Marker {
   public owner: MarkerOwner;
-  private $_framePosition: MarkerPosition; // ! watch out !
   public visible: boolean;
   public clickable: boolean;
   private _radius?: number;
   private _color?: vec3;
+  private $_framePosition: MarkerPosition; // ! watch out !
 
-  constructor (protoObj?: Object) {
+  constructor (
+    public readonly type: MarkerType,
+    protoObj?: Object
+  ) {
     this.owner = get(protoObj, 'owner', undefined);
-    this._radius = get(protoObj, 'radius', undefined);
-    this._color = get(protoObj, 'color', undefined);
     this.visible = get(protoObj, 'visible', true);
     this.clickable = get(protoObj, 'clickable', true);
+    this._radius = get(protoObj, 'radius', undefined);
+    this._color = get(protoObj, 'color', undefined);
     this.$_framePosition = {
       position3d: vec3_Create(),
       positionNDC: vec2_Create(0, 0),
     };
-  }
-
-  get type () {
-    switch (typeof this.owner) {
-      case 'undefined': return MarkerType.Debug;
-      case 'number': return MarkerType.Gizmo;
-      default: return MarkerType.Bone;
-    }
   }
 
   get radius () {
@@ -86,7 +81,7 @@ export class Marker {
       case MarkerType.Gizmo: return `Axis_${this.owner}`;
       case MarkerType.Debug: return `Debug_?`;
       default:
-        throw `Invalid marker type in Marker.name: '${this.type}'`;
+        throw `Invalid marker type '${this.type}' provided for Marker.name`;
     }
   }
 
@@ -97,15 +92,15 @@ export class Marker {
   // mvp: mat4, modelMatrix: mat4, pos: vec3
   updatePosition (pos: vec3, modelMatrix: mat4, mvp: mat4) {
     const $pos = this.$_framePosition;
-    transformPointByMat4($pos.position3d, pos, modelMatrix);
-    const resultNDC = transformPointByMat4(vec3_Create(), pos, mvp); // mvp already contains modelMatrix, so cant use recalcNDC
+    $pos.position3d = transformPointByMat4(pos, modelMatrix, true);
+    const resultNDC = transformPointByMat4(pos, mvp, false); // mvp already contains modelMatrix, so cant use recalcNDC
     $pos.positionNDC = vec2_Create(resultNDC[0], resultNDC[1]);
   }
 
   /** NOTE: takes vp, NOT mvp. !Dangerous! */
   recalcNDC (vp: mat4) {
     const $pos = this.$_framePosition;
-    const resultNDC = transformPointByMat4(vec3_Create(), $pos.position3d, vp);
+    const resultNDC = transformPointByMat4($pos.position3d, vp, false);
     $pos.positionNDC = vec2_Create(resultNDC[0], resultNDC[1]);
   }
 

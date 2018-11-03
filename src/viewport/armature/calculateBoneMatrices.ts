@@ -42,7 +42,7 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
 /*
  * calculate bone and children (recursively)
  *
- * matrices order (reversed multiplication order cause opengl):
+ * matrices order:
  * 1. inverseBindMatrix - bring vertices to bone's local space
  *      In other words transformation: bindPosition->(0,0,0).
  *      In implementation, combination of BONE_BIND_MATRIX and PARENT'S_BONE_BIND_MATRIX.
@@ -53,6 +53,8 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
  *      position/rotaton/scale
  * 3. parentTransfrom - this acts as local->global space transformation
  *      Look up how we calculated inverseBindMatrix
+ *
+ * In following implementation the multiplication order is reversed cause OpenGL
  */
 const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: mat4) => {
   const bone = cfg.bones[boneId];

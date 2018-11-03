@@ -19,7 +19,7 @@ const getPixelPos = (glState: GlState, mvp: mat4) => (point: vec3) => {
   const [width, height] = glState.getViewport();
 
   // calculate NDC
-  const screenPos = transformPointByMat4(vec3_Create(0, 0, 0), point, mvp);
+  const screenPos = transformPointByMat4(point, mvp, false);
 
   return NDCtoPixels(screenPos, width, height, false);
 };
