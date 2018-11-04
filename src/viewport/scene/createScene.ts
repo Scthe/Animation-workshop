@@ -54,15 +54,15 @@ const createGizmoMeta = (gl: Webgl) => {
   const shader = new Shader(gl, SHADERS.GIZMO_VERT, SHADERS.GIZMO_FRAG);
   const moveMesh = generateMoveGizmo(gl, shader);
   const rotateMesh = generateRotateGizmo(gl, shader);
-  // const axisVectors = [vec3_0(), vec3_0(), vec3_0()];
+  const axisVectors = [vec3_0(), vec3_0(), vec3_0()];
 
   return {
     shader,
     moveMesh,
     rotateMesh,
     markers,
-    /*axisVectors,
-    rotationPlane: undefined as any*/
+    axisVectors,
+    rotationPlane: undefined as any
   };
 };
 

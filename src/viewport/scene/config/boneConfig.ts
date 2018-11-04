@@ -1,5 +1,5 @@
+import {Axis, Transform, POS_ROT_SCALE_0} from 'gl-utils';
 import {Constraints, ALLOW_ALL, DISALLOW_ALL} from './constraints';
-import {Transform, POS_ROT_SCALE_0} from 'viewport/animation';
 
 // this file contains descriptor of scene.
 // tightly coupled to .glb file.
@@ -10,6 +10,10 @@ export interface BoneConfigEntry {
   name: string;
   keyframe0: Transform; // default values
   constraints: Constraints;
+  /// swap rotation axis cause blender gltf exporter...
+  /// (literary after clicking on rotate Axis.Y we will
+  ///  rotate on Axis.X and it will look good)
+  blenderExporterRotationAxisFix: [Axis, Axis, Axis];
 }
 
 export const DEFAULT_CFG_VALUES = {
@@ -20,6 +24,7 @@ export const DEFAULT_CFG_VALUES = {
     rotation: ALLOW_ALL,
     scale:    DISALLOW_ALL,
   },
+  // blenderExporterRotationAxisFix: [Axis.AxisX, Axis.AxisY, Axis.AxisZ],
 } as BoneConfigEntry;
 
 

@@ -1,9 +1,11 @@
+import {vec3} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Shader, Vao, getMVP, Axis, hexToVec3} from 'gl-utils';
+import {Plane} from 'gl-utils/raycast';
 import {Armature} from 'viewport/armature';
 import {CameraFPS} from 'viewport/camera-fps';
 import {GlState} from 'viewport/GlState';
-import {Marker} from 'viewport/marker';
+import {Marker, MarkerType} from 'viewport/marker';
 
 export interface Mesh {
   vao: Vao;
@@ -32,6 +34,8 @@ interface GizmoMeta {
   moveMesh: Mesh;
   rotateMesh: Mesh;
   markers: Marker[]; // only 3, but no Array<Marker, 3> in TS
+  axisVectors: vec3[];
+  rotationPlane: Plane;
 }
 
 // debug drag system
@@ -64,14 +68,17 @@ export class Scene {
   ) {
     const hd = this.debugMarkers;
     const opts = ({ radius: 10, visible: true, clickable: false, color: hexToVec3('#eec64f')});
-    hd.dragStart      = new Marker(opts);
-    hd.dragNow        = new Marker(opts);
-    hd.dragNowOnPlane = new Marker(opts);
+    hd.dragStart      = new Marker(MarkerType.Debug, opts);
+    hd.dragNow        = new Marker(MarkerType.Debug, opts);
+    hd.dragNowOnPlane = new Marker(MarkerType.Debug, opts);
 
     hd.axis = [] as Marker[];
     for (let i = 0; i < DEBUG_AXIS_MARKERS_CNT; i++) {
-      const mark = new Marker({ radius: 2, visible: true, clickable: false, });
-      hd.axis.push(mark);
+      hd.axis.push(new Marker(MarkerType.Debug, {
+        radius: 2,
+        visible: true,
+        clickable: false,
+      }));
     }
   }
 

@@ -1,12 +1,11 @@
 import {ALLOW_ALL, DISALLOW_ALL} from './constraints';
-import {POS_ROT_SCALE_0} from 'viewport/animation';
-import {BoneConfigEntry} from './boneConfig';
+import {BoneConfigEntry, DEFAULT_CFG_VALUES} from './boneConfig';
 
 export const BONE_CONFIG = [
 
   {
+    ...DEFAULT_CFG_VALUES,
     name: 'SkeletonTest_rig_B_root',
-    keyframe0: POS_ROT_SCALE_0,
     constraints: {
       position: ALLOW_ALL,
       rotation: ALLOW_ALL,
@@ -15,8 +14,8 @@ export const BONE_CONFIG = [
   } as BoneConfigEntry,
 
   {
+    ...DEFAULT_CFG_VALUES,
     name: 'SkeletonTest_rig_B_1',
-    keyframe0: POS_ROT_SCALE_0,
     constraints: {
       position: ALLOW_ALL,
       rotation: ALLOW_ALL, // allowOnly(Axis.AxisY),
@@ -25,8 +24,8 @@ export const BONE_CONFIG = [
   } as BoneConfigEntry,
 
   {
+    ...DEFAULT_CFG_VALUES,
     name: 'SkeletonTest_rig_B_2',
-    keyframe0: POS_ROT_SCALE_0,
     constraints: {
       position: ALLOW_ALL,
       rotation: ALLOW_ALL, // allowOnly(Axis.AxisY),

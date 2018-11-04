@@ -1,4 +1,4 @@
-import {vec2} from 'gl-vec2';
+import {vec2, length as vec2_dist} from 'gl-vec2';
 import {
   vec3, create as vec3_0, fromValues as vec3_Create,
   subtract, scale, dot, normalize
@@ -7,9 +7,11 @@ import {
   mat4, create as mat4_Create,
   fromXRotation, fromZRotation, multiply,
 } from 'gl-mat4';
-import {create as quat_Create, rotationTo} from 'gl-quat';
+import {create as quat_Create, rotationTo, setAxisAngle} from 'gl-quat';
 
-import {subtractNorm, Axis, toRadians, transformPointByMat4} from 'gl-utils';
+// import * as GLTF_PLS from 'viewport/gltfExporterFixes';
+
+import {subtractNorm, Axis, toRadians, transformPointByMat4, getAxisVector} from 'gl-utils';
 import {
   generateRayFromCamera,
   createPlaneAroundAxisAndTowardCamera,
@@ -27,6 +29,13 @@ import {GizmoAxisDragEvent} from './index';
 
 
 // NOTE: transform deltas are not cumulative: set, not add!
+
+// TODO
+//   0) decide if not just flip X-axis during bone read
+//   1) finalize so it handles well (all axis conversions, constraints etc.)
+//   2) finish handler
+//   3) draw rotate gizmo based on parent, not bone itself?
+
 
 // TODO or maybe just unproject vec4(pxX, pxY, dist(camera, marker), 1) for view space points?
 // TODO compare wrong mappings with blender
@@ -58,8 +67,8 @@ const projectOntoAxis = (vec: vec3, axis: vec3) => {
 // DEBUG
 ////////////////////
 
-// const d2 = (a: number) => Number(a).toFixed(3);
-// const to_str = (v: vec3) => `[${d2(v[0])}, ${d2(v[1])}, ${d2(v[2])}]`;
+const d2 = (a: number) => Number(a).toFixed(3);
+const to_str = (v: vec3) => `[${d2(v[0])}, ${d2(v[1])}, ${d2(v[2])}]`;
 
 const fillWithDebugMarkers = (vpMat: mat4, markers: Marker[], axisDir: vec3, point: vec3) => {
   const SPACING = 0.2;
@@ -98,6 +107,7 @@ export const applyGizmoMove = (frameEnv: FrameEnv, ev: GizmoAxisDragEvent) => {
 
   // done!
   const delta = subtract(vec3_0(), pNow, p0);
+  // TODO multiply delta by inverse bind/frame matrix?
   addMove(selectedObject.name, delta);
 
   // debug
@@ -123,6 +133,7 @@ const toHumanAngle = (a: vec3, b: vec3) => {
 
 ////////////
 // TODO use from gizmo/draw instead, but debug wrong axis with after translation first
+/*
 const ANGLE_90_DGR = toRadians(90);
 
 const getAxisMatrix = (axis: Axis) => {
@@ -144,19 +155,21 @@ const getRotationAxis = (selectedObject: Marker, axis: Axis) => {
 
   const m = multiply(mat4_Create(), boneMatrix, axisRotationMatrix);
   const v = vec3_Create(0, 1, 0);
-  return normalize(vec3_0(), transformPointByMat4(vec3_0(), v, m, true));
+  return normalize(vec3_0(), transformPointByMat4(v, m, true));
 };
+*/
 ////////////
 
 
 export const applyGizmoRotate = (frameEnv: FrameEnv, ev: GizmoAxisDragEvent) => {
   const {mouseEvent, axis} = ev;
-  const {selectedObject} = frameEnv;
+  const {selectedObject, scene} = frameEnv;
   const objPosition = selectedObject.$position3d;
   // NOTE: rotation axis is same as move axis == plane normal
 
   // create plane to project clicked 3d points onto
-  const axisVec = getRotationAxis(selectedObject, axis);
+  // const axisVec = getRotationAxis(selectedObject, axis);
+  /*const axisVec = normalize(vec3_0(), scene.gizmoMeta.axisVectors[axis]);
   const plane = {
     normal: axisVec,
     d: getPlane_d(axisVec, objPosition),
@@ -175,10 +188,31 @@ export const applyGizmoRotate = (frameEnv: FrameEnv, ev: GizmoAxisDragEvent) => 
   const qRotate = rotationTo(quat_Create(), a, b);
   addRotation(selectedObject.name, qRotate); // done!
 
+
   // debug
-  const vp = frameEnv.scene.getMVP(mat4_Create());
-  const debug = frameEnv.scene.debugMarkers;
+  const vp = scene.getMVP(mat4_Create());
+  const debug = scene.debugMarkers;
   fillWithDebugMarkers(vp, debug.axis, axisVec, objPosition);
   debug.dragStart.__$position3d = p0;
   debug.dragNowOnPlane.__$position3d = pNow;
+  */
+
+  // Three.js: distance between gizmo handle along handle tangent?
+
+  /*// debug
+  const rp = scene.gizmoMeta.rotationPlane;
+  console.log('rotationPlane', to_str(rp.normal), d2(rp.d));
+  const vp = scene.getMVP(mat4_Create());
+  const debug = scene.debugMarkers;
+  fillWithDebugMarkers(vp, debug.axis, rp.normal, objPosition);*/
+
+  //
+
+  // const actuallyCorrectAxis = GLTF_PLS.fixGltfExporterRotationAxis(axis, frameEnv);
+  const axisVec = getAxisVector(axis);
+  let d = vec2_dist(mouseEvent.totalDelta) / 100;
+  // TODO this fails when delta.y is big (since d is also big in that cause and sign change causes snap)
+  d = mouseEvent.totalDelta[0] < 0 ? -d : d;
+  const q = setAxisAngle(quat_Create(), axisVec, d);
+  addRotation(selectedObject.name, q); // done!
 };
