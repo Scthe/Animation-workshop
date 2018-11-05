@@ -1,10 +1,8 @@
 import {mat4, create as mat4_Create, multiply} from 'gl-mat4';
-import {create as vec3_Create, add} from 'gl-vec3';
-import {create as quat_Create, multiply as qMul} from 'gl-quat';
 import {AnimTimings} from 'viewport/animation';
 import {getMove, getRotation} from '../../UI_Bridge';
 import {Armature, Bone} from './index';
-import {createModelMatrix} from 'gl-utils';
+import {convertTransformToMatrix, Transform, SCALE_0} from 'gl-utils';
 
 /*
  *  In this file we update bone matrices for animation.
@@ -17,50 +15,25 @@ import {createModelMatrix} from 'gl-utils';
  *    * https://youtu.be/F-kcaonjHf8?t=3m23s
  */
 
-// some util struct to ease moving params
-interface BoneTransformsCfg {
-  animState: AnimTimings;
-  bones: Armature;
-}
-
-// get animation matrix for bone
-/*const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
-  const bone = cfg.bones[boneId];
-  const boneData = bone.data;
+const getAnimTransform = (bone: Bone) => {
   const marker = {name: bone.name} as any;
-
-  const deltaFromAnim = getMove(marker);
-  const translation = add(vec3_Create(), boneData.translation, deltaFromAnim);
-
-  const qAnim = getRotation(marker);
-  const rotation = qMul(quat_Create(), qAnim, boneData.rotation);
-
-  const scale = 1.0;
-  return createModelMatrix(translation, rotation, scale);
+  return {
+    position: getMove(marker),
+    rotation: getRotation(marker),
+    scale: SCALE_0,
+  } as Transform;
 };
-*/
 
-const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
-  const bone = cfg.bones[boneId];
-  const boneData = bone.data;
-  const marker = {name: bone.name} as any;
 
-  const translation = getMove(marker);
-  const rotation = getRotation(marker);
-  const scale = 1.0;
-  /*
-  // const translation = add(vec3_Create(), boneData.translation, deltaFromAnim);
-  // const rotation = qMul(quat_Create(), qAnim, boneData.rotation);
-
-  // return createModelMatrix(translation, rotation, scale);
-  const animMat = createModelMatrix(translation, rotation, scale);
-  */
-  const bindMat = createModelMatrix(translation, rotation, scale);
-  const animMat = createModelMatrix(boneData.translation, boneData.rotation, scale);
-
-  return multiply(mat4_Create(), animMat, bindMat);
-  // return multiply(mat4_Create(), bindMat, animMat);
+/**
+ * This, along with gizmo handler control transformation space.
+ */
+const calculateAnimTransformMat = (bone: Bone, animTransfrom: Transform) => {
+  const bindMat = convertTransformToMatrix(bone.data.bindTransform);
+  const animMat = convertTransformToMatrix(animTransfrom);
+  return multiply(mat4_Create(), bindMat, animMat);
 };
+
 
 /*
  * calculate bone and children (recursively)
@@ -85,48 +58,22 @@ const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
  *
  * In following implementation the multiplication order is reversed cause OpenGL
  */
-const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: mat4) => {
-  const bone = cfg.bones[boneId] as Bone;
-  const {parentGlobalTransform: globalTransform, finalBoneMatrix} = bone.getFrameCache();
+const calculateBone = (bones: Armature, boneId: number, parentTransfrom: mat4) => {
+  const bone = bones[boneId] as Bone;
+  const {globalTransform, finalBoneMatrix} = bone.getFrameCache();
 
   // transform for current frame
-  const animationTransform = getAnimationTransform(cfg, boneId);
+  const animTransfrom = getAnimTransform(bone);
+  const animationTransformMat = calculateAnimTransformMat(bone, animTransfrom);
 
-  multiply(globalTransform, parentTransfrom, animationTransform);
+  multiply(globalTransform, parentTransfrom, animationTransformMat);
   multiply(finalBoneMatrix, globalTransform, bone.data.inverseBindMatrix);
 
   bone.children.forEach(childIdx => {
-    calculateBone(cfg, childIdx, globalTransform);
+    calculateBone(bones, childIdx, globalTransform);
   });
 };
 
-export const calculateBoneMatrices = (animState: AnimTimings, bones: Armature) => {
-  const cfg = { animState, bones, };
-  calculateBone(cfg, 0, mat4_Create());
+export const calculateBoneMatrices = (_: AnimTimings, bones: Armature) => {
+  calculateBone(bones, 0, mat4_Create());
 };
-
-
-
-/*
-const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
-  // Interpolate scaling and generate scaling transformation matrix
-  aiVector3D Scaling;
-  CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-  Matrix4f ScalingM;
-  ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
-
-  // Interpolate rotation and generate rotation transformation matrix
-  aiQuaternion RotationQ;
-  CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-  Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
-
-  // Interpolate translation and generate translation transformation matrix
-  aiVector3D Translation;
-  CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-  Matrix4f TranslationM;
-  TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
-
-  // Combine the above transformations
-  return TranslationM * RotationM * ScalingM;
-}
-*/

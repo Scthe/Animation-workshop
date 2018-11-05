@@ -1,7 +1,6 @@
 import {vec3, fromValues as vec3_Create, normalize, distance} from 'gl-vec3';
 import {mat4} from 'gl-mat4';
 import {transformPointByMat4} from 'gl-utils';
-import {createPlaneFromPoints} from 'gl-utils/raycast';
 
 /**
  * ugh.., nice API You got there. Why didn't You make `out` the last (optional) arg?
@@ -39,10 +38,5 @@ export const calcDraggableHandlePos = (modelMatrix: mat4, cameraPos: vec3) => {
   };
 
   const closestIdx = possiblePositions.reduce(getClosest, 0);
-  const [a, b, c] = possiblePositions.map(e => e.position).slice(0, 3);
-
-  return {
-    handlePos: possiblePositions[closestIdx].position,
-    rotationPlane: createPlaneFromPoints(a, b, c),
-  };
+  return possiblePositions[closestIdx].position;
 };

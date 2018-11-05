@@ -1,5 +1,4 @@
 import {GltfAsset, GltfLoader} from 'gltf-loader-ts';
-import {create as vec3_0} from 'gl-vec3';
 import {create as mat4_Create} from 'gl-mat4';
 import {Shader, AxisList, Vao, VaoAttrInit} from 'gl-utils';
 
@@ -54,15 +53,12 @@ const createGizmoMeta = (gl: Webgl) => {
   const shader = new Shader(gl, SHADERS.GIZMO_VERT, SHADERS.GIZMO_FRAG);
   const moveMesh = generateMoveGizmo(gl, shader);
   const rotateMesh = generateRotateGizmo(gl, shader);
-  const axisVectors = [vec3_0(), vec3_0(), vec3_0()];
 
   return {
     shader,
     moveMesh,
     rotateMesh,
     markers,
-    axisVectors,
-    rotationPlane: undefined as any
   };
 };
 

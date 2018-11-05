@@ -1,26 +1,18 @@
-import {mat4, create as mat4_Create, copy, multiply} from 'gl-mat4';
-import {vec3} from 'gl-vec3';
-import {quat} from 'gl-quat';
+import {mat4, create as mat4_Create, copy} from 'gl-mat4';
 import {includes} from 'lodash';
 import {Armature} from './index';
 import {Marker, MarkerType} from 'viewport/marker';
-import {Transform, createInitTransform} from 'gl-utils';
+import {Transform} from 'gl-utils';
 
 interface BoneData {
   readonly bindMatrix: mat4; // used when drawing markers
   readonly inverseBindMatrix: mat4;
-  readonly translation: vec3;
-  readonly rotation: quat;
-  readonly scale: vec3;
+  readonly bindTransform: Transform;
 }
 
 interface BoneFrameCache {
-  // transformation from animation only - does not inlcude bind position
-  // animTransformOffset: Transform;
-  // to be used in shader
   finalBoneMatrix: mat4;
-  //
-  parentGlobalTransform: mat4;
+  globalTransform: mat4;
 }
 
 export class Bone {
@@ -35,9 +27,8 @@ export class Bone {
     this.marker = new Marker(MarkerType.Bone);
     this.marker.owner = this;
     this.$_frameCache = {
-      // animTransformOffset: createInitTransform(),
       finalBoneMatrix: mat4_Create(),
-      parentGlobalTransform: mat4_Create(),
+      globalTransform: mat4_Create(),
     } as BoneFrameCache;
     Object.freeze(this.data);
   }
@@ -50,11 +41,6 @@ export class Bone {
     return bones.filter(isParent)[0];
   }
 
-  // getParentFrameMatrix (bones: Armature) {
-    // const parent = this.getParent(bones);
-    // return parent ? parent.getFrameMatrix() : mat4_Create();
-  // }
-
   getParentBindMatrix (bones: Armature) {
     const bindMat = mat4_Create();
     const parentBone = this.getParent(bones);
@@ -66,14 +52,8 @@ export class Bone {
     return bindMat;
   }
 
-  /** get bone matrix for current frame */
-  // getFrameMatrix () {
-    // const boneMat = this.$_frameCache.finalBoneMatrix;
-    // const {bindMatrix} = this.data;
-    // return multiply(mat4_Create(), boneMat, bindMatrix);
-  // }
-
-  getFrameMatrix2 () {
+  /** Returns bone matrix for this frame */
+  getFrameMatrix () {
     return this.$_frameCache.finalBoneMatrix;
   }
 

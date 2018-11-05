@@ -1,7 +1,5 @@
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {create as mat4_Create, fromScaling} from 'gl-mat4';
-import {Axis} from 'gl-utils';
-import {FrameEnv} from 'viewport/main';
 
 // Khronos' official blender gltf exporter is VERY broken.
 // VERY, VERY broken, if You check the 'swap Y-up axis' option.
@@ -29,15 +27,3 @@ import {FrameEnv} from 'viewport/main';
 //
 // All this is similar to left/right-hand coordinate system conversion
 export const BIND_MATRIX_FIX = fromScaling(mat4_Create(), vec3_Create(-1, 1, 1));
-
-
-////////////////////////////////////////////////////////
-
-
-/// swap rotation axis cause blender gltf exporter...
-/// (literary after clicking on rotate Axis.Y we will
-///  rotate on Axis.X and it will look good)
-// export const fixGltfExporterRotationAxis = (axis: Axis, frameEnv: FrameEnv) => {
-  // const {selectedObjectCfg} = frameEnv;
-  // return selectedObjectCfg.blenderExporterRotationAxisFix[axis];
-// };

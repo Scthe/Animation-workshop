@@ -2,10 +2,9 @@ import {fromValues as vec3_Create} from 'gl-vec3';
 import {
   mat4, create as mat4_Create, multiply,
   fromScaling, fromXRotation, fromZRotation,
-  translate
 } from 'gl-mat4';
 import {
-  Axis, AxisList, toRadians, transformPointByMat4,
+  Axis, AxisList, toRadians,
   setUniforms, DrawParameters, DepthTest, CullingMode
 } from 'gl-utils';
 
@@ -72,9 +71,7 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
   // It gives us correct position + rotation, just a couple things to fix later
   // (it can get funny if boneMat has scale build-in. oh, well!)
   const bone = opts.origin.owner as Bone;
-  // const boneMatrix = bone.getFrameMatrix();
-  const boneMatrix = multiply(mat4_Create(), bone.getFrameMatrix2(), bone.data.bindMatrix);
-  // const boneMatrix = calculateParentSpaceMatrix(opts.origin.owner as Bone, frameEnv);
+  const boneMatrix = multiply(mat4_Create(), bone.getFrameMatrix(), bone.data.bindMatrix);
 
   // combine
   const m = multiply(mat4_Create(), boneMatrix, axisRotationMatrix);
@@ -83,10 +80,7 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
 
 const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: mat4, modelMatrix: mat4) => {
   const {scene, glState} = frameEnv;
-  const {camera, gizmoMeta} = scene;
   const marker = scene.getMarker(axis);
-
-  gizmoMeta.axisVectors[axis] = transformPointByMat4(GIZMO_MOVE_TIP, modelMatrix, true);
 
   switch (opts.gizmoType) {
     case GizmoType.Move:
@@ -101,13 +95,12 @@ const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: 
       break;
     }
     case GizmoType.Rotate: {
-      const cameraPos = camera.getPosition();
-      const {handlePos, rotationPlane} = calcDraggableHandlePos_Rot(modelMatrix, cameraPos);
+      const cameraPos = scene.camera.getPosition();
+      const draggableHandlePos_WS = calcDraggableHandlePos_Rot(modelMatrix, cameraPos);
       // draggableHandlePos is already in WS, do not mul by modelMatrix again
       const modelMatrix2 = mat4_Create();
       const mvp2 = scene.getMVP(modelMatrix2);
-      marker.updatePosition(handlePos, modelMatrix2, mvp2);
-      scene.gizmoMeta.rotationPlane = rotationPlane;
+      marker.updatePosition(draggableHandlePos_WS, modelMatrix2, mvp2);
       break;
     }
   }

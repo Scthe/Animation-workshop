@@ -29,7 +29,6 @@ const getKeyframe = (objName: string) => {
 
 export const addMove = (objName: string, moveVec: vec3) => {
   const keyframe = getKeyframe(objName);
-  // vAdd(keyframe.translation, keyframe.translation, moveVec);
   vCopy(keyframe.translation, moveVec);
 };
 
@@ -43,7 +42,6 @@ export const getMove = (marker: Marker) => {
 
 export const addRotation = (objName: string, rotateQuat: quat) => {
   const keyframe = getKeyframe(objName);
-  // qMul(keyframe.rotation, keyframe.rotation, rotateQuat);
   qCopy(keyframe.rotation, rotateQuat);
 };
 

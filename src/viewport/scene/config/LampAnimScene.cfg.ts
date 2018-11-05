@@ -1,4 +1,3 @@
-import {Axis} from 'gl-utils';
 import {BoneConfigEntry, DEFAULT_CFG_VALUES} from './boneConfig';
 
 export const BONE_CONFIG = [
@@ -21,7 +20,6 @@ export const BONE_CONFIG = [
   {
     ...DEFAULT_CFG_VALUES,
     name: 'Armature.001_bHead',
-    blenderExporterRotationAxisFix: [Axis.AxisX, Axis.AxisY, Axis.AxisZ],
   } as BoneConfigEntry,
 
 ];

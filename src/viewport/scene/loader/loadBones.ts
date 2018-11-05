@@ -2,7 +2,7 @@ import {GltfAsset, gltf} from 'gltf-loader-ts';
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {fromValues as quat_Create} from 'gl-quat';
 import {create as mat4_Create} from 'gl-mat4';
-import {POSITION_0, ROTATION_0, SCALE_0} from 'gl-utils';
+import {POSITION_0, ROTATION_0, SCALE_0, Transform} from 'gl-utils';
 
 import {Bone, fillBindMatrices} from 'viewport/armature';
 
@@ -30,9 +30,11 @@ const createBoneData = (node: gltf.Node) => {
   return {
     bindMatrix: mat4_Create(),
     inverseBindMatrix: mat4_Create(),
-    translation: tra,
-    rotation: rot,
-    scale: scale,
+    bindTransform: {
+      position: tra,
+      rotation: rot,
+      scale: scale,
+    } as Transform,
   };
 };
 

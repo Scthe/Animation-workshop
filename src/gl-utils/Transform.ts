@@ -1,5 +1,6 @@
 import {vec3, fromValues as vec3_Create} from 'gl-vec3';
 import {quat, fromValues as quat_Create} from 'gl-quat';
+import {createModelMatrix} from './index';
 
 export interface Transform {
   position: vec3;
@@ -20,3 +21,9 @@ Object.freeze(POS_ROT_SCALE_0);
 export const POSITION_0 = POS_ROT_SCALE_0.position;
 export const ROTATION_0 = POS_ROT_SCALE_0.rotation;
 export const SCALE_0 = POS_ROT_SCALE_0.scale;
+
+export const convertTransformToMatrix = (transfrom: Transform) => {
+  const {position, rotation} = transfrom;
+  const scale = 1.0;
+  return createModelMatrix(position, rotation, scale);
+};

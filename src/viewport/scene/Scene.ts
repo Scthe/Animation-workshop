@@ -1,7 +1,5 @@
-import {vec3} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Shader, Vao, getMVP, Axis, hexToVec3} from 'gl-utils';
-import {Plane} from 'gl-utils/raycast';
 import {Armature} from 'viewport/armature';
 import {CameraFPS} from 'viewport/camera-fps';
 import {GlState} from 'viewport/GlState';
@@ -34,8 +32,6 @@ interface GizmoMeta {
   moveMesh: Mesh;
   rotateMesh: Mesh;
   markers: Marker[]; // only 3, but no Array<Marker, 3> in TS
-  axisVectors: vec3[];
-  rotationPlane: Plane;
 }
 
 // debug drag system
