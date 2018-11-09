@@ -1,7 +1,7 @@
 import {vec2, fromValues as vec2_Create} from 'gl-vec2';
 import {
   vec3, create as vec3_0, fromValues as vec3_Create,
-  scale, add
+  scale, add, subtract, dot
 } from 'gl-vec3';
 import {mat4, create as mat4_Create, invert} from 'gl-mat4';
 import {subtractNorm, transformPointByMat4} from 'gl-utils';
@@ -43,4 +43,23 @@ export const generateRayFromCamera = (camera: CameraDesc, mousePosPx: vec2) => {
 export const getPointFromRay = (ray: Ray, t: number) => {
   const offset = scale(vec3_0(), ray.dir, t);
   return add(vec3_0(), ray.origin, offset);
+};
+
+/** Find closest point to 'p' that also lies on the specified ray */
+export const projectPointOntoRay = (p: vec3, ray: Ray) => {
+  // dot op that we are going to use ignores ray.origin and uses (0,0,0)
+  // as ray start. Subtract here from p to move to same space
+  const p2 = subtract(vec3_0(), p, ray.origin);
+
+  // this is from the geometric definition of dot product
+  const dist = dot(p2, ray.dir);
+  const offset = scale(vec3_0(), ray.dir, dist);
+  return add(vec3_0(), ray.origin, offset);
+};
+
+
+/** are p0, p1 on same 'side' of ray direction? */
+export const getDirectionModifier = (ray: Ray, p0: vec3, p1: vec3) => {
+  const v2 = subtractNorm(p1, p0);
+  return dot(ray.dir, v2) >= 0 ? 1 : -1;
 };

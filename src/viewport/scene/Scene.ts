@@ -63,10 +63,10 @@ export class Scene {
     public readonly gizmoMeta: GizmoMeta,
   ) {
     const hd = this.debugMarkers;
-    const opts = ({ radius: 10, visible: true, clickable: false, color: hexToVec3('#eec64f')});
-    hd.dragStart      = new Marker(MarkerType.Debug, opts);
-    hd.dragNow        = new Marker(MarkerType.Debug, opts);
-    hd.dragNowOnPlane = new Marker(MarkerType.Debug, opts);
+    const opts = ({ radius: 10, visible: true, clickable: false});
+    hd.dragStart      = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#318c8f'), });
+    hd.dragNow        = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#69d3d6'), });
+    hd.dragNowOnPlane = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#40c170'), });
 
     hd.axis = [] as Marker[];
     for (let i = 0; i < DEBUG_AXIS_MARKERS_CNT; i++) {

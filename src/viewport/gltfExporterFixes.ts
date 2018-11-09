@@ -27,3 +27,6 @@ import {create as mat4_Create, fromScaling} from 'gl-mat4';
 //
 // All this is similar to left/right-hand coordinate system conversion
 export const BIND_MATRIX_FIX = fromScaling(mat4_Create(), vec3_Create(-1, 1, 1));
+
+// Don't even ask
+export const MOVE_BONE_AXIS_MODS = vec3_Create(-1, 1, -1);

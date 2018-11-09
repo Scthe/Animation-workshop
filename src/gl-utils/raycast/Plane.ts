@@ -27,7 +27,7 @@ export const planeRayIntersection = (plane: Plane, ray: Ray) => {
 
 
 /** Given plane normal and point that lies on the plane, calculate plane's `d` */
-const getPlane_d = (n: vec3, point: vec3) => dot(n, point);
+const getPlane_d = (n: vec3, point: vec3) => -dot(n, point);
 
 
 /**
@@ -35,9 +35,13 @@ const getPlane_d = (n: vec3, point: vec3) => dot(n, point);
  *  - contains point `p`
  *  - has normal perpendicular to `axis`
  *  - is perpendicular to camera
+ *
+ * NOTE: this is VERY iffy, but kinda works, which is good enough
  */
-export const createPlaneAroundAxisAndTowardCamera = (axis: vec3, p: vec3, camera: vec3) => {
-  const toCamera = subtractNorm(camera, p); // TODO would this be normal instead?
+export const createPlaneAroundAxisAndTowardCamera = (ray: Ray, camera: vec3) => {
+  const {origin: p, dir: axis} = ray;
+  const toCamera = subtractNorm(camera, p);
+
   // do cross twice - usuall thing to create plane normal
   // (plane includes rotation axis and is perpendicular to camera)
   const tangent = cross(vec3_0(), axis, toCamera);
@@ -45,5 +49,21 @@ export const createPlaneAroundAxisAndTowardCamera = (axis: vec3, p: vec3, camera
   return {
     normal: planeNormal,
     d: getPlane_d(planeNormal, p)
+  } as Plane;
+};
+
+
+/**
+ * Plane containg 'p' with normal toward 'target'
+ *
+ * NOTE: In practice, this function is a bit unstable, use
+ *       'createPlaneAroundAxisAndTowardCamera' instead
+ */
+export const createPlaneTowardPoint = (target: vec3, p: vec3) => {
+  const toTarget = subtractNorm(target, p);
+
+  return {
+    normal: toTarget,
+    d: getPlane_d(toTarget, p)
   } as Plane;
 };
