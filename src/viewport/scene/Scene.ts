@@ -1,10 +1,9 @@
-import {Shader, Vao, getMVP, Axis} from 'gl-utils';
+import {mat4, create as mat4_Create} from 'gl-mat4';
+import {Shader, Vao, getMVP, Axis, hexToVec3} from 'gl-utils';
 import {Armature} from 'viewport/armature';
 import {CameraFPS} from 'viewport/camera-fps';
-import {mat4} from 'gl-mat4';
 import {GlState} from 'viewport/GlState';
-import {Marker, MarkerPosition} from 'viewport/marker';
-// import {BoneConfigEntry} from './config';
+import {Marker, MarkerType} from 'viewport/marker';
 
 export interface Mesh {
   vao: Vao;
@@ -35,6 +34,15 @@ interface GizmoMeta {
   markers: Marker[]; // only 3, but no Array<Marker, 3> in TS
 }
 
+// debug drag system
+interface DebugMarkers {
+  axis: Marker[];
+  dragStart: Marker;
+  dragNow: Marker;
+  dragNowOnPlane: Marker;
+}
+const DEBUG_AXIS_MARKERS_CNT = 10;
+
 
 /*
 contains:
@@ -44,6 +52,8 @@ contains:
 */
 export class Scene {
 
+  public readonly debugMarkers = {} as DebugMarkers;
+
   constructor (
     public readonly glState: GlState,
     public readonly camera: CameraFPS,
@@ -51,7 +61,22 @@ export class Scene {
     public readonly lamp: Object3d,
     public readonly markerMeta: MarkerMeta,
     public readonly gizmoMeta: GizmoMeta,
-  ) {}
+  ) {
+    const hd = this.debugMarkers;
+    const opts = ({ radius: 10, visible: true, clickable: false});
+    hd.dragStart      = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#318c8f'), });
+    hd.dragNow        = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#69d3d6'), });
+    hd.dragNowOnPlane = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#40c170'), });
+
+    hd.axis = [] as Marker[];
+    for (let i = 0; i < DEBUG_AXIS_MARKERS_CNT; i++) {
+      hd.axis.push(new Marker(MarkerType.Debug, {
+        radius: 2,
+        visible: true,
+        clickable: false,
+      }));
+    }
+  }
 
   getMVP (modelMatrix: mat4) {
     const [width, height] = this.glState.getViewport();
@@ -67,19 +92,8 @@ export class Scene {
     return [
       ...this.lamp.bones.map(b => b.marker),
       ...this.gizmoMeta.markers,
+      ...this.getDebugMarkers(),
     ];
-  }
-
-  updateMarker (name: string | Axis, position: MarkerPosition) {
-    const marker = this.getMarker(name);
-
-    if (marker) {
-      marker.$_framePosition = position;
-    } else {
-      throw `Could not find marker for update. Searched by: '${name}'`;
-    }
-
-    return marker;
   }
 
   getMarker (name: string | Axis) {
@@ -93,6 +107,22 @@ export class Scene {
     }
 
     return undefined;
+  }
+
+  updateDebugMarkers () {
+    const ident = mat4_Create();
+    const vpMat = this.getMVP(ident);
+
+    this.getDebugMarkers().forEach(m => m.recalcNDC(vpMat));
+  }
+
+  private getDebugMarkers () {
+    return [
+      ...this.debugMarkers.axis,
+      this.debugMarkers.dragStart,
+      this.debugMarkers.dragNow,
+      this.debugMarkers.dragNowOnPlane,
+    ];
   }
 
 }

@@ -5,7 +5,7 @@ import {some} from 'lodash';
 /// most of this file is opaque to 3rd party
 /// (with exception for config.ts that uses this stuff)
 
-type PerAxisConstraints = Axis[]; // Per each axis
+type PerAxisConstraints = Axis[]; // impl: array of allowed axes
 
 export interface Constraints {
   position: PerAxisConstraints;

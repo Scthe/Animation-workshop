@@ -61,8 +61,7 @@ export class CameraFPS {
   private applyMove (moveDir: vec3) {
     if (moveDir[0] !== 0 || moveDir[1] !== 0 || moveDir[2] !== 0) {
       const rotationMat = transpose(mat4_Create(), this.getRotationMat());
-      const moveDirLocal = transformPointByMat4(vec3_Create(0, 0, 0), moveDir, rotationMat);
-
+      const moveDirLocal = transformPointByMat4(moveDir, rotationMat, true);
 
       for (let i = 0; i < 3; i++) {
         this.position[i] += moveDirLocal[i];

@@ -10,7 +10,6 @@ void main () {
 
   if (toCenterDist > vMarkerRadius * vMarkerRadius) {
     discard;
-    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   }
 
   gl_FragColor = vec4(vColor, 1.0);

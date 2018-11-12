@@ -1,10 +1,8 @@
-import {mat4, create as mat4_Create, multiply, identity} from 'gl-mat4';
-import {create as vec3_Create, add} from 'gl-vec3';
-import {create as quat_Create, multiply as qMul} from 'gl-quat';
+import {mat4, create as mat4_Create, multiply} from 'gl-mat4';
 import {AnimTimings} from 'viewport/animation';
 import {getMove, getRotation} from '../../UI_Bridge';
-import {Armature} from './index';
-import {createModelMatrix} from 'gl-utils';
+import {Armature, Bone} from './index';
+import {convertTransformToMatrix, Transform, SCALE_0} from 'gl-utils';
 
 /*
  *  In this file we update bone matrices for animation.
@@ -17,84 +15,65 @@ import {createModelMatrix} from 'gl-utils';
  *    * https://youtu.be/F-kcaonjHf8?t=3m23s
  */
 
-// some util struct to ease moving params
-interface BoneTransformsCfg {
-  animState: AnimTimings;
-  bones: Armature;
-}
-
-// get animation matrix for bone
-const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
-  const bone = cfg.bones[boneId];
-  const boneData = bone.data;
+const getAnimTransform = (bone: Bone) => {
   const marker = {name: bone.name} as any;
-
-  const deltaFromAnim = getMove(marker);
-  const translation = add(vec3_Create(), boneData.translation, deltaFromAnim);
-
-  const qAnim = getRotation(marker);
-  const rotation = qMul(quat_Create(), qAnim, boneData.rotation);
-
-  const scale = 0.95; // TODO remove, ATM prevents flickering
-  return createModelMatrix(translation, rotation, scale);
+  return {
+    position: getMove(marker),
+    rotation: getRotation(marker),
+    scale: SCALE_0,
+  } as Transform;
 };
+
+
+/**
+ * This, along with gizmo handler control transformation space.
+ */
+const calculateAnimTransformMat = (bone: Bone, animTransfrom: Transform) => {
+  const bindMat = convertTransformToMatrix(bone.data.bindTransform);
+  const animMat = convertTransformToMatrix(animTransfrom);
+  return multiply(mat4_Create(), bindMat, animMat);
+};
+
 
 /*
  * calculate bone and children (recursively)
  *
- * matrices order (reversed multiplication order cause opengl):
+ * matrices order:
  * 1. inverseBindMatrix - bring vertices to bone's local space
  *      In other words transformation: bindPosition->(0,0,0).
  *      In implementation, combination of BONE_BIND_MATRIX and PARENT'S_BONE_BIND_MATRIX.
+ *      NOTE: this resets the bone's rotation to identity (straight up usually)
  * 2. animationTransform - current local transform for this animation frame.
  *      if identity is given here, bone will land at (0,0,0) with no rotation.
  *      'true' identity is achieved if bind matrix is given here.
  *      In other words, this matrix must move from (0,0,0) to expected bone
- *      position/rotaton/scale
- * 3. parentTransfrom - this acts as local->global space transformation
+ *      [position/rotaton/scale]-localSpace
+ * 3. parentTransfrom - this acts as (0,0,0)->finalPosition.
+ *      e.g. You rotated the character's shoulder With animationTransform,
+ *      now we have to move the shoulder from (0,0,0) to proper position
+ *      relative to spine (where spine is parent bone).
  *      Look up how we calculated inverseBindMatrix
+ *      NOTE: parentTransfrom is waht makes the animation propagate down the
+ *      children
+ *
+ * In following implementation the multiplication order is reversed cause OpenGL
  */
-const calculateBone = (cfg: BoneTransformsCfg, boneId: number, parentTransfrom: mat4) => {
-  const bone = cfg.bones[boneId];
+const calculateBone = (bones: Armature, boneId: number, parentTransfrom: mat4) => {
+  const bone = bones[boneId] as Bone;
+  const {globalTransform, finalBoneMatrix} = bone.getFrameCache(); // aliases
 
-  const animationTransform = getAnimationTransform(cfg, boneId);
-  identity(bone.$_frameCache);
-  const globalTransform = multiply(mat4_Create(), parentTransfrom, animationTransform);
-  multiply(bone.$_frameCache, globalTransform, bone.data.inverseBindMatrix);
+  // transform for current frame
+  const animTransfrom = getAnimTransform(bone);
+  const animationTransformMat = calculateAnimTransformMat(bone, animTransfrom);
+
+  multiply(globalTransform, parentTransfrom, animationTransformMat);
+  multiply(finalBoneMatrix, globalTransform, bone.data.inverseBindMatrix);
 
   bone.children.forEach(childIdx => {
-    calculateBone(cfg, childIdx, globalTransform);
+    calculateBone(bones, childIdx, globalTransform);
   });
 };
 
-export const calculateBoneMatrices = (animState: AnimTimings, bones: Armature) => {
-  const cfg = { animState, bones, };
-  const root = mat4_Create();
-  calculateBone(cfg, 0, root);
+export const calculateBoneMatrices = (_: AnimTimings, bones: Armature) => {
+  calculateBone(bones, 0, mat4_Create());
 };
-
-
-
-/*
-const getAnimationTransform = (cfg: BoneTransformsCfg, boneId: number) => {
-  // Interpolate scaling and generate scaling transformation matrix
-  aiVector3D Scaling;
-  CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-  Matrix4f ScalingM;
-  ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
-
-  // Interpolate rotation and generate rotation transformation matrix
-  aiQuaternion RotationQ;
-  CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-  Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
-
-  // Interpolate translation and generate translation transformation matrix
-  aiVector3D Translation;
-  CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-  Matrix4f TranslationM;
-  TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
-
-  // Combine the above transformations
-  return TranslationM * RotationM * ScalingM;
-}
-*/

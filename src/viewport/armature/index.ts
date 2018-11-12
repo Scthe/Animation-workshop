@@ -1,5 +1,6 @@
 export * from './calculateBoneMatrices';
-export * from './updateMarkers';
+export * from './updateArmatureMarkers';
+export * from './fillBindMatrices';
 
 import {Bone} from './Bone';
 export {Bone};

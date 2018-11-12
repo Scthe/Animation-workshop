@@ -7,16 +7,15 @@ import {
   Axis, AxisList, toRadians,
   setUniforms, DrawParameters, DepthTest, CullingMode
 } from 'gl-utils';
+
 import {Bone} from 'viewport/armature';
 import {FrameEnv} from 'viewport/main';
 import {Marker, MarkerType} from 'viewport/marker';
-import {
-  updateMarker as updateMarker_Move,
-  getMarkerRadius as getMarkerRadius_Move
-} from './move/updateMarker';
-import {updateMarker as updateMarker_Rot} from './rotate/updateMarker';
-import {GizmoType, AXIS_COLORS} from './index';
+import {GizmoType, AXIS_COLORS, GIZMO_MOVE_TIP} from './index';
 import {isAxisAllowed} from 'viewport/scene';
+
+import {getMarkerRadius as getMarkerRadius_Move} from './move/getMarkerRadius';
+import {calcDraggableHandlePos as calcDraggableHandlePos_Rot} from './rotate/calcDraggableHandlePos';
 // yep, 20 lines of imports.
 
 
@@ -55,18 +54,6 @@ const getAxisMatrix = (axis: Axis) => {
   }
 };
 
-/**
- * get bone matrix for current frame
- * It gives us correct position + rotation, just a couple things to fix later
- * (it can get funny if boneMat has scale build-in. oh, well!)
- */
-const getBoneMatrix = (marker: Marker) => {
-  const bone = marker.owner as Bone;
-  const boneMat = bone.$_frameCache;
-  const {bindMatrix} = bone.data;
-  return multiply(mat4_Create(), boneMat, bindMatrix);
-};
-
 const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
   // NOTE: don't try to read this function, just assume it is correct.
   //       There is limited number of permutations for matrix multiply order,
@@ -81,7 +68,14 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
   const scaleMatrix = fromScaling(mat4_Create(), vec3_Create(opts.size, opts.size, opts.size));
 
   // matrix 3: bone matrix
-  const boneMatrix = getBoneMatrix(opts.origin);
+  // It gives us correct position + rotation, just a couple things to fix later
+  // (it can get funny if boneMat has scale build-in. oh, well!)
+  // Explanation (TODO verify, don't remember ATM):
+  // inverseBindMatrix moves bone from world space (e.g. shoulder position)
+  // to (0,0,0). Bind matrix does reverse, so it takes gizmo at (0,0,0)
+  // and moves it to bind WS position (e.g. shoulder position)
+  const bone = opts.origin.owner as Bone;
+  const boneMatrix = multiply(mat4_Create(), bone.getFrameMatrix(), bone.data.bindMatrix);
 
   // combine
   const m = multiply(mat4_Create(), boneMatrix, axisRotationMatrix);
@@ -90,18 +84,27 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
 
 const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: mat4, modelMatrix: mat4) => {
   const {scene, glState} = frameEnv;
+  const marker = scene.getMarker(axis);
 
   switch (opts.gizmoType) {
     case GizmoType.Move:
     case GizmoType.Scale: {
-      const markerPos = updateMarker_Move(mvp, modelMatrix);
-      const marker = scene.updateMarker(axis, markerPos);
+      /// Move gizmo uses weird shape - arrow. Implmenting picking requires
+      /// some special code.
+      ///
+      /// Basically, we are going to place circular markers at the end of the arrows.
+      /// When the marker is clicked, the move translation will occur (after drag)
+      marker.updatePosition(GIZMO_MOVE_TIP, modelMatrix, mvp);
       marker.radius = getMarkerRadius_Move(glState, mvp, opts.origin);
       break;
     }
     case GizmoType.Rotate: {
-      const markerPos = updateMarker_Rot(scene, mvp, modelMatrix);
-      scene.updateMarker(axis, markerPos);
+      const cameraPos = scene.camera.getPosition();
+      const draggableHandlePos_WS = calcDraggableHandlePos_Rot(modelMatrix, cameraPos);
+      // draggableHandlePos is already in WS, do not mul by modelMatrix again
+      const modelMatrix2 = mat4_Create();
+      const mvp2 = scene.getMVP(modelMatrix2);
+      marker.updatePosition(draggableHandlePos_WS, modelMatrix2, mvp2);
       break;
     }
   }

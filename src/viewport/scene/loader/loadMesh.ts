@@ -41,18 +41,13 @@ const getAttributeData = async (gl: Webgl, asset: GltfAsset, accessorId: number)
 
 const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: number) => {
   const accessor = asset.gltf.accessors[indicesAccesorId];
-  if (accessor.componentType !== gl.UNSIGNED_BYTE) {
-    // hardcoded for now to gl.UNSIGNED_BYTE
-    throw `Unsupported index buffer component type (${accessor.componentType})`;
-  }
-
   const dataRaw = await asset.bufferViewData(accessor.bufferView);
   const buffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, dataRaw, gl.STATIC_DRAW);
 
   return {
-    indexGlType: gl.UNSIGNED_BYTE,
+    indexGlType: accessor.componentType,
     indexBuffer: buffer,
     triangleCnt: accessor.count / 3,
   };

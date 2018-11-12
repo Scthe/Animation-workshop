@@ -5,36 +5,26 @@ import {Shader, AxisList, Vao, VaoAttrInit} from 'gl-utils';
 import {CameraFPS} from 'viewport/camera-fps';
 import {AXIS_COLORS} from 'viewport/gizmo';
 import {GlState} from 'viewport/GlState';
-import {Marker} from 'viewport/marker';
+import {Marker, MarkerType} from 'viewport/marker';
 import {Scene, getNode, loadBones, loadMesh} from './index';
 import {isMeshNode} from 'viewport/scene/loader/_utils';
 import {generateMoveGizmo, generateRotateGizmo} from './_generateGizmoMeshes';
 
+import {
+  GLTF_URL, LAMP_ROOT_NODE,
+  SHADERS, CAMERA_SETTINGS
+} from './config';
 
-const CAMERA_SETTINGS = {
-  fovDgr: 90,
-  zNear: 0.1,
-  zFar: 100,
-};
 
-const SHADERS = {
-  LAMP_VERT: require('shaders/lampShader.vert.glsl'),
-  LAMP_FRAG: require('shaders/lampShader.frag.glsl'),
-  MARKER_VERT: require('shaders/marker.vert.glsl'),
-  MARKER_FRAG: require('shaders/marker.frag.glsl'),
-  GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
-  GIZMO_FRAG: require('shaders/lampShader.frag.glsl'),
-};
-const GLTF_URL = require('assets/TestScene.glb');
-const LAMP_ROOT_NODE = 'SkeletonTest_rig';
-const MARKER_VAO_SIZE = 255;
+const MARKER_VAO_SIZE = 256; // see also MAX_MARKERS in marker.vert.glsl
 
 
 const getMeshNode = (asset: GltfAsset, rootNodeName: string) => {
   const gltf = asset.gltf;
   const rootNode = getNode(asset, rootNodeName);
+  if (!rootNode) { return undefined; }
   const childNodes = rootNode.children.map((idx: number) => gltf.nodes[idx]);
-  return childNodes.filter(isMeshNode)[0];
+  return childNodes.find(isMeshNode);
 };
 
 const createInstancingVao = (gl: Webgl, shader: Shader, size: number) => {
@@ -55,7 +45,7 @@ const createMarkerMeta = (gl: Webgl) => {
 };
 
 const createGizmoMeta = (gl: Webgl) => {
-  const markers = AxisList.map(axis => new Marker({
+  const markers = AxisList.map(axis => new Marker(MarkerType.Gizmo, {
     owner: axis,
     color: AXIS_COLORS[axis],
   }));
@@ -64,7 +54,12 @@ const createGizmoMeta = (gl: Webgl) => {
   const moveMesh = generateMoveGizmo(gl, shader);
   const rotateMesh = generateRotateGizmo(gl, shader);
 
-  return { shader, moveMesh, rotateMesh, markers, };
+  return {
+    shader,
+    moveMesh,
+    rotateMesh,
+    markers,
+  };
 };
 
 
@@ -74,10 +69,15 @@ export const createScene = async (glState: GlState) => {
 
   const loader = new GltfLoader();
   const asset = await loader.load(GLTF_URL);
+  console.log('asset.gltf', asset.gltf);
 
   // lamp
   const meshNode = getMeshNode(asset, LAMP_ROOT_NODE);
-  const lampBones = await loadBones(asset, meshNode);
+  if (!meshNode) {
+    const nodeNames = asset.gltf.nodes.map(n => n.name).join(', ');
+    throw `Could not find object node '${LAMP_ROOT_NODE}' in [${nodeNames}]`;
+  }
+  const lampBones = loadBones(asset, meshNode);
   const lampMesh = await loadMesh(gl, materialWithArmature, asset, meshNode.mesh, {
     'POSITION': 'a_Position',
     'JOINTS_0': 'a_BoneIDs',

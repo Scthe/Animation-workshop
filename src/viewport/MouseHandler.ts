@@ -47,6 +47,7 @@ export class MouseHandler {
     element.addEventListener('mousedown', this.onMouseDown, false);
     element.addEventListener('mousemove', this.onMouseMove, false);
     element.addEventListener('mouseup', this.onMouseUp, false);
+    element.addEventListener('mouseleave', this.stopDragging, false);
   }
 
   public setOnMarkerClicked(cb: ClickHandler) {
@@ -59,6 +60,16 @@ export class MouseHandler {
 
   public setOnMarkerUnclicked(cb: UnclickHandler) {
     this.onMarkerUnclickedHandler = cb;
+  }
+
+  private stopDragging = () => {
+    if (this.clickedState === ClickedState.Marker) {
+      if (this.onMarkerUnclickedHandler) {
+        this.onMarkerUnclickedHandler();
+      }
+    }
+
+    this.clickedState = ClickedState.NotClicked;
   }
 
   private onMouseDown = (event: MouseEvent) => {
@@ -85,13 +96,7 @@ export class MouseHandler {
   private onMouseUp = (event: MouseEvent ) => {
     if (event.button !== MOUSE_LEFT_BTN) { return; }
 
-    if (this.clickedState === ClickedState.Marker) {
-      if (this.onMarkerUnclickedHandler) {
-        this.onMarkerUnclickedHandler();
-      }
-    }
-
-    this.clickedState = ClickedState.NotClicked;
+    this.stopDragging();
   }
 
   private onMouseMove = (event: MouseEvent) => {

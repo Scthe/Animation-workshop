@@ -18,6 +18,7 @@ const CAMERA_ROTATE_SPEED = 0.025 / 6;
 // TODO fix gizmo/handlers
 // TODO final glb
 // TODO gizmo should always draw on top. use stencil?
+// TODO when looking behind, the markers are still visible
 
 
 //////////
@@ -28,7 +29,7 @@ export interface FrameEnv {
   timing: AnimTimings;
   glState: GlState;
   scene: Scene;
-  selectedObject: Marker;
+  selectedMarker: Marker;
   selectedObjectCfg: BoneConfigEntry;
 }
 
@@ -40,7 +41,7 @@ const resetGizmoMarkers = (scene: Scene) => {
 };
 
 const createGizmoDrawOpts = (frameEnv: FrameEnv) => {
-  const {glState, selectedObject} = frameEnv;
+  const {glState, selectedMarker} = frameEnv;
   const {draggedGizmo} = glState.draggingStatus;
 
   const {gizmoSize, showDebug} = uiBridge.getFromUI(
@@ -48,10 +49,10 @@ const createGizmoDrawOpts = (frameEnv: FrameEnv) => {
   );
   const isDragging = glState.isDragging();
 
-  return selectedObject ? {
+  return selectedMarker ? {
     size: gizmoSize / 100, // just go with it..
     gizmoType: draggedGizmo,
-    origin: selectedObject,
+    origin: selectedMarker,
     forceDrawMarkers: showDebug,
     isDragging,
   } : undefined;
@@ -73,12 +74,12 @@ const tryChangeGizmo = (glState: GlState, scene: Scene) => {
 };
 
 const getSelectedObject = (scene: Scene) => {
-  const {selectedObject} = uiBridge.getFromUI(
-    appStateGetter('selectedObject')
+  const {selectedObjectName} = uiBridge.getFromUI(
+    appStateGetter('selectedObjectName')
   );
   return {
-    selectedObject: scene.getMarker(selectedObject as string),
-    selectedObjectCfg: getBoneConfig(selectedObject as string),
+    selectedMarker: scene.getMarker(selectedObjectName),
+    selectedObjectCfg: getBoneConfig(selectedObjectName),
   };
 };
 
@@ -124,10 +125,11 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
 
   // markers
   updateArmatureMarkers(scene, lamp);
-  const {markerSize} = uiBridge.getFromUI(
-    appStateGetter('markerSize')
+  scene.updateDebugMarkers();
+  const {markerSize, showDebug} = uiBridge.getFromUI(
+    appStateGetter('markerSize', 'showDebug')
   );
-  drawMarkers(frameEnv, markerSize / 10.0); // just go with it..
+  drawMarkers(frameEnv, markerSize / 10.0, showDebug); // just go with it..
 };
 
 //////////
@@ -144,7 +146,7 @@ const onMarkerClicked = (marker: Marker) => {
   switch (marker.type) {
     case MarkerType.Bone:
       glState.draggingStatus.draggedAxis = undefined;
-      uiBridge.setOnUI(appStateSetter('selectedObject', marker.name));
+      uiBridge.setOnUI(appStateSetter('selectedObjectName', marker.name));
       break;
     case MarkerType.Gizmo:
       glState.draggingStatus.draggedAxis = marker.owner as any;
@@ -152,21 +154,36 @@ const onMarkerClicked = (marker: Marker) => {
   }
 };
 
+const setCursor = (cursor: string) =>
+  document.body.style.cursor = cursor;
+
 const onMarkerDragged = (ev: MouseDragEvent) => {
   const {draggedAxis, draggedGizmo} = glState.draggingStatus;
 
-  const {selectedObject} = uiBridge.getFromUI(
-    appStateGetter('selectedObject')
-  );
+  const frameEnv = {
+    timing: undefined, // no timing for handler - use mouse delta
+    glState,
+    scene,
+    ...getSelectedObject(scene),
+  } as FrameEnv; // typecheck this pls
 
-  if (!selectedObject || draggedAxis === undefined) { return; }
+  if (!frameEnv.selectedMarker || draggedAxis === undefined) {
+    return;
+  }
+
+  const dragEv = {
+    mouseEvent: ev,
+    axis: draggedAxis,
+  };
 
   switch (draggedGizmo) {
     case GizmoType.Move:
-      applyGizmoMove(selectedObject, ev, draggedAxis);
+      applyGizmoMove(frameEnv, dragEv);
+      setCursor('move');
       break;
     case GizmoType.Rotate:
-      applyGizmoRotate(selectedObject, ev, draggedAxis);
+      applyGizmoRotate(frameEnv, dragEv);
+      setCursor('ew-resize');
       break;
   }
 };
@@ -176,6 +193,7 @@ const onMarkerUnclicked = () => {
   if (glState.isDragging()) {
     glState.draggingStatus.draggedAxis = undefined;
   }
+  setCursor('default');
 };
 
 export const init = async (canvas: HTMLCanvasElement) => {

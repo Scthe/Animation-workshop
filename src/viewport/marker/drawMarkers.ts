@@ -3,8 +3,8 @@ import {Marker, MarkerType, SELECTED_BONE_COLOR} from './index';
 import {FrameEnv} from 'viewport/main';
 
 const getMarkerColor = (frameEnv: FrameEnv, marker: Marker) => {
-  const selectedObj = frameEnv.selectedObject;
-  return selectedObj && selectedObj.name === marker.name ? SELECTED_BONE_COLOR : marker.color;
+  const selectedMarker = frameEnv.selectedMarker;
+  return selectedMarker && selectedMarker.name === marker.name ? SELECTED_BONE_COLOR : marker.color;
 };
 
 const setMarkerUniforms = (frameEnv: FrameEnv, markers: Marker[], scale: number) => {
@@ -20,8 +20,7 @@ const setMarkerUniforms = (frameEnv: FrameEnv, markers: Marker[], scale: number)
 
   markers.forEach((marker, i) => {
     const posName = `g_MarkerPositions[${i}]`;
-    const position = marker.$_framePosition.positionNDC;
-    gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), position);
+    gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), marker.$positionNDC);
 
     const colName = `g_MarkerColors[${i}]`;
     gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), getMarkerColor(frameEnv, marker));
@@ -32,14 +31,20 @@ const setMarkerUniforms = (frameEnv: FrameEnv, markers: Marker[], scale: number)
   });
 };
 
+const getVisibleMarkers = (allMarkers: Marker[], showDebug: boolean) => {
+  return allMarkers.filter(marker => {
+    const visibleByDebug = marker.type !== MarkerType.Debug || showDebug;
+    return marker.visible && visibleByDebug;
+  });
+};
 
 const VERTICES_PER_MARKER = 6;
 
-export const drawMarkers = (frameEnv: FrameEnv, scale: number) => {
+export const drawMarkers = (frameEnv: FrameEnv, scale: number, showDebug: boolean) => {
   const {glState: {gl}, scene} = frameEnv;
   const {shader, instancingVAO} = scene.markerMeta;
 
-  const markers = scene.getMarkers().filter(m => m.visible);
+  const markers = getVisibleMarkers(scene.getMarkers(), showDebug);
   const vertexCount = VERTICES_PER_MARKER * markers.length;
 
   const dp = new DrawParameters();
