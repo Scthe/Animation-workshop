@@ -10,8 +10,11 @@ interface BoneData {
   readonly bindTransform: Transform;
 }
 
+// @see calculateBoneMatrices.ts for more details
 interface BoneFrameCache {
+  // matrix send to shader
   finalBoneMatrix: mat4;
+  // if bone has to be used as parent space
   globalTransform: mat4;
 }
 

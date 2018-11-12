@@ -70,6 +70,10 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
   // matrix 3: bone matrix
   // It gives us correct position + rotation, just a couple things to fix later
   // (it can get funny if boneMat has scale build-in. oh, well!)
+  // Explanation (TODO verify, don't remember ATM):
+  // inverseBindMatrix moves bone from world space (e.g. shoulder position)
+  // to (0,0,0). Bind matrix does reverse, so it takes gizmo at (0,0,0)
+  // and moves it to bind WS position (e.g. shoulder position)
   const bone = opts.origin.owner as Bone;
   const boneMatrix = multiply(mat4_Create(), bone.getFrameMatrix(), bone.data.bindMatrix);
 

@@ -60,7 +60,7 @@ const calculateAnimTransformMat = (bone: Bone, animTransfrom: Transform) => {
  */
 const calculateBone = (bones: Armature, boneId: number, parentTransfrom: mat4) => {
   const bone = bones[boneId] as Bone;
-  const {globalTransform, finalBoneMatrix} = bone.getFrameCache();
+  const {globalTransform, finalBoneMatrix} = bone.getFrameCache(); // aliases
 
   // transform for current frame
   const animTransfrom = getAnimTransform(bone);

@@ -7,9 +7,11 @@ const getMarkerPosFromBone = (armature: Armature, bone: Bone) => {
   const boneMat = bone.getFrameMatrix();
   const parentBindMat = bone.getParentBindMatrix(armature);
 
-  // bone.translation is bone offset relative to parent
-  // by transforming through parent matrix we can
-  // calculate final position
+  // bone.translation is bone offset relative to parent.
+  // By transforming through parent matrix we can
+  // calculate final position.
+  // (Just think of this as a vector from parent
+  //  to childPosition that needs to be transformed)
   const bonePos = bone.data.bindTransform.position;
 
   // same steps as normal bone calculations, but on CPU this time
