@@ -51,7 +51,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   }
 
   public render() {
-    const {timelineState, appState} = this.props;
+    const {appState} = this.props;
     const tfxSpace = (appState.isUseLocalSpace
       ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
 
@@ -75,7 +75,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
           <Tooltip text='Play [V]' className={Styles.Tooltip} />
           <Button onClick={this.onPlay} theme={ButtonTheme.Green}>
-            {timelineState.isPlaying
+            {appState.isPlaying
               ? <FaIcon svg={require('fa/faPause')} />
               : <FaIcon svg={require('fa/faPlay')} /> }
           </Button>
@@ -94,9 +94,9 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
         <Tooltip text='Current frame' className={Styles.Tooltip} />
         <Input
           name='current-frame'
-          value={timelineState.currentFrame + 1}
+          value={appState.currentFrame + 1}
           className={Styles.FrameStatus}
-          append={` of ${timelineState.frameCount}`}
+          append={` of ${appState.frameCount}`}
           onInput={this.onFrameTextInput}
           validate={InputValidate.NumberDecimal}
           rawProps={{maxlength: 3}}
@@ -177,68 +177,64 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     }
   }
 
-  private gotoFrame (frameId: number) {
-    const {timelineState} = this.props;
-    const frameIdFixed = timelineState.clampFrame(frameId);
-
-    if (!timelineState.isPlaying && timelineState.currentFrame !== frameIdFixed) {
-      timelineState.currentFrame = frameIdFixed;
-    }
-  }
 
   /* GENERAL PLAYBACK */
   private onPlay = () => {
-    const {timelineState} = this.props;
-    timelineState.isPlaying = !timelineState.isPlaying;
+    const {appState} = this.props;
+    appState.isPlaying = !appState.isPlaying;
   }
 
   private onReset = () => {
-    const {timelineState} = this.props;
-    timelineState.isPlaying = false;
+    const {appState} = this.props;
+    appState.isPlaying = false;
 
-    let range = timelineState.previewRange;
-    this.gotoFrame(Math.min(...range));
+    appState.gotoFrame(appState.previewRange_Min);
   }
 
   private onPrevFrame = () => {
-    const {timelineState} = this.props;
-    this.gotoFrame(timelineState.currentFrame - 1);
+    const {appState} = this.props;
+    appState.gotoFrame(appState.currentFrame - 1);
   }
 
   private onNextFrame = () => {
-    const {timelineState} = this.props;
-    this.gotoFrame(timelineState.currentFrame + 1);
+    const {appState} = this.props;
+    appState.gotoFrame(appState.currentFrame + 1);
   }
 
   private onFrameTextInput = (nextVal: string, e: any) => {
     const val = parseFloat(nextVal);
     if (isNaN(val)) { return; }
 
-    this.gotoFrame(val - 1);
+    const {appState} = this.props;
+    appState.gotoFrame(val - 1);
   }
 
   /* KEYFRAME MANIPULATION */
   private onPrevKeyframe = () => {
-    const {timelineState} = this.props;
-    const [prevKeyframe, ] = timelineState.getCurrentObjectKeyframeNeighbours(timelineState.currentFrame, false);
+    const {timelineState, appState} = this.props;
+    const prevKeyframe = timelineState.getKeyframeBefore(
+      appState.selectedObjectName, appState.currentFrame, false
+    );
 
     if (prevKeyframe) {
-      this.gotoFrame(prevKeyframe.frameId);
+      appState.gotoFrame(prevKeyframe.frameId);
     }
   }
 
   private onNextKeyframe = () => {
-    const {timelineState} = this.props;
-    const [ , nextKeyframe] = timelineState.getCurrentObjectKeyframeNeighbours(timelineState.currentFrame, false);
+    const {timelineState, appState} = this.props;
+    const nextKeyframe = timelineState.getKeyframeAfter(
+      appState.selectedObjectName, appState.currentFrame, false
+    );
 
     if (nextKeyframe) {
-      this.gotoFrame(nextKeyframe.frameId);
+      appState.gotoFrame(nextKeyframe.frameId);
     }
   }
 
   private onKeyframeDelete = () => {
-    const {timelineState} = this.props;
-    timelineState.deleteKeyframeForCurrentObject(timelineState.currentFrame);
+    const {timelineState, appState} = this.props;
+    timelineState.deleteKeyframe(appState.selectedObjectName, appState.currentFrame);
   }
 
 

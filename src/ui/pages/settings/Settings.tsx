@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Settings.scss');
-import {TimelineState} from 'ui/state';
+import {AppState} from 'ui/state';
 import {Tabs} from 'ui/components';
 import {TabGlobal} from './TabGlobal';
 import {TabObject} from './TabObject';
@@ -16,11 +16,11 @@ const TABS = [
 
 interface SettingsProps {
   className?: string;
-  timelineState?: TimelineState;
+  appState?: AppState;
 }
 
 
-@inject('timelineState')
+@inject('appState')
 @observer
 export class Settings extends Component<SettingsProps, any> {
 
@@ -35,11 +35,11 @@ export class Settings extends Component<SettingsProps, any> {
   }
 
   private getClasses () {
-    const {className, timelineState} = this.props;
+    const {className, appState} = this.props;
     return classnames(
       Styles.Settings,
       className,
-      {[Styles.IsPlaying]: timelineState.isPlaying},
+      {[Styles.IsPlaying]: appState.isPlaying},
     );
   }
 

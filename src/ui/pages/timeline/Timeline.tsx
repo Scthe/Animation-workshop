@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Timeline.scss');
-import {TimelineState} from 'ui/state';
+import {AppState} from 'ui/state';
 import {TimelineButtonRow} from './TimelineButtonRow';
 import {TimelineAxis} from './TimelineAxis';
 import {Button, ButtonTheme, FaIcon} from 'ui/components';
@@ -10,11 +10,11 @@ import {Button, ButtonTheme, FaIcon} from 'ui/components';
 
 interface TimelineProps {
   className?: string;
-  timelineState?: TimelineState;
+  appState?: AppState;
 }
 
 
-@inject('timelineState')
+@inject('appState')
 @observer
 export class Timeline extends Component<TimelineProps, any> {
 
@@ -29,8 +29,8 @@ export class Timeline extends Component<TimelineProps, any> {
   }
 
   private renderPauseButton () {
-    const {timelineState} = this.props;
-    if (!timelineState.isPlaying) { return null; }
+    const {appState} = this.props;
+    if (!appState.isPlaying) { return null; }
 
     return (
       <div className={Styles.IsPlayingOverlay}>
@@ -52,8 +52,8 @@ export class Timeline extends Component<TimelineProps, any> {
   }
 
   private onPause = () => {
-    const {timelineState} = this.props;
-    timelineState.isPlaying = false;
+    const {appState} = this.props;
+    appState.isPlaying = false;
   }
 
 }

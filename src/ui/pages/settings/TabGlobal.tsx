@@ -8,7 +8,7 @@ import {
   Tooltip, TooltipPosition
 } from 'ui/components';
 import {
-  AppState, TimelineState,
+  AppState,
   MAX_MARKER_SIZE, MAX_GIZMO_SIZE,
   MAX_CAMERA_MOVE_SPEED, MAX_CAMERA_ROTATE_SPEED,
 } from 'ui/state';
@@ -22,17 +22,15 @@ const QUAT_INTERPOLATIONS = [
 interface TabGlobalProps {
   className?: string;
   appState?: AppState;
-  timelineState?: TimelineState;
 }
 
 
 @inject('appState')
-@inject('timelineState')
 @observer
 export class TabGlobal extends Component<TabGlobalProps, any> {
 
   public render () {
-    const {appState, timelineState} = this.props;
+    const {appState} = this.props;
 
     const tooltipProps = {
       className: Styles.Tooltip,
@@ -75,14 +73,14 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
             onSelected={this.setPreviewRangeA}
             name='preview-start'
             label='Preview start'
-            min={0} max={timelineState.frameCount} value={timelineState.previewRange[0]}
+            min={0} max={appState.frameCount} value={appState._previewRange[0]}
           />
           <Tooltip text='Temporarily limit keyframe range' {...tooltipProps} />
           <Slider
             onSelected={this.setPreviewRangeB}
             name='preview-end'
             label='Preview end'
-            min={0} max={timelineState.frameCount} value={timelineState.previewRange[1]}
+            min={0} max={appState.frameCount} value={appState._previewRange[1]}
           />
         </Section>
 
@@ -165,25 +163,25 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
   }
 
   private setPreviewRangeA = (frameId: number) => {
-    const {timelineState} = this.props;
-    const otherFrameId = timelineState.previewRange[1];
-    timelineState.previewRange = [
+    const {appState} = this.props;
+    const otherFrameId = appState.previewRange[1];
+    appState._previewRange = [
       this.getPreviewRangeNum(frameId, otherFrameId), otherFrameId
     ];
   }
 
   private setPreviewRangeB = (frameId: number) => {
-    const {timelineState} = this.props;
-    const otherFrameId = timelineState.previewRange[0];
-    timelineState.previewRange = [
+    const {appState} = this.props;
+    const otherFrameId = appState.previewRange[0];
+    appState._previewRange = [
       otherFrameId, this.getPreviewRangeNum(frameId, otherFrameId)
     ];
   }
 
   private getPreviewRangeNum (frameIdNew: number, frameIdOther: number) {
-    const {timelineState} = this.props;
+    const {appState} = this.props;
 
-    frameIdNew = clamp(frameIdNew, 0, timelineState.frameCount);
+    frameIdNew = clamp(frameIdNew, 0, appState.frameCount);
     if (frameIdNew === frameIdOther) {
       frameIdNew = frameIdOther === 0 ? frameIdOther + 1 : frameIdOther - 1;
     }
@@ -192,8 +190,8 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
   }
 
   private resetPreviewRange = () => {
-    const {timelineState} = this.props;
-    timelineState.previewRange = [0, timelineState.frameCount];
+    const {appState} = this.props;
+    appState.resetPreviewRange();
   }
 
   private onCameraMoveSpeed = (nextValue: number) => {

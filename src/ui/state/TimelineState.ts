@@ -1,10 +1,11 @@
-import {observable, computed} from 'mobx';
-import {Keyframe, getNeighboursKeyframes} from 'viewport/animation';
-import {clamp} from 'ui/utils';
+// import {observable, computed} from 'mobx';
+import {Keyframe} from 'viewport/animation';
+import {Transform} from 'gl-utils';
+import {find, findLast} from 'lodash';
 
-const MAX_FRAMES = 250;
 
 // type TimelineMap = {[key: string]: Timeline};
+type BoneName = string;
 
 const KEYFRAMES =  [
   {frameId: 5, },
@@ -13,57 +14,70 @@ const KEYFRAMES =  [
   {frameId: 200, },
 ] as Keyframe[];
 
+const isKeyframeExact = (frameId: number, allowExact: boolean) => (keyframe: Keyframe) =>
+  allowExact && keyframe.frameId === frameId;
+const isKeyframeBefore = (frameId: number, allowExact: boolean) => (keyframe: Keyframe) =>
+  keyframe.frameId < frameId || isKeyframeExact(frameId, allowExact)(keyframe);
+const isKeyframeAfter = (frameId: number, allowExact: boolean) => (keyframe: Keyframe) =>
+  keyframe.frameId > frameId || isKeyframeExact(frameId, allowExact)(keyframe);
+
 
 export class TimelineState {
-
-  // current frame on timeline
-  @observable currentFrame = 0;
-  // playing animation should disable UI
-  @observable isPlaying = false;
   // all animation data
-  // private timelines = {} as TimelineMap;
-  // preview
-  @observable previewRange = [150, 50]; // [0, MAX_FRAMES];
+  // @observable timelines = {} as TimelineMap;
 
-  @computed
-  get frameCount () { return MAX_FRAMES; }
-
-  @computed
-  get currentObjectTimeline () {
+  getTimeline (boneName: BoneName) {
+    // if (!timelines[name]) {
+      // timelines[name] = [];
+    // }
     return KEYFRAMES;
   }
 
-  clampFrame (frameId: number) {
-    return clamp(frameId, 0, this.frameCount - 1);
+  hasKeyframeAt (boneName: BoneName, frameId: number) {
+    return !!this.getKeyframeAt(boneName, frameId);
   }
 
-  getCurrentObjectKeyframeNeighbours (frameId: number, allowCurrent: boolean = true) {
-    return getNeighboursKeyframes(this.currentObjectTimeline, frameId, allowCurrent);
+  insertKeyframeAt (boneName: BoneName, frameId: number, transform: Transform) {
+    console.log(`would add keyframe ${boneName}[${frameId}]`, transform);
+    /*
+    const timeline = this.getTimeline(boneName);
+    if (!timeline) { return undefined; }
+
+    const keyframe = { frameId, transform, } as Keyframe;
+    const newTimeline = [...timeline, keyframe];
+    // TODO should keep reference?
+    this.timelines[boneName] = timeline.filter(keyframe => keyframe.frameId !== frameId);
+    */
   }
 
-  deleteKeyframeForCurrentObject (frameId: number) {
-    console.log(`would delete keyframe ${frameId}`);
+  deleteKeyframe (boneName: BoneName, frameId: number) {
+    console.log(`would delete keyframe ${boneName}[${frameId}]`);
+    /*
+    const timeline = this.getTimeline(boneName);
+    if (!timeline) { return undefined; }
+    // TODO should keep reference?
+    this.timelines[boneName] = timeline.filter(keyframe => keyframe.frameId !== frameId);
+    */
   }
 
-  /*
-  // sets keyframe for selected object
-  setKeyframe (name: string, keyframe: Keyframe) {
-    const currentObj = this.getSelectedObj();
-    const time = this.getCurrentTime();
-    const timeline = this.getTimeline(currentObj);
-    timelineSet(timeline, time, keyframe);
+  private getKeyframeAt (boneName: BoneName, frameId: number) {
+    const timeline = this.getTimeline(boneName);
+    if (!timeline) { return undefined; }
+    return timeline.find(keyframe => keyframe.frameId === frameId);
   }
 
-  // delete keyframe
-  deleteKeyframe (name: string, frameId: number) {
+  getKeyframeBefore (boneName: BoneName, frameId: number, allowExact = true) {
+    const timeline = this.getTimeline(boneName);
+    if (!timeline) { return undefined; }
+
+    return findLast(timeline, isKeyframeBefore(frameId, allowExact));
   }
 
-  // get timeline for an object
-  getTimeline (name: string) {
-    if (!timelines[name]) {
-      timelines[name] = [];
-    }
-    return timelines[name];
+  getKeyframeAfter (boneName: BoneName, frameId: number, allowExact = true) {
+    const timeline = this.getTimeline(boneName);
+    if (!timeline) { return undefined; }
+
+    return find(timeline, isKeyframeAfter(frameId, allowExact));
   }
-  */
+
 }

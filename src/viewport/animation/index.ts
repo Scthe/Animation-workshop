@@ -1,6 +1,5 @@
 import {Transform} from 'gl-utils';
 
-export * from './getNeighbourKeyframes';
 export * from './AnimTimings';
 
 // this is not displayed fps, this internal value how densly the keyframes

@@ -5,7 +5,7 @@ import {classnames} from 'ui/utils';
 const Styles = require('./TabObject.scss');
 
 import {Section, Input, InputValidate, FaIcon} from 'ui/components';
-import {AppState} from 'ui/state';
+import {AppState, TimelineState} from 'ui/state';
 import {isAxisAllowed} from 'viewport/scene';
 import {GizmoType} from 'viewport/gizmo';
 import {Axis} from 'gl-utils';
@@ -39,10 +39,12 @@ const ROTATION_FIELDS = [
 interface TabObjectProps {
   className?: string;
   appState?: AppState;
+  timelineState?: TimelineState;
 }
 
 
 @inject('appState')
+@inject('timelineState')
 @observer
 export class TabObject extends Component<TabObjectProps, any> {
 
@@ -52,14 +54,14 @@ export class TabObject extends Component<TabObjectProps, any> {
 
     if (!obj) {
       return (
-        <div className={this.getClasses(false)}>
+        <div className={this.getClasses()}>
           <p className={Styles.NoObjectSelected}>No object selected</p>
         </div>
       );
     }
 
     return (
-      <div className={this.getClasses(obj.hasKeyframeAtCurrentFrame)}>
+      <div className={this.getClasses()}>
 
         <h2 className={Styles.ObjectName}>
           {obj.isBone
@@ -68,7 +70,7 @@ export class TabObject extends Component<TabObjectProps, any> {
           {obj.name}
         </h2>
 
-        {obj.hasKeyframeAtCurrentFrame
+        {this.hasKeyframeAtCurrentFrame()
           ? (<p className={Styles.KeyframeInfoYes}>
               <FaIcon svg={require('fa/faKey')} />
               Keyframe
@@ -94,12 +96,20 @@ export class TabObject extends Component<TabObjectProps, any> {
     );
   }
 
-  private getClasses (hasKeyframeAtCurrentFrame: boolean) {
+  private hasKeyframeAtCurrentFrame() {
+    const {timelineState, appState} = this.props;
+
+    return appState.selectedObjectName && timelineState.hasKeyframeAt(
+      appState.selectedObjectName, appState.currentFrame
+    );
+  }
+
+  private getClasses () {
     const {className} = this.props;
     return classnames(
       Styles.TabObject,
       className,
-      {[Styles.hasKeyframe]: hasKeyframeAtCurrentFrame}
+      {[Styles.hasKeyframe]: this.hasKeyframeAtCurrentFrame()}
     );
   }
 
@@ -120,7 +130,6 @@ export class TabObject extends Component<TabObjectProps, any> {
     return (
       <Input
         prepend={prepend}
-        append={locked ? <FaIcon svg={require('fa/faBan')} /> : undefined}
         className={className}
         name={name}
         disabled={locked}
