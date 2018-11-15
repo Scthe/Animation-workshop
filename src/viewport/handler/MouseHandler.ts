@@ -1,6 +1,6 @@
 import {vec2, fromValues as vec2_Create} from 'gl-vec2';
-import {GlState} from './GlState';
-import {Marker, getMarkerAt} from './marker';
+import {GlState} from 'viewport/GlState';
+import {Marker, getMarkerAt} from 'viewport/marker';
 import {Scene} from 'viewport/scene';
 
 
