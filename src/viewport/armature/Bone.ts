@@ -2,7 +2,7 @@ import {mat4, create as mat4_Create, copy} from 'gl-mat4';
 import {includes} from 'lodash';
 import {Armature} from './index';
 import {Marker, MarkerType} from 'viewport/marker';
-import {Transform} from 'gl-utils';
+import {Transform, createInitTransform} from 'gl-utils';
 
 interface BoneData {
   readonly bindMatrix: mat4; // used when drawing markers
@@ -16,6 +16,9 @@ interface BoneFrameCache {
   finalBoneMatrix: mat4;
   // if bone has to be used as parent space
   globalTransform: mat4;
+  // result of keyframe interpolation (and gizmo dragging),
+  // basis for matrices calculation
+  animationTransform: Transform;
 }
 
 export class Bone {
@@ -32,7 +35,8 @@ export class Bone {
     this.$_frameCache = {
       finalBoneMatrix: mat4_Create(),
       globalTransform: mat4_Create(),
-    } as BoneFrameCache;
+      animationTransform: createInitTransform(),
+    };
     Object.freeze(this.data);
   }
 

@@ -15,7 +15,6 @@ import {
   getDirectionModifier,
 } from 'gl-utils/raycast';
 
-import {addMove} from '../../UI_Bridge';
 import {Scene} from 'viewport/scene';
 import {
   GizmoHandleDragEvent, Viewport,
@@ -39,7 +38,7 @@ const calculateMoveOffset = (moveAxisWorldSpace: Ray, firstClick: vec3, mouseNow
   return amountMoved * dir;
 };
 
-export const applyGizmoMove = (event: GizmoHandleDragEvent) => {
+export const applyGizmoMove = (event: GizmoHandleDragEvent): vec3 => {
   const {mouseEvent, axis, selectedMarker, scene: {camera}, scene, viewport} = event;
   const objPosition = selectedMarker.$position3d;
   const moveAxisLocalSpace = getAxisVector(axis);
@@ -62,7 +61,6 @@ export const applyGizmoMove = (event: GizmoHandleDragEvent) => {
   const moveOffset = calculateMoveOffset(moveAxisWorldSpace, p0, pNow);
   const offset = scale(vec3_0(), moveAxisLocalSpace, moveOffset);
   mul(offset, offset, GLTF_PLS.MOVE_BONE_AXIS_MODS); // blender exporter fixing
-  addMove(selectedMarker.name, offset);
 
   // debug
   const vp = scene.getMVP(mat4_Create());
@@ -70,4 +68,7 @@ export const applyGizmoMove = (event: GizmoHandleDragEvent) => {
   scene.debugMarkers.dragStart.__$position3d = p0;
   scene.debugMarkers.dragNowOnPlane.__$position3d = pNow_onPlane;
   scene.debugMarkers.dragNow.__$position3d = pNow;
+
+  //
+  return offset;
 };

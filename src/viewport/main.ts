@@ -6,7 +6,7 @@ import {drawGizmo} from './gizmo';
 import {Marker, drawMarkers} from './marker';
 import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
 import {Scene, createScene, BoneConfigEntry, getBoneConfig} from './scene';
-import {AnimTimings, createAnimTimings} from './animation';
+import {AnimTimings, createAnimTimings, interpolate} from './animation';
 import {uiBridge, appStateGetter} from '../UI_Bridge';
 import {initHandlers} from './handler';
 
@@ -92,8 +92,8 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   } as FrameEnv; // typecheck this pls
 
   // camera
-  const {cameraMoveSpeed, cameraRotateSpeed} = uiBridge.getFromUI(
-    appStateGetter('cameraMoveSpeed', 'cameraRotateSpeed')
+  const {cameraMoveSpeed, cameraRotateSpeed, selectedObjectName} = uiBridge.getFromUI(
+    appStateGetter('cameraMoveSpeed', 'cameraRotateSpeed', 'selectedObjectName')
   );
   camera.update(
     frameEnv.timing.deltaTime,
@@ -108,7 +108,9 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   gl.viewport(0.0, 0.0, width, height);
 
   // lamp: bones + draw
-  calculateBoneMatrices(frameEnv.timing, lamp.bones);
+  const interpolateParams = { glState, selectedObjectName, };
+  interpolate(interpolateParams, lamp.bones);
+  calculateBoneMatrices(lamp.bones);
   drawObject3d(frameEnv, scene.lamp);
 
   // gizmo

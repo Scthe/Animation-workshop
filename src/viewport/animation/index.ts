@@ -1,6 +1,7 @@
 import {Transform} from 'gl-utils';
 
 export * from './AnimTimings';
+export * from './interpolate';
 
 // this is not displayed fps, this internal value how densly the keyframes
 // are stored.

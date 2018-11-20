@@ -100,7 +100,7 @@ export class MouseHandler {
   }
 
   private onMouseMove = (event: MouseEvent) => {
-    const ev = this.createDragEvent(event);
+    const ev: MouseDragEvent = this.createDragEvent(event);
 
     switch (this.clickedState) {
       case ClickedState.Camera: {
@@ -131,7 +131,7 @@ export class MouseHandler {
       position,
       delta,
       totalDelta: subtract(position, this.firstClick),
-    } as MouseDragEvent;
+    };
   }
 
 }

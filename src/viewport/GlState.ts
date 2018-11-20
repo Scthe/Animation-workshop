@@ -3,6 +3,7 @@ import {
   DrawParameters, applyDrawParams
 } from 'gl-utils';
 import {GizmoType} from './gizmo';
+import {Transform, createInitTransform} from 'gl-utils';
 
 // TODO add here draggedDisplacement: Keyframe for tmp. move/rotate while dragging?
 interface DraggingStatus {
@@ -10,6 +11,9 @@ interface DraggingStatus {
   draggedAxis?: Axis;
   // we can drag and switch gizmo using key-shortcut. this is local copy for such cases
   draggedGizmo?: GizmoType;
+  // when dragging, this transform represents current displacement.
+  // Only one of position/roration/scale from this object is used at the time (rest is zeroed)
+  temporaryDisplacement: Transform;
 }
 
 export class GlState {
@@ -44,8 +48,7 @@ export class GlState {
     return {
       draggedAxis: undefined as Axis,
       draggedGizmo: GizmoType.Move,
-      // draggedGizmo: GizmoType.Rotate,
-      currentObject: undefined as string,
+      temporaryDisplacement: createInitTransform(),
     };
   }
 

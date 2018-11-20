@@ -4,6 +4,7 @@ import {GizmoType} from 'viewport/gizmo';
 import {Marker, MarkerType} from 'viewport/marker';
 import {getSelectedObject} from 'viewport/main';
 import {uiBridge, appStateSetter} from '../../UI_Bridge';
+import {resetTransform} from 'gl-utils';
 
 import {MouseHandler, MouseDragEvent} from './MouseHandler';
 import {applyGizmoMove} from './handler.move';
@@ -36,23 +37,29 @@ const onMarkerClicked = (glState: GlState) => (marker: Marker) => {
     // when starting dragging gizmo to move/rotate bone
     case MarkerType.Gizmo:
       draggingStatus.draggedAxis = marker.owner as any;
+      resetTransform(draggingStatus.temporaryDisplacement);
       break;
   }
 };
 
 
-const onMarkerDragged = (glState: GlState, scene: Scene) => (mouseEvent: MouseDragEvent) => {
-  const {draggedAxis, draggedGizmo} = glState.draggingStatus;
+const createDragEvent = (glState: GlState, scene: Scene, mouseEvent: MouseDragEvent) => {
+  const {draggedAxis} = glState.draggingStatus;
   const [width, height] = glState.getViewport();
   const {selectedMarker} = getSelectedObject(scene);
 
-  const dragEvent = {
+  return {
     mouseEvent,
     axis: draggedAxis,
     selectedMarker,
     scene,
     viewport: {width, height},
-  } as GizmoHandleDragEvent;
+  };
+};
+
+const onMarkerDragged = (glState: GlState, scene: Scene) => (mouseEvent: MouseDragEvent) => {
+  const {draggedAxis, draggedGizmo, temporaryDisplacement} = glState.draggingStatus;
+  const dragEvent: GizmoHandleDragEvent = createDragEvent(glState, scene, mouseEvent);
 
   if (!dragEvent.selectedMarker || draggedAxis === undefined) {
     return;
@@ -60,11 +67,16 @@ const onMarkerDragged = (glState: GlState, scene: Scene) => (mouseEvent: MouseDr
 
   switch (draggedGizmo) {
     case GizmoType.Move:
-      applyGizmoMove(dragEvent);
+      const deltaMove = applyGizmoMove(dragEvent);
+      temporaryDisplacement.position = deltaMove;
+
       setCursor(CURSOR_MOVE);
       break;
+
     case GizmoType.Rotate:
-      applyGizmoRotate(dragEvent);
+      const deltaRotateQuat = applyGizmoRotate(dragEvent);
+      temporaryDisplacement.rotation = deltaRotateQuat;
+
       setCursor(CURSOR_ROTATE);
       break;
   }
@@ -72,8 +84,11 @@ const onMarkerDragged = (glState: GlState, scene: Scene) => (mouseEvent: MouseDr
 
 
 const onMarkerUnclicked = (glState: GlState) => () => {
+  const {draggingStatus} = glState;
+
   if (glState.isDragging()) {
-    glState.draggingStatus.draggedAxis = undefined;
+    draggingStatus.draggedAxis = undefined;
+    resetTransform(draggingStatus.temporaryDisplacement);
   }
   setCursor(CURSOR_DEFAULT);
 };
