@@ -8,7 +8,7 @@ import {
   Dropdown, DropdownItem,
   Tooltip, TooltipPosition
 } from 'ui/components';
-import {AppState, TimelineState} from 'ui/state';
+import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
 import {isAnyAxisAllowed} from 'viewport/scene';
 

@@ -3,7 +3,7 @@ import {Provider, observer, inject} from 'mobx-preact';
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./App.scss');
 import {Button, FaIcon} from 'ui/components';
-import {appState, timelineState} from './state';
+import {appState, timelineState} from 'state';
 import {Timeline} from './pages/timeline';
 import {Settings} from './pages/settings';
 import {init} from 'viewport/main'; // NOTE: order of this matters!

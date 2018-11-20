@@ -7,7 +7,7 @@ import {Marker, drawMarkers} from './marker';
 import {calculateBoneMatrices, updateArmatureMarkers} from './armature';
 import {Scene, createScene, BoneConfigEntry, getBoneConfig} from './scene';
 import {AnimTimings, createAnimTimings, interpolate} from './animation';
-import {uiBridge, appStateGetter} from '../UI_Bridge';
+import {uiBridge, appStateGetter} from 'state';
 import {initHandlers} from './handler';
 
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.

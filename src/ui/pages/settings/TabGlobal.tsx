@@ -11,7 +11,7 @@ import {
   AppState,
   MAX_MARKER_SIZE, MAX_GIZMO_SIZE,
   MAX_CAMERA_MOVE_SPEED, MAX_CAMERA_ROTATE_SPEED,
-} from 'ui/state';
+} from 'state';
 
 
 const QUAT_INTERPOLATIONS = [

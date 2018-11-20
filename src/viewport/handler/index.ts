@@ -3,7 +3,7 @@ import {GlState} from 'viewport/GlState';
 import {GizmoType} from 'viewport/gizmo';
 import {Marker, MarkerType} from 'viewport/marker';
 import {getSelectedObject} from 'viewport/main';
-import {uiBridge, appStateSetter} from '../../UI_Bridge';
+import {uiBridge, appStateSetter} from 'state';
 import {resetTransform} from 'gl-utils';
 
 import {MouseHandler, MouseDragEvent} from './MouseHandler';

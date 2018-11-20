@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Settings.scss');
-import {AppState} from 'ui/state';
+import {AppState} from 'state';
 import {Tabs} from 'ui/components';
 import {TabGlobal} from './TabGlobal';
 import {TabObject} from './TabObject';

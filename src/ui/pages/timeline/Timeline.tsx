@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Timeline.scss');
-import {AppState} from 'ui/state';
+import {AppState} from 'state';
 import {TimelineButtonRow} from './TimelineButtonRow';
 import {TimelineAxis} from './TimelineAxis';
 import {Button, ButtonTheme, FaIcon} from 'ui/components';

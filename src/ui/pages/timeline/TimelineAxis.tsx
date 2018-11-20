@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
 import {classnames, WithDimensions, Dimensions} from 'ui/utils';
 const Styles = require('./TimelineAxis.scss');
-import {AppState, TimelineState} from 'ui/state';
+import {AppState, TimelineState} from 'state';
 import {Tick, createTickPosition, TickLabel} from './TimelineTick';
 import {ANIM_FPS} from 'viewport/animation';
 

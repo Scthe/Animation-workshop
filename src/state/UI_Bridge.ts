@@ -1,13 +1,16 @@
 import {pick} from 'lodash';
-import {AppState, appState, TimelineState, timelineState} from 'ui/state';
+import {AppState, TimelineState} from 'state';
 
-export {AppState, TimelineState}; // easier imports. still, ugh..
 
+// Both AppState and TimelineState were created mainly for use by UI.
+// The state has to be shared with viewport that runs in infinite loop.
+// This file exposes such interface.
+//
 // normally in mobx You would add a reaction to bridge the imperative code
 // with state. Since we are running infinite loop, we are going to just
 // use getters instead
 
-export interface UIState {
+interface UIState {
   appState: AppState;
   timelineState: TimelineState;
 }
@@ -36,7 +39,12 @@ export const appStateSetter = <K extends keyof AppState, V>(key: K, value: AppSt
   };
 };
 
-class UIBridge {
+export class UIBridge {
+
+  constructor(
+    private appState: AppState,
+    private timelineState: TimelineState
+  ) {}
 
   getFromUI<fn extends FromStateGetter> (getter: fn) {
     // https://dev.to/miracleblue/how-2-typescript-serious-business-with-typescripts-infer-keyword-40i5
@@ -50,9 +58,10 @@ class UIBridge {
     });
   }
 
-  private getStateAsObject () {
-    return { appState, timelineState, };
+  private getStateAsObject (): UIState {
+    return {
+      appState: this.appState,
+      timelineState: this.timelineState,
+    };
   }
 }
-
-export const uiBridge = new UIBridge();

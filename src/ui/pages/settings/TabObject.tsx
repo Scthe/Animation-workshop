@@ -5,7 +5,7 @@ import {classnames} from 'ui/utils';
 const Styles = require('./TabObject.scss');
 
 import {Section, Input, InputValidate, FaIcon} from 'ui/components';
-import {AppState, TimelineState} from 'ui/state';
+import {AppState, TimelineState} from 'state';
 import {isAxisAllowed} from 'viewport/scene';
 import {GizmoType} from 'viewport/gizmo';
 import {Axis} from 'gl-utils';
