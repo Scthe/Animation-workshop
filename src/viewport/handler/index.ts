@@ -3,6 +3,7 @@ import {GlState} from 'viewport/GlState';
 import {GizmoType} from 'viewport/gizmo';
 import {Marker, MarkerType} from 'viewport/marker';
 import {getSelectedObject} from 'viewport/main';
+import {Bone} from 'viewport/armature';
 import {uiBridge, appStateSetter} from 'state';
 import {resetTransform} from 'gl-utils';
 
@@ -82,14 +83,22 @@ const onMarkerDragged = (glState: GlState, scene: Scene) => (mouseEvent: MouseDr
   }
 };
 
+const applyDraggingDisplacementToKeyframe = (scene: Scene) => {
+  const {selectedMarker} = getSelectedObject(scene);
+  const bone = selectedMarker.owner as Bone;
+  const {animationTransform} = bone.getFrameCache();
+  uiBridge.setKeyframe(animationTransform);
+};
 
-const onMarkerUnclicked = (glState: GlState) => () => {
+const onMarkerUnclicked = (glState: GlState, scene: Scene) => () => {
   const {draggingStatus} = glState;
 
   if (glState.isDragging()) {
     draggingStatus.draggedAxis = undefined;
+    applyDraggingDisplacementToKeyframe(scene);
     resetTransform(draggingStatus.temporaryDisplacement);
   }
+
   setCursor(CURSOR_DEFAULT);
 };
 
@@ -104,5 +113,5 @@ export const initHandlers = (canvas: HTMLCanvasElement, glState: GlState, scene:
   mouseHandler = new MouseHandler(canvas, glState, scene);
   mouseHandler.setOnMarkerClicked(onMarkerClicked(glState));
   mouseHandler.setOnMarkerDragged(onMarkerDragged(glState, scene));
-  mouseHandler.setOnMarkerUnclicked(onMarkerUnclicked(glState));
+  mouseHandler.setOnMarkerUnclicked(onMarkerUnclicked(glState, scene));
 };

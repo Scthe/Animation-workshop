@@ -1,5 +1,6 @@
 import {pick} from 'lodash';
 import {AppState, TimelineState} from 'state';
+import {Transform} from 'gl-utils';
 
 
 // Both AppState and TimelineState were created mainly for use by UI.
@@ -56,6 +57,17 @@ export class UIBridge {
     (window as any).requestAnimationFrame(() => {
       setter(this.getStateAsObject());
     });
+  }
+
+  setKeyframe (transform: Transform) {
+    const {selectedObjectName, currentFrame} = this.appState;
+    this.timelineState.setKeyframeAt(selectedObjectName, currentFrame, transform);
+  }
+
+  getCurrentKeyframe (objName: string) {
+    // TODO this will be replaced by interpolation between before-after frames
+    const {currentFrame} = this.appState;
+    return this.timelineState.getKeyframeAt(objName, currentFrame);
   }
 
   private getStateAsObject (): UIState {

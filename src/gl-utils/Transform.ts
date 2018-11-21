@@ -29,16 +29,20 @@ export const convertTransformToMatrix = (transform: Transform) => {
   return createModelMatrix(position, rotation, IGNORE_SCALE);
 };
 
-export const resetTransform = (transform: Transform) => {
+export const copyTransform = (target: Transform, source: Transform) => {
   const setF32 = (buf: Float32Array, vals: Float32Array) => {
     for (let i = 0; i < vals.length; i++) {
       buf[i] = vals[i];
     }
   };
 
-  setF32(transform.position, POSITION_0);
-  setF32(transform.rotation, ROTATION_0);
-  setF32(transform.scale, SCALE_0);
+  setF32(target.position, source.position);
+  setF32(target.rotation, source.rotation);
+  setF32(target.scale, source.scale);
+};
+
+export const resetTransform = (transform: Transform) => {
+  copyTransform(transform, POS_ROT_SCALE_0);
 };
 
 export const addTransforms = (base: Transform, offset: Transform) => {
