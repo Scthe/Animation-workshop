@@ -7,12 +7,10 @@ import {find, findLast, sortBy} from 'lodash';
 type TimelineMap = {[key: string]: Timeline};
 type BoneName = string;
 
-const isKeyframeExact = (frameId: number, allowExact: boolean) => (keyframe: Keyframe) =>
-  allowExact && keyframe.frameId === frameId;
-const isKeyframeBefore = (frameId: number, allowExact: boolean) => (keyframe: Keyframe) =>
-  keyframe.frameId < frameId || isKeyframeExact(frameId, allowExact)(keyframe);
-const isKeyframeAfter = (frameId: number, allowExact: boolean) => (keyframe: Keyframe) =>
-  keyframe.frameId > frameId || isKeyframeExact(frameId, allowExact)(keyframe);
+const isKeyframeBefore = (frameId: number) => (keyframe: Keyframe) =>
+  keyframe.frameId < frameId;
+const isKeyframeAfter = (frameId: number) => (keyframe: Keyframe) =>
+  keyframe.frameId > frameId;
 
 const removeKeyframeAt = (timeline: Timeline, frameId: number) =>
   timeline.filter(keyframe => keyframe.frameId !== frameId);
@@ -56,14 +54,14 @@ export class TimelineState {
     return timeline.find(keyframe => keyframe.frameId === frameId);
   }
 
-  getKeyframeBefore (boneName: BoneName, frameId: number, allowExact = true) {
+  getKeyframeBefore (boneName: BoneName, frameId: number) {
     const timeline = this.getTimeline(boneName);
-    return findLast(timeline, isKeyframeBefore(frameId, allowExact));
+    return findLast(timeline, isKeyframeBefore(frameId));
   }
 
-  getKeyframeAfter (boneName: BoneName, frameId: number, allowExact = true) {
+  getKeyframeAfter (boneName: BoneName, frameId: number) {
     const timeline = this.getTimeline(boneName);
-    return find(timeline, isKeyframeAfter(frameId, allowExact));
+    return find(timeline, isKeyframeAfter(frameId));
   }
 
 }

@@ -1,6 +1,10 @@
-import {vec3, fromValues as vec3_Create, add as vec3_Add} from 'gl-vec3';
-import {quat, create as quat_0, multiply as quat_Mul} from 'gl-quat';
+import {vec3, fromValues as vec3_Create, add as vec3_Add, lerp as vec3_Lerp} from 'gl-vec3';
+import {
+  quat, create as quat_0, multiply as quat_Mul,
+  lerp as quat_Lerp, slerp as quat_Slerp
+} from 'gl-quat';
 import {createModelMatrix} from './index';
+import {clamp} from 'gl-utils';
 
 const IGNORE_SCALE = 1.0; // for now
 
@@ -49,4 +53,28 @@ export const addTransforms = (base: Transform, offset: Transform) => {
   vec3_Add(base.position, base.position, offset.position);
   quat_Mul(base.rotation, base.rotation, offset.rotation);
   // vec3_Mul(base.scale, base.scale, offset.scale);
+};
+
+interface InterpolateOpts {
+  useSlerp: boolean;
+}
+
+export const interpolateTransforms = (
+  transformA: Transform, transformB: Transform,
+  mod: number, opts: InterpolateOpts
+) => {
+  mod = clamp(mod, 0.0, 1.0);
+  const result = createInitTransform();
+
+  // position
+  vec3_Lerp(result.position, transformA.position, transformB.position, mod);
+
+  // rotation
+  if (opts.useSlerp) {
+    quat_Slerp(result.rotation, transformA.rotation, transformB.rotation, mod);
+  } else {
+    quat_Lerp(result.rotation, transformA.rotation, transformB.rotation, mod);
+  }
+
+  return result;
 };

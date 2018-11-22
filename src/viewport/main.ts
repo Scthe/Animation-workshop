@@ -108,7 +108,10 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   gl.viewport(0.0, 0.0, width, height);
 
   // lamp: bones + draw
-  const interpolateParams = { glState, selectedObjectName, };
+  const interpolateParams = {
+    glState, selectedObjectName,
+    animTimings: frameEnv.timing,
+  };
   interpolate(interpolateParams, lamp.bones);
   calculateBoneMatrices(lamp.bones);
   drawObject3d(frameEnv, scene.lamp);

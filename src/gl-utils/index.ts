@@ -86,6 +86,10 @@ export const lerp = (a: number, b: number, time: number) => {
   return (1 - time) * a + time * b;
 };
 
+export const clamp = (value: number, min: number, max: number) => {
+  return Math.min(Math.max(value, min), max);
+};
+
 export const hexToVec3 = (hex: number | string) => {
   if (typeof hex === 'string') {
     const hexStr = hex[0] === '#' ? hex.substr(1) : hex;

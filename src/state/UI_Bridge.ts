@@ -65,9 +65,18 @@ export class UIBridge {
   }
 
   getCurrentKeyframe (objName: string) {
-    // TODO this will be replaced by interpolation between before-after frames
     const {currentFrame} = this.appState;
     return this.timelineState.getKeyframeAt(objName, currentFrame);
+  }
+
+  getKeyframeBefore (objName: string) {
+    const {currentFrame} = this.appState;
+    return this.timelineState.getKeyframeBefore(objName, currentFrame);
+  }
+
+  getKeyframeAfter (objName: string) {
+    const {currentFrame} = this.appState;
+    return this.timelineState.getKeyframeAfter(objName, currentFrame);
   }
 
   private getStateAsObject (): UIState {

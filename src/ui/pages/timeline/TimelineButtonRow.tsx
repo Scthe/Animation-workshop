@@ -213,7 +213,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   private onPrevKeyframe = () => {
     const {timelineState, appState} = this.props;
     const prevKeyframe = timelineState.getKeyframeBefore(
-      appState.selectedObjectName, appState.currentFrame, false
+      appState.selectedObjectName, appState.currentFrame
     );
 
     if (prevKeyframe) {
@@ -224,7 +224,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   private onNextKeyframe = () => {
     const {timelineState, appState} = this.props;
     const nextKeyframe = timelineState.getKeyframeAfter(
-      appState.selectedObjectName, appState.currentFrame, false
+      appState.selectedObjectName, appState.currentFrame
     );
 
     if (nextKeyframe) {

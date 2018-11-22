@@ -1,7 +1,7 @@
 import {observable, computed} from 'mobx';
 import {GizmoType} from 'viewport/gizmo';
 import {getBoneConfig} from 'viewport/scene';
-import {clamp} from 'ui/utils';
+import {clamp} from 'gl-utils';
 
 // consts
 export const MAX_MARKER_SIZE = 20;

@@ -1,19 +1,54 @@
 import {get} from 'lodash';
+import {
+  Transform,
+  addTransforms, copyTransform, interpolateTransforms
+} from 'gl-utils';
 import {Armature, Bone} from 'viewport/armature';
-import {Transform, addTransforms, copyTransform, POS_ROT_SCALE_0} from 'gl-utils';
 import {GlState} from 'viewport/GlState';
+import {getBoneConfig} from 'viewport/scene';
+import {AnimTimings, Keyframe} from './index';
 import {uiBridge} from 'state';
 
 interface InterpolateParams {
   glState: GlState;
   selectedObjectName: string;
-  // animTimings: AnimTimings;
+  animTimings: AnimTimings;
 }
 
-// TODO this method will set all properties based on initerpolation between keyframes
-const interpolateTimeline = (t: Transform, bone: Bone) => {
-  const interpolatedKeyframe = uiBridge.getCurrentKeyframe(bone.name);
-  const keyframeTransform = get(interpolatedKeyframe, 'transform', POS_ROT_SCALE_0);
+const getKeyframeMod = (keyframeA: Keyframe, keyframeB: Keyframe, currentFrameId: number) => {
+  const timeA = get(keyframeA, 'frameId', 0);
+  const timeB = get(keyframeB, 'frameId', 0);
+  const delta = timeB - timeA;
+
+  if (delta === 0) { // happens when e.g. no keyframes at all and both use keyrame0
+    return 1.0;
+  }
+
+  // inb4 off by one
+  return (currentFrameId - timeA) / delta;
+};
+
+const interpolateTimeline = (timing: AnimTimings, t: Transform, bone: Bone) => {
+  const {animationFrameId: currentFrameId, useSlerp} = timing;
+
+  const keyframe = uiBridge.getCurrentKeyframe(bone.name);
+  let keyframeTransform = get(keyframe, 'transform');
+
+  if (!keyframeTransform) {
+    const boneConfig = getBoneConfig(bone.name);
+    const keyframeBefore = uiBridge.getKeyframeBefore(bone.name);
+    const keyframeBeforeTransform = get(keyframeBefore, 'transform', boneConfig.keyframe0);
+
+    const keyframeAfter = uiBridge.getKeyframeAfter(bone.name);
+    const keyframeAfterTransform = get(keyframeAfter, 'transform', keyframeBeforeTransform);
+
+    keyframeTransform = interpolateTransforms(
+      keyframeBeforeTransform, keyframeAfterTransform,
+      getKeyframeMod(keyframeBefore, keyframeAfter, currentFrameId),
+      { useSlerp, }
+    );
+  }
+
   copyTransform(t, keyframeTransform);
 };
 
@@ -27,9 +62,10 @@ const getDraggingDisplacement = (params: InterpolateParams, bone: Bone) => {
 };
 
 const updateAnimTransform = (params: InterpolateParams) => (bone: Bone) => {
+  const {animTimings} = params;
   const {animationTransform} = bone.getFrameCache();
 
-  interpolateTimeline(animationTransform, bone);
+  interpolateTimeline(animTimings, animationTransform, bone);
 
   const dragDisplacement = getDraggingDisplacement(params, bone);
   if (dragDisplacement) {
