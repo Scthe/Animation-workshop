@@ -5,7 +5,6 @@ import {
 import {GizmoType} from './gizmo';
 import {Transform, createInitTransform} from 'gl-utils';
 
-// TODO add here draggedDisplacement: Keyframe for tmp. move/rotate while dragging?
 interface DraggingStatus {
   // when we are moving/rotating/scaling
   draggedAxis?: Axis;
@@ -16,12 +15,20 @@ interface DraggingStatus {
   temporaryDisplacement: Transform;
 }
 
+// Animation state that persists between frames
+interface AnimationState {
+  isPlaying: boolean;
+  // timestamp of moment the animation started (unit: in ms since app started)
+  animationStartTimestamp: number;
+}
+
 export class GlState {
 
   public gl: Webgl;
   public canvas: HTMLCanvasElement;
   private drawParams: DrawParameters;
   public draggingStatus: DraggingStatus;
+  public animationState: AnimationState;
   // IO
   public pressedKeys: boolean[] = new Array(128); // keycode => bool
 
@@ -34,6 +41,8 @@ export class GlState {
     applyDrawParams(this.gl, this.drawParams, undefined, true);
 
     this.draggingStatus = GlState.createSelection();
+
+    this.animationState = { isPlaying: false, animationStartTimestamp: 0 };
 
     // IO
     window.addEventListener('keydown', event => {

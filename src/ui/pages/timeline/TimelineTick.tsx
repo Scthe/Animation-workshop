@@ -1,5 +1,5 @@
 import {h} from 'preact';
-import {ANIM_FPS} from 'viewport/animation';
+import {frameToAnimationSeconds} from 'viewport/animation';
 
 export enum TickLabel { None, FrameId, Time }
 
@@ -15,7 +15,7 @@ interface TickProps {
 
 export const createTickPosition = (frameId: number, maxFrames: number, panelWidth: number) => {
   const progress = (frameId / maxFrames);
-  const timeSec = (frameId / ANIM_FPS) + 0.1; // rounding errors, just in case
+  const timeSec = frameToAnimationSeconds(frameId) + 0.1; // rounding errors, just in case
   return {
     frameId,
     time: `${Math.floor(timeSec)}s`,

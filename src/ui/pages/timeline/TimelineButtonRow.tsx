@@ -188,7 +188,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     const {appState} = this.props;
     appState.isPlaying = false;
 
-    appState.gotoFrame(appState.previewRange_Min);
+    appState.gotoFrame(Math.min(...appState.previewRange));
   }
 
   private onPrevFrame = () => {

@@ -4,7 +4,7 @@ import {classnames, WithDimensions, Dimensions} from 'ui/utils';
 const Styles = require('./TimelineAxis.scss');
 import {AppState, TimelineState} from 'state';
 import {Tick, createTickPosition, TickLabel} from './TimelineTick';
-import {ANIM_FPS} from 'viewport/animation';
+import {ANIM_FPS, animationSecondsToFrame} from 'viewport/animation';
 
 const CLASSES_TICK = classnames(Styles.Tick, Styles.TickTime);
 const CLASSES_KEYFRAME = classnames(Styles.Tick, Styles.TickKeyframe);
@@ -84,7 +84,7 @@ export class TimelineAxis extends Component<TimelineAxisProps, TimelineAxisState
     const dummyArr = Array.from(Array(Math.ceil(count))); // [0...count]
 
     return dummyArr.map((_, i) => {
-      const frameId = (i + 1) * ANIM_FPS;
+      const frameId = animationSecondsToFrame(i + 1);
       return createTickPosition(frameId, frameCount, panelWidth);
     });
   }
@@ -130,7 +130,7 @@ export class TimelineAxis extends Component<TimelineAxisProps, TimelineAxisState
     const frameCount = appState.frameCount;
     const {width} = dimensions;
 
-    const px = appState.previewRange.map((p: number) => (
+    const px = appState.previewRangeSorted.map((p: number) => (
       createTickPosition(p, frameCount, width).pixelX
     ));
 

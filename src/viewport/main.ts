@@ -37,6 +37,17 @@ const resetGizmoMarkers = (scene: Scene) => {
   });
 };
 
+const updateIsPlayingState = (time: number, glState: GlState) => {
+  const {animationState} = glState;
+  const {isPlaying} = uiBridge.getFromUI(appStateGetter('isPlaying'));
+
+  if (!animationState.isPlaying && isPlaying) {
+    animationState.animationStartTimestamp = time;
+  }
+
+  animationState.isPlaying = isPlaying;
+};
+
 const createGizmoDrawOpts = (frameEnv: FrameEnv) => {
   const {glState, selectedMarker} = frameEnv;
   const {draggedGizmo} = glState.draggingStatus;
@@ -46,13 +57,13 @@ const createGizmoDrawOpts = (frameEnv: FrameEnv) => {
   );
   const isDragging = glState.isDragging();
 
-  return selectedMarker ? {
+  return {
     size: gizmoSize / 100, // just go with it..
     gizmoType: draggedGizmo,
     origin: selectedMarker,
     forceDrawMarkers: showDebug,
     isDragging,
-  } : undefined;
+  };
 };
 
 const tryChangeGizmo = (glState: GlState, scene: Scene) => {
@@ -80,23 +91,26 @@ export const getSelectedObject = (scene: Scene) => {
   };
 };
 
+const shouldDrawViewportUI = (glState: GlState) => !glState.animationState.isPlaying;
+
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
   const {camera, lamp} = scene;
 
-  const frameEnv = {
-    timing: createAnimTimings(time),
+  updateIsPlayingState(time, glState);
+  const frameEnv: FrameEnv = {
+    timing: createAnimTimings(time, glState),
     glState,
     scene,
     ...getSelectedObject(scene),
-  } as FrameEnv; // typecheck this pls
+  };
 
   // camera
   const {cameraMoveSpeed, cameraRotateSpeed, selectedObjectName} = uiBridge.getFromUI(
     appStateGetter('cameraMoveSpeed', 'cameraRotateSpeed', 'selectedObjectName')
   );
   camera.update(
-    frameEnv.timing.deltaTime,
+    frameEnv.timing.deltaTimeMs,
     CAMERA_MOVE_SPEED * cameraMoveSpeed / 10, // just go with it..
     CAMERA_ROTATE_SPEED * cameraRotateSpeed / 10, // just go with it..
     pressedKeys
@@ -118,9 +132,10 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
 
   // gizmo
   tryChangeGizmo(glState, scene);
-  const gizmoDrawOpts = createGizmoDrawOpts(frameEnv);
-  if (gizmoDrawOpts) {
-    drawGizmo(frameEnv, gizmoDrawOpts); // this also sets markers
+  if (frameEnv.selectedMarker) {
+    if (shouldDrawViewportUI(glState)) {
+      drawGizmo(frameEnv, createGizmoDrawOpts(frameEnv)); // this also sets markers
+    }
   } else {
     resetGizmoMarkers(scene);
   }
@@ -131,7 +146,9 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {markerSize, showDebug} = uiBridge.getFromUI(
     appStateGetter('markerSize', 'showDebug')
   );
-  drawMarkers(frameEnv, markerSize / 10.0, showDebug); // just go with it..
+  if (shouldDrawViewportUI(glState)) {
+    drawMarkers(frameEnv, markerSize / 10.0, showDebug); // just go with it..
+  }
 };
 
 //////////

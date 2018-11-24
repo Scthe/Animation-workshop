@@ -44,7 +44,6 @@ export class TimelineState {
   }
 
   deleteKeyframe (boneName: BoneName, frameId: number) {
-    console.log(`would delete keyframe ${boneName}[${frameId}]`);
     const timeline = this.getTimeline(boneName);
     this.setTimeline(boneName, removeKeyframeAt(timeline, frameId));
   }

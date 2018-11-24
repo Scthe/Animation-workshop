@@ -160,3 +160,11 @@ export const getAxesFromRotMatrix = (rotMat: mat3) => {
   return axes2;
 };
 */
+
+// string utils
+export const numberToString = (a: number, precision: number = 3) => Number(a).toFixed(precision);
+
+export const vec3ToString = (v: vec3, precision: number = 3) => {
+  const pv = (idx: number) => numberToString(v[idx], precision);
+  return `[${pv(0)}, ${pv(1)}, ${pv(2)}]`;
+};

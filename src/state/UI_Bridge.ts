@@ -64,19 +64,16 @@ export class UIBridge {
     this.timelineState.setKeyframeAt(selectedObjectName, currentFrame, transform);
   }
 
-  getCurrentKeyframe (objName: string) {
-    const {currentFrame} = this.appState;
-    return this.timelineState.getKeyframeAt(objName, currentFrame);
+  getKeyframe (objName: string, frameId: number) {
+    return this.timelineState.getKeyframeAt(objName, frameId);
   }
 
-  getKeyframeBefore (objName: string) {
-    const {currentFrame} = this.appState;
-    return this.timelineState.getKeyframeBefore(objName, currentFrame);
+  getKeyframeBefore (objName: string, frameId: number) {
+    return this.timelineState.getKeyframeBefore(objName, frameId);
   }
 
-  getKeyframeAfter (objName: string) {
-    const {currentFrame} = this.appState;
-    return this.timelineState.getKeyframeAfter(objName, currentFrame);
+  getKeyframeAfter (objName: string, frameId: number) {
+    return this.timelineState.getKeyframeAfter(objName, frameId);
   }
 
   private getStateAsObject (): UIState {

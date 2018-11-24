@@ -15,7 +15,7 @@ interface InterpolateParams {
   animTimings: AnimTimings;
 }
 
-const getKeyframeMod = (keyframeA: Keyframe, keyframeB: Keyframe, currentFrameId: number) => {
+const getKeyframeMod = (keyframeA: Keyframe, keyframeB: Keyframe, frameId: number) => {
   const timeA = get(keyframeA, 'frameId', 0);
   const timeB = get(keyframeB, 'frameId', 0);
   const delta = timeB - timeA;
@@ -25,26 +25,26 @@ const getKeyframeMod = (keyframeA: Keyframe, keyframeB: Keyframe, currentFrameId
   }
 
   // inb4 off by one
-  return (currentFrameId - timeA) / delta;
+  return (frameId - timeA) / delta;
 };
 
 const interpolateTimeline = (timing: AnimTimings, t: Transform, bone: Bone) => {
-  const {animationFrameId: currentFrameId, useSlerp} = timing;
+  const {animationFrameId, useSlerp} = timing;
 
-  const keyframe = uiBridge.getCurrentKeyframe(bone.name);
+  const keyframe = uiBridge.getKeyframe(bone.name, animationFrameId);
   let keyframeTransform = get(keyframe, 'transform');
 
   if (!keyframeTransform) {
     const boneConfig = getBoneConfig(bone.name);
-    const keyframeBefore = uiBridge.getKeyframeBefore(bone.name);
+    const keyframeBefore = uiBridge.getKeyframeBefore(bone.name, animationFrameId);
     const keyframeBeforeTransform = get(keyframeBefore, 'transform', boneConfig.keyframe0);
 
-    const keyframeAfter = uiBridge.getKeyframeAfter(bone.name);
+    const keyframeAfter = uiBridge.getKeyframeAfter(bone.name, animationFrameId);
     const keyframeAfterTransform = get(keyframeAfter, 'transform', keyframeBeforeTransform);
 
     keyframeTransform = interpolateTransforms(
       keyframeBeforeTransform, keyframeAfterTransform,
-      getKeyframeMod(keyframeBefore, keyframeAfter, currentFrameId),
+      getKeyframeMod(keyframeBefore, keyframeAfter, animationFrameId),
       { useSlerp, }
     );
   }

@@ -1,25 +1,34 @@
-import {Transform, copyTransform, createInitTransform} from 'gl-utils';
+import {numberToString} from 'gl-utils';
 
 export * from './AnimTimings';
 export * from './interpolate';
+export * from './Keyframe';
 
 // this is not displayed fps, this is an internal value how densly the keyframes
 // are stored.
 export const ANIM_FPS = 24;
 
+export const frameToAnimationSeconds = (frameId: number) => frameId / ANIM_FPS;
+export const animationSecondsToFrame = (secondsSinceStart: number) => secondsSinceStart * ANIM_FPS;
 
-export interface Keyframe {
-  frameId: number;
-  transform: Transform;
-}
 
-export type Timeline = Keyframe[];
+// Small black rectangle in top left viewport corner
+// that shows current animation time.
+// It is visible even in fullscreen mode
+const animationFrameIdTextEl = document.getElementById('animation-frame-id');
 
-export const createKeyframe = (frameId: number, transform: Transform) => {
-  const keyframe = {
-    frameId,
-    transform: createInitTransform(),
+export const updateAnimationFrameIdText = (frameId: number, showTimeAsSeconds: boolean) => {
+  const setDisplay = (val: string) => {
+    if (animationFrameIdTextEl.style.display !== val) {
+      animationFrameIdTextEl.style.display = val;
+    }
   };
-  copyTransform(keyframe.transform, transform);
-  return keyframe;
+
+  if (frameId !== undefined) {
+    setDisplay('block');
+    const frameInProperUnit = showTimeAsSeconds ? frameToAnimationSeconds(frameId) : frameId;
+    animationFrameIdTextEl.innerText = numberToString(frameInProperUnit, 1);
+  } else {
+    setDisplay('none');
+  }
 };

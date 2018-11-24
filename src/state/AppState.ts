@@ -31,7 +31,7 @@ export class AppState {
   @observable showTimeAsSeconds = true;
   @observable showDebug = false;
   // playback
-  @observable _previewRange = [150, 50]; // [0, MAX_FRAMES];
+  @observable _previewRange = [100, 0]; // [0, MAX_FRAMES];
   @observable currentFrame = 0;
   @observable isPlaying = false; // playing animation should disable UI
 
@@ -51,14 +51,16 @@ export class AppState {
   }
 
   @computed
-  get previewRange_Min () { return Math.min(...this._previewRange); }
-
-  @computed
-  get previewRange_Max () { return Math.max(...this._previewRange); }
-
-  @computed
   get previewRange () {
-    return [ this.previewRange_Min, this.previewRange_Max, ];
+    return this._previewRange;
+  }
+
+  @computed
+  get previewRangeSorted () {
+    return [
+      Math.min(...this.previewRange),
+      Math.max(...this.previewRange)
+    ];
   }
 
   resetPreviewRange () {
