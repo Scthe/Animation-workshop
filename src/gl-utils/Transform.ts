@@ -55,7 +55,7 @@ export const addTransforms = (base: Transform, offset: Transform) => {
   // vec3_Mul(base.scale, base.scale, offset.scale);
 };
 
-interface InterpolateOpts {
+export interface InterpolateOpts {
   useSlerp: boolean;
 }
 

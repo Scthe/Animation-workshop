@@ -28,7 +28,7 @@ $frameStatus-label-w: 70px;
   margin-bottom: 0;
 
   // too lazy to expose, so just stupid selector
-  input { max-width: $frameStatus-input-w; padding-bottom: 4px; }
+  input { width: $frameStatus-input-w; padding-bottom: 4px; }
   p { width: $frameStatus-label-w; }
 }
 

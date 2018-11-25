@@ -31,7 +31,7 @@ export class AppState {
   @observable showTimeAsSeconds = true;
   @observable showDebug = false;
   // playback
-  @observable _previewRange = [100, 0]; // [0, MAX_FRAMES];
+  @observable _previewRange = [0, MAX_FRAMES];
   @observable currentFrame = 0;
   @observable isPlaying = false; // playing animation should disable UI
 

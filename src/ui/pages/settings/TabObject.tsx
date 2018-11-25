@@ -1,14 +1,15 @@
 import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
-import {get} from 'lodash';
+import {get, set} from 'lodash';
 import {classnames} from 'ui/utils';
 const Styles = require('./TabObject.scss');
 
 import {Section, Input, InputValidate, FaIcon} from 'ui/components';
 import {AppState, TimelineState} from 'state';
-import {isAxisAllowed} from 'viewport/scene';
+import {isAxisAllowed, getBoneConfig} from 'viewport/scene';
 import {GizmoType} from 'viewport/gizmo';
-import {Axis} from 'gl-utils';
+import {interpolateKeyframe} from 'viewport/animation';
+import {Axis, Transform, createInitTransform, copyTransform} from 'gl-utils';
 
 
 // TODO add material settings
@@ -60,6 +61,8 @@ export class TabObject extends Component<TabObjectProps, any> {
       );
     }
 
+    const transform = this.calculateCurrentTransform();
+
     return (
       <div className={this.getClasses()}>
 
@@ -79,20 +82,28 @@ export class TabObject extends Component<TabObjectProps, any> {
 
 
         <Section title='Position' icon={require('fa/faArrowsAlt')}>
-          {POSITION_FIELDS.map(fieldMeta =>
-            this.renderInput(obj, fieldMeta, this.onTransformChange))}
+          {POSITION_FIELDS.map(this.renderInput(transform))}
         </Section>
 
-        {/* initFolded={true} */}
         <Section title='Rotation' icon={require('fa/faUndo')}>
           <p className={Styles.QuaternionWarning}>
             Rotation is represented as quaternion. Any changes would be ill-advised
           </p>
-          {ROTATION_FIELDS.map(fieldMeta =>
-            this.renderInput(obj, fieldMeta, this.onTransformChange))}
+          {ROTATION_FIELDS.map(this.renderInput(transform))}
         </Section>
 
       </div>
+    );
+  }
+
+  private calculateCurrentTransform() {
+    const {appState, timelineState} = this.props;
+    const {useSlerp, currentFrame, selectedObjectName} = appState;
+
+    const timeline = timelineState.getTimeline(selectedObjectName);
+    const boneConfig = getBoneConfig(selectedObjectName);
+    return interpolateKeyframe(
+      timeline, currentFrame, boneConfig.keyframe0, {useSlerp}
     );
   }
 
@@ -113,7 +124,9 @@ export class TabObject extends Component<TabObjectProps, any> {
     );
   }
 
-  private renderInput = (obj: any, fieldMeta: TransformInputProps, cb: Function) => {
+  private renderInput = (transfrom: Transform) => (fieldMeta: TransformInputProps) => {
+    const {appState} = this.props;
+    const obj = appState.currentObjectData;
     const {type, axis, name, disabled} = fieldMeta;
 
     let prepend, className;
@@ -124,8 +137,7 @@ export class TabObject extends Component<TabObjectProps, any> {
       default:         prepend = 'w'; className = Styles.InputAxisW; break;
     }
 
-    const {constraints} = obj;
-    const locked = disabled || !isAxisAllowed(axis, type, constraints);
+    const locked = disabled || !isAxisAllowed(axis, type, obj.constraints);
 
     return (
       <Input
@@ -133,8 +145,8 @@ export class TabObject extends Component<TabObjectProps, any> {
         className={className}
         name={name}
         disabled={locked}
-        value={get(obj, `keyframe.${fieldMeta.name}`)}
-        onInput={cb}
+        value={get(transfrom, fieldMeta.name)}
+        onInput={this.onTransformChange}
         validate={InputValidate.NumberFloat}
       />
     );
@@ -142,28 +154,24 @@ export class TabObject extends Component<TabObjectProps, any> {
 
   private updateKeyframeProperty (propName: string, value: number) {
     // method to update position[0], rotation[2], scale[1] etc.
-    if (isNaN(value)) { return; }
+    // console.log(`SET (${propName}=${value})`);
+    const {timelineState, appState} = this.props;
+    const {selectedObjectName, currentFrame} = appState;
 
-    /*
-    const {appState} = this.props;
-    const obj = appState.selectedObject;
-    const keyframe = { ...obj.keyframe };
-    if (!has(keyframe, propName)) { return; }
+    const oldTransform = this.calculateCurrentTransform();
+    const newTransfrom = createInitTransform();
+    copyTransform(newTransfrom, oldTransform);
+    set(newTransfrom, propName, value);
 
-    const valPrev = get(keyframe, propName);
-    const changedEnough = Math.abs(valPrev - value) > CHANGE_EPS;
-    if (changedEnough) {
-      set(keyframe, propName, value);
-      console.log(`SET (${propName}=${value}) will have: `, keyframe);
-    }
-    */
-    console.log(`SET (${propName}=${value}) will have: `);
+    timelineState.setKeyframeAt(selectedObjectName, currentFrame, newTransfrom);
   }
 
   private onTransformChange = (nextVal: string, e: any) => {
     const propName = e.target.name;
     const val = parseFloat(nextVal);
-    this.updateKeyframeProperty(propName, val);
+    if (!isNaN(val)) {
+      this.updateKeyframeProperty(propName, val);
+    }
   }
 
 }

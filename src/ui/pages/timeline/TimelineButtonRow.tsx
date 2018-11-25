@@ -5,18 +5,18 @@ const Styles = require('./TimelineButtonRow.scss');
 import {
   Button, ButtonTheme, ButtonGroup,
   Input, InputValidate, FaIcon,
-  Dropdown, DropdownItem,
-  Tooltip, TooltipPosition
+  Tooltip
 } from 'ui/components';
 import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
 import {isAnyAxisAllowed} from 'viewport/scene';
+import {getKeyframeBefore, getKeyframeAfter} from 'viewport/animation';
 
 
-const TRANSFORM_SPACES = [
+/*const TRANSFORM_SPACES = [
   {name: 'Global', value: 'Global'},
   {name: 'Local', value: 'Local'},
-];
+];*/
 
 const KEYMAP = [
   { key: 'f', action: 'onPrevFrame', continous: true, },
@@ -52,8 +52,8 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
   public render() {
     const {appState} = this.props;
-    const tfxSpace = (appState.isUseLocalSpace
-      ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
+    // const tfxSpace = (appState.isUseLocalSpace
+      // ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
 
     const obj = appState.currentObjectData;
 
@@ -142,6 +142,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
         </ButtonGroup>
 
         {/* TRANSFORM SPACE */}
+        {/*
         <Tooltip text='Transformation space' className={Styles.Tooltip} position={TooltipPosition.Right} />
         <Dropdown
           options={TRANSFORM_SPACES}
@@ -149,6 +150,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
           onSelected={this.onSpaceChange}
           className={Styles.TransformSpacesDropdown}
         />
+        */}
 
       </div>
     );
@@ -212,8 +214,8 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   /* KEYFRAME MANIPULATION */
   private onPrevKeyframe = () => {
     const {timelineState, appState} = this.props;
-    const prevKeyframe = timelineState.getKeyframeBefore(
-      appState.selectedObjectName, appState.currentFrame
+    const prevKeyframe = getKeyframeBefore(
+      timelineState.getTimeline(appState.selectedObjectName), appState.currentFrame
     );
 
     if (prevKeyframe) {
@@ -223,8 +225,8 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
   private onNextKeyframe = () => {
     const {timelineState, appState} = this.props;
-    const nextKeyframe = timelineState.getKeyframeAfter(
-      appState.selectedObjectName, appState.currentFrame
+    const nextKeyframe = getKeyframeAfter(
+      timelineState.getTimeline(appState.selectedObjectName), appState.currentFrame
     );
 
     if (nextKeyframe) {
@@ -261,9 +263,9 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     this.trySetGizmo(GizmoType.Scale);
   }
 
-  private onSpaceChange = (a: DropdownItem) => {
+  /*private onSpaceChange = (a: DropdownItem) => {
     const {appState} = this.props;
     appState.isUseLocalSpace = a.value === 'Local';
-  }
+  }*/
 
 }

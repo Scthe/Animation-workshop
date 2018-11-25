@@ -1,16 +1,12 @@
 import {observable} from 'mobx';
-import {Keyframe, Timeline, createKeyframe} from 'viewport/animation';
+import {Timeline, createKeyframe} from 'viewport/animation';
 import {Transform} from 'gl-utils';
-import {find, findLast, sortBy} from 'lodash';
+import {sortBy} from 'lodash';
 
 
 type TimelineMap = {[key: string]: Timeline};
 type BoneName = string;
 
-const isKeyframeBefore = (frameId: number) => (keyframe: Keyframe) =>
-  keyframe.frameId < frameId;
-const isKeyframeAfter = (frameId: number) => (keyframe: Keyframe) =>
-  keyframe.frameId > frameId;
 
 const removeKeyframeAt = (timeline: Timeline, frameId: number) =>
   timeline.filter(keyframe => keyframe.frameId !== frameId);
@@ -51,16 +47,6 @@ export class TimelineState {
   getKeyframeAt (boneName: BoneName, frameId: number) {
     const timeline = this.getTimeline(boneName);
     return timeline.find(keyframe => keyframe.frameId === frameId);
-  }
-
-  getKeyframeBefore (boneName: BoneName, frameId: number) {
-    const timeline = this.getTimeline(boneName);
-    return findLast(timeline, isKeyframeBefore(frameId));
-  }
-
-  getKeyframeAfter (boneName: BoneName, frameId: number) {
-    const timeline = this.getTimeline(boneName);
-    return find(timeline, isKeyframeAfter(frameId));
   }
 
 }

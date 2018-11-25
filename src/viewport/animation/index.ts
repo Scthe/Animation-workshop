@@ -3,6 +3,7 @@ import {numberToString} from 'gl-utils';
 export * from './AnimTimings';
 export * from './interpolate';
 export * from './Keyframe';
+export * from './interpolateKeyframe';
 
 // this is not displayed fps, this is an internal value how densly the keyframes
 // are stored.
