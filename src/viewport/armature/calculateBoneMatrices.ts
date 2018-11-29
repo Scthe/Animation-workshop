@@ -1,8 +1,6 @@
 import {mat4, create as mat4_Create, multiply} from 'gl-mat4';
-import {AnimTimings} from 'viewport/animation';
-import {getMove, getRotation} from '../../UI_Bridge';
 import {Armature, Bone} from './index';
-import {convertTransformToMatrix, Transform, SCALE_0} from 'gl-utils';
+import {convertTransformToMatrix, Transform} from 'gl-utils';
 
 /*
  *  In this file we update bone matrices for animation.
@@ -15,22 +13,13 @@ import {convertTransformToMatrix, Transform, SCALE_0} from 'gl-utils';
  *    * https://youtu.be/F-kcaonjHf8?t=3m23s
  */
 
-const getAnimTransform = (bone: Bone) => {
-  const marker = {name: bone.name} as any;
-  return {
-    position: getMove(marker),
-    rotation: getRotation(marker),
-    scale: SCALE_0,
-  } as Transform;
-};
-
 
 /**
  * This, along with gizmo handler control transformation space.
  */
-const calculateAnimTransformMat = (bone: Bone, animTransfrom: Transform) => {
+const calculateAnimTransformMat = (bone: Bone, animTransform: Transform) => {
   const bindMat = convertTransformToMatrix(bone.data.bindTransform);
-  const animMat = convertTransformToMatrix(animTransfrom);
+  const animMat = convertTransformToMatrix(animTransform);
   return multiply(mat4_Create(), bindMat, animMat);
 };
 
@@ -48,25 +37,25 @@ const calculateAnimTransformMat = (bone: Bone, animTransfrom: Transform) => {
  *      'true' identity is achieved if bind matrix is given here.
  *      In other words, this matrix must move from (0,0,0) to expected bone
  *      [position/rotaton/scale]-localSpace
- * 3. parentTransfrom - this acts as (0,0,0)->finalPosition.
+ * 3. parentTransform - this acts as (0,0,0)->finalPosition.
  *      e.g. You rotated the character's shoulder With animationTransform,
  *      now we have to move the shoulder from (0,0,0) to proper position
  *      relative to spine (where spine is parent bone).
  *      Look up how we calculated inverseBindMatrix
- *      NOTE: parentTransfrom is waht makes the animation propagate down the
+ *      NOTE: parentTransform is what makes the animation propagate down the
  *      children
  *
  * In following implementation the multiplication order is reversed cause OpenGL
  */
-const calculateBone = (bones: Armature, boneId: number, parentTransfrom: mat4) => {
+const calculateBone = (bones: Armature, boneId: number, parentTransform: mat4) => {
   const bone = bones[boneId] as Bone;
   const {globalTransform, finalBoneMatrix} = bone.getFrameCache(); // aliases
 
-  // transform for current frame
-  const animTransfrom = getAnimTransform(bone);
-  const animationTransformMat = calculateAnimTransformMat(bone, animTransfrom);
+  // transform for current frame (interpolated keyframes + gizmo dragging)
+  const {animationTransform} = bone.getFrameCache();
+  const animationTransformMat = calculateAnimTransformMat(bone, animationTransform);
 
-  multiply(globalTransform, parentTransfrom, animationTransformMat);
+  multiply(globalTransform, parentTransform, animationTransformMat);
   multiply(finalBoneMatrix, globalTransform, bone.data.inverseBindMatrix);
 
   bone.children.forEach(childIdx => {
@@ -74,6 +63,8 @@ const calculateBone = (bones: Armature, boneId: number, parentTransfrom: mat4) =
   });
 };
 
-export const calculateBoneMatrices = (_: AnimTimings, bones: Armature) => {
-  calculateBone(bones, 0, mat4_Create());
+const BONE_ROOT_INDEX = 0;
+
+export const calculateBoneMatrices = (bones: Armature) => {
+  calculateBone(bones, BONE_ROOT_INDEX, mat4_Create());
 };

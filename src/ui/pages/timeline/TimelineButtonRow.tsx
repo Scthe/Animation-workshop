@@ -5,18 +5,18 @@ const Styles = require('./TimelineButtonRow.scss');
 import {
   Button, ButtonTheme, ButtonGroup,
   Input, InputValidate, FaIcon,
-  Dropdown, DropdownItem,
-  Tooltip, TooltipPosition
+  Tooltip
 } from 'ui/components';
-import {AppState, TimelineState} from 'ui/state';
+import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
 import {isAnyAxisAllowed} from 'viewport/scene';
+import {getKeyframeBefore, getKeyframeAfter} from 'viewport/animation';
 
 
-const TRANSFORM_SPACES = [
+/*const TRANSFORM_SPACES = [
   {name: 'Global', value: 'Global'},
   {name: 'Local', value: 'Local'},
-];
+];*/
 
 const KEYMAP = [
   { key: 'f', action: 'onPrevFrame', continous: true, },
@@ -51,9 +51,9 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   }
 
   public render() {
-    const {timelineState, appState} = this.props;
-    const tfxSpace = (appState.isUseLocalSpace
-      ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
+    const {appState} = this.props;
+    // const tfxSpace = (appState.isUseLocalSpace
+      // ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
 
     const obj = appState.currentObjectData;
 
@@ -75,7 +75,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
           <Tooltip text='Play [V]' className={Styles.Tooltip} />
           <Button onClick={this.onPlay} theme={ButtonTheme.Green}>
-            {timelineState.isPlaying
+            {appState.isPlaying
               ? <FaIcon svg={require('fa/faPause')} />
               : <FaIcon svg={require('fa/faPlay')} /> }
           </Button>
@@ -94,9 +94,9 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
         <Tooltip text='Current frame' className={Styles.Tooltip} />
         <Input
           name='current-frame'
-          value={timelineState.currentFrame + 1}
+          value={appState.currentFrame + 1}
           className={Styles.FrameStatus}
-          append={` of ${timelineState.frameCount}`}
+          append={` of ${appState.frameCount}`}
           onInput={this.onFrameTextInput}
           validate={InputValidate.NumberDecimal}
           rawProps={{maxlength: 3}}
@@ -142,6 +142,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
         </ButtonGroup>
 
         {/* TRANSFORM SPACE */}
+        {/*
         <Tooltip text='Transformation space' className={Styles.Tooltip} position={TooltipPosition.Right} />
         <Dropdown
           options={TRANSFORM_SPACES}
@@ -149,6 +150,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
           onSelected={this.onSpaceChange}
           className={Styles.TransformSpacesDropdown}
         />
+        */}
 
       </div>
     );
@@ -177,68 +179,64 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     }
   }
 
-  private gotoFrame (frameId: number) {
-    const {timelineState} = this.props;
-    const frameIdFixed = timelineState.clampFrame(frameId);
-
-    if (!timelineState.isPlaying && timelineState.currentFrame !== frameIdFixed) {
-      timelineState.currentFrame = frameIdFixed;
-    }
-  }
 
   /* GENERAL PLAYBACK */
   private onPlay = () => {
-    const {timelineState} = this.props;
-    timelineState.isPlaying = !timelineState.isPlaying;
+    const {appState} = this.props;
+    appState.isPlaying = !appState.isPlaying;
   }
 
   private onReset = () => {
-    const {timelineState} = this.props;
-    timelineState.isPlaying = false;
+    const {appState} = this.props;
+    appState.isPlaying = false;
 
-    let range = timelineState.previewRange;
-    this.gotoFrame(Math.min(...range));
+    appState.gotoFrame(Math.min(...appState.previewRange));
   }
 
   private onPrevFrame = () => {
-    const {timelineState} = this.props;
-    this.gotoFrame(timelineState.currentFrame - 1);
+    const {appState} = this.props;
+    appState.gotoFrame(appState.currentFrame - 1);
   }
 
   private onNextFrame = () => {
-    const {timelineState} = this.props;
-    this.gotoFrame(timelineState.currentFrame + 1);
+    const {appState} = this.props;
+    appState.gotoFrame(appState.currentFrame + 1);
   }
 
   private onFrameTextInput = (nextVal: string, e: any) => {
     const val = parseFloat(nextVal);
     if (isNaN(val)) { return; }
 
-    this.gotoFrame(val - 1);
+    const {appState} = this.props;
+    appState.gotoFrame(val - 1);
   }
 
   /* KEYFRAME MANIPULATION */
   private onPrevKeyframe = () => {
-    const {timelineState} = this.props;
-    const [prevKeyframe, ] = timelineState.getCurrentObjectKeyframeNeighbours(timelineState.currentFrame, false);
+    const {timelineState, appState} = this.props;
+    const prevKeyframe = getKeyframeBefore(
+      timelineState.getTimeline(appState.selectedObjectName), appState.currentFrame
+    );
 
     if (prevKeyframe) {
-      this.gotoFrame(prevKeyframe.frameId);
+      appState.gotoFrame(prevKeyframe.frameId);
     }
   }
 
   private onNextKeyframe = () => {
-    const {timelineState} = this.props;
-    const [ , nextKeyframe] = timelineState.getCurrentObjectKeyframeNeighbours(timelineState.currentFrame, false);
+    const {timelineState, appState} = this.props;
+    const nextKeyframe = getKeyframeAfter(
+      timelineState.getTimeline(appState.selectedObjectName), appState.currentFrame
+    );
 
     if (nextKeyframe) {
-      this.gotoFrame(nextKeyframe.frameId);
+      appState.gotoFrame(nextKeyframe.frameId);
     }
   }
 
   private onKeyframeDelete = () => {
-    const {timelineState} = this.props;
-    timelineState.deleteKeyframeForCurrentObject(timelineState.currentFrame);
+    const {timelineState, appState} = this.props;
+    timelineState.deleteKeyframe(appState.selectedObjectName, appState.currentFrame);
   }
 
 
@@ -265,9 +263,9 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     this.trySetGizmo(GizmoType.Scale);
   }
 
-  private onSpaceChange = (a: DropdownItem) => {
+  /*private onSpaceChange = (a: DropdownItem) => {
     const {appState} = this.props;
     appState.isUseLocalSpace = a.value === 'Local';
-  }
+  }*/
 
 }

@@ -1,65 +1,17 @@
-import {Marker} from './viewport/marker';
-import {vec3, create as vec3_Create, copy as vCopy} from 'gl-vec3';
-import {quat, create as quat_Create, copy as qCopy} from 'gl-quat';
 import {pick} from 'lodash';
+import {AppState, TimelineState} from 'state';
+import {Transform} from 'gl-utils';
 
-////////////////////
-/// KEYFRAME STORAGE
-////////////////////
 
-let modMap: any = {};
-(window as any).modMap = modMap;
-
-const createEmptyKeyFrame = () => ({
-  translation: vec3_Create(),
-  rotation: quat_Create(),
-});
-
-const getKeyframe = (objName: string) => {
-  if (!modMap[objName]) {
-    modMap[objName] = createEmptyKeyFrame();
-  }
-
-  return modMap[objName];
-};
-
-////////////////////
-/// MOVE
-////////////////////
-
-export const addMove = (objName: string, moveVec: vec3) => {
-  const keyframe = getKeyframe(objName);
-  vCopy(keyframe.translation, moveVec);
-};
-
-export const getMove = (marker: Marker) => {
-  return getKeyframe(marker.name).translation;
-};
-
-////////////////////
-/// ROTATE
-////////////////////
-
-export const addRotation = (objName: string, rotateQuat: quat) => {
-  const keyframe = getKeyframe(objName);
-  qCopy(keyframe.rotation, rotateQuat);
-};
-
-export const getRotation = (marker: Marker) => {
-  return getKeyframe(marker.name).rotation;
-};
-
-/////////////////
-
-import {AppState, appState, TimelineState, timelineState} from 'ui/state';
-
-export {AppState, TimelineState}; // easier imports. still, ugh..
-
+// Both AppState and TimelineState were created mainly for use by UI.
+// The state has to be shared with viewport that runs in infinite loop.
+// This file exposes such interface.
+//
 // normally in mobx You would add a reaction to bridge the imperative code
 // with state. Since we are running infinite loop, we are going to just
 // use getters instead
 
-export interface UIState {
+interface UIState {
   appState: AppState;
   timelineState: TimelineState;
 }
@@ -88,7 +40,12 @@ export const appStateSetter = <K extends keyof AppState, V>(key: K, value: AppSt
   };
 };
 
-class UIBridge {
+export class UIBridge {
+
+  constructor(
+    private appState: AppState,
+    private timelineState: TimelineState
+  ) {}
 
   getFromUI<fn extends FromStateGetter> (getter: fn) {
     // https://dev.to/miracleblue/how-2-typescript-serious-business-with-typescripts-infer-keyword-40i5
@@ -102,9 +59,19 @@ class UIBridge {
     });
   }
 
-  private getStateAsObject () {
-    return { appState, timelineState, };
+  setKeyframe (transform: Transform) {
+    const {selectedObjectName, currentFrame} = this.appState;
+    this.timelineState.setKeyframeAt(selectedObjectName, currentFrame, transform);
+  }
+
+  getTimeline (objName: string) {
+    return this.timelineState.getTimeline(objName);
+  }
+
+  private getStateAsObject (): UIState {
+    return {
+      appState: this.appState,
+      timelineState: this.timelineState,
+    };
   }
 }
-
-export const uiBridge = new UIBridge();

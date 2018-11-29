@@ -86,6 +86,10 @@ export const lerp = (a: number, b: number, time: number) => {
   return (1 - time) * a + time * b;
 };
 
+export const clamp = (value: number, min: number, max: number) => {
+  return Math.min(Math.max(value, min), max);
+};
+
 export const hexToVec3 = (hex: number | string) => {
   if (typeof hex === 'string') {
     const hexStr = hex[0] === '#' ? hex.substr(1) : hex;
@@ -156,3 +160,11 @@ export const getAxesFromRotMatrix = (rotMat: mat3) => {
   return axes2;
 };
 */
+
+// string utils
+export const numberToString = (a: number, precision: number = 3) => Number(a).toFixed(precision);
+
+export const vec3ToString = (v: vec3, precision: number = 3) => {
+  const pv = (idx: number) => numberToString(v[idx], precision);
+  return `[${pv(0)}, ${pv(1)}, ${pv(2)}]`;
+};

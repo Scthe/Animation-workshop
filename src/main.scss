@@ -11,3 +11,18 @@ body {
   background-color: $viewport-color;
   color: $text-color;
 }
+
+// :global to not mangle name through css-loader (cuz 'module' option is on)
+:global #animation-frame-id {
+  display: none; // will be shown through inline js
+  position: fixed;
+  min-width: 60px;
+  top: 0;
+  left: 0;
+  background: black;
+  color: white;
+  padding: 5px 10px;
+  opacity: 0.5;
+  text-align: right;
+  font-family: monospace;
+}

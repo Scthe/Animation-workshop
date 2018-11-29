@@ -3,13 +3,23 @@ import {
   DrawParameters, applyDrawParams
 } from 'gl-utils';
 import {GizmoType} from './gizmo';
+import {Transform, createInitTransform} from 'gl-utils';
 
-// TODO add here draggedDisplacement: Keyframe for tmp. move/rotate while dragging?
 interface DraggingStatus {
   // when we are moving/rotating/scaling
   draggedAxis?: Axis;
   // we can drag and switch gizmo using key-shortcut. this is local copy for such cases
   draggedGizmo?: GizmoType;
+  // when dragging, this transform represents current displacement.
+  // Only one of position/roration/scale from this object is used at the time (rest is zeroed)
+  temporaryDisplacement: Transform;
+}
+
+// Animation state that persists between frames
+interface AnimationState {
+  isPlaying: boolean;
+  // timestamp of moment the animation started (unit: in ms since app started)
+  animationStartTimestamp: number;
 }
 
 export class GlState {
@@ -18,6 +28,7 @@ export class GlState {
   public canvas: HTMLCanvasElement;
   private drawParams: DrawParameters;
   public draggingStatus: DraggingStatus;
+  public animationState: AnimationState;
   // IO
   public pressedKeys: boolean[] = new Array(128); // keycode => bool
 
@@ -30,6 +41,8 @@ export class GlState {
     applyDrawParams(this.gl, this.drawParams, undefined, true);
 
     this.draggingStatus = GlState.createSelection();
+
+    this.animationState = { isPlaying: false, animationStartTimestamp: 0 };
 
     // IO
     window.addEventListener('keydown', event => {
@@ -44,8 +57,7 @@ export class GlState {
     return {
       draggedAxis: undefined as Axis,
       draggedGizmo: GizmoType.Move,
-      // draggedGizmo: GizmoType.Rotate,
-      currentObject: undefined as string,
+      temporaryDisplacement: createInitTransform(),
     };
   }
 

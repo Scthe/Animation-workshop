@@ -8,7 +8,7 @@ import {
 } from 'gl-mat4';
 import {vec3, fromValues as vec3_Create} from 'gl-vec3';
 import {transformPointByMat4, toRadians} from 'gl-utils';
-import {MouseDragEvent} from './MouseHandler';
+import {MouseDragEvent} from './handler';
 
 const KEY_FORWARD = 'W'.charCodeAt(0);
 const KEY_BACK    = 'S'.charCodeAt(0);

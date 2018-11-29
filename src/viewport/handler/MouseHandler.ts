@@ -1,6 +1,6 @@
 import {vec2, fromValues as vec2_Create} from 'gl-vec2';
-import {GlState} from './GlState';
-import {Marker, getMarkerAt} from './marker';
+import {GlState} from 'viewport/GlState';
+import {Marker, getMarkerAt} from 'viewport/marker';
 import {Scene} from 'viewport/scene';
 
 
@@ -100,7 +100,7 @@ export class MouseHandler {
   }
 
   private onMouseMove = (event: MouseEvent) => {
-    const ev = this.createDragEvent(event);
+    const ev: MouseDragEvent = this.createDragEvent(event);
 
     switch (this.clickedState) {
       case ClickedState.Camera: {
@@ -131,7 +131,7 @@ export class MouseHandler {
       position,
       delta,
       totalDelta: subtract(position, this.firstClick),
-    } as MouseDragEvent;
+    };
   }
 
 }

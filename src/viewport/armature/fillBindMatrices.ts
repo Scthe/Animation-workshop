@@ -2,8 +2,6 @@ import {mat4, create as mat4_Create, invert, multiply} from 'gl-mat4';
 import {convertTransformToMatrix} from 'gl-utils';
 import {Bone} from './Bone';
 
-import * as GLTF_PLS from 'viewport/gltfExporterFixes';
-
 
 // we calculate by hand, since blender exporter is broken beyond belief
 export const fillBindMatrices = (bones: Bone[]) => {
@@ -12,7 +10,6 @@ export const fillBindMatrices = (bones: Bone[]) => {
 
     const boneMat = convertTransformToMatrix(data.bindTransform);
     multiply(data.bindMatrix, parentMat, boneMat);
-    multiply(data.bindMatrix, data.bindMatrix, GLTF_PLS.BIND_MATRIX_FIX);
 
     invert(data.inverseBindMatrix, data.bindMatrix);
 
