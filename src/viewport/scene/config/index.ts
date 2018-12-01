@@ -33,6 +33,8 @@ export const SHADERS = {
   MARKER_FRAG: require('shaders/marker.frag.glsl'),
   GIZMO_VERT: require('shaders/gizmo.vert.glsl'),
   GIZMO_FRAG: require('shaders/lampShader.frag.glsl'),
+  GRID_VERT: require('shaders/grid.vert.glsl'),
+  GRID_FRAG: require('shaders/grid.frag.glsl'),
 };
 
 

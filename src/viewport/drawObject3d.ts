@@ -18,7 +18,7 @@ const setPerObjectUniforms = (frameEnv: FrameEnv, shader: Shader, object: Object
   });
 };
 
-const drawMesh = (gl: Webgl) => (mesh: Mesh) => {
+export const drawMesh = (gl: Webgl) => (mesh: Mesh) => {
   const {vao, indexGlType, indexBuffer, triangleCnt} = mesh;
   vao.bind(gl);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
