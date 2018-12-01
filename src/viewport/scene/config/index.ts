@@ -1,6 +1,8 @@
+import {fromValues as vec3_Create} from 'gl-vec3';
 export {isAxisAllowed, isAnyAxisAllowed} from './constraints';
 export {BoneConfigEntry} from './boneConfig';
 
+// TODO clean up this file
 
 /// SCENE
 
@@ -9,9 +11,12 @@ export {BoneConfigEntry} from './boneConfig';
 // export const LAMP_ROOT_NODE = 'SkeletonTest_rig';
 // import {BONE_CONFIG} from './TestScene.cfg';
 
+// export const GLTF_URL = require('assets/LampAnimScene.old.glb');
+
 // final object
 export const GLTF_URL = require('assets/LampAnimScene.glb');
-export const LAMP_ROOT_NODE = 'Armature.001';
+export const SCENE_OBJECTS = ['LampObj'];
+// export const SCENE_OBJECTS = ['LampObj', 'BallObj'];
 import {BONE_CONFIG} from './LampAnimScene.cfg';
 
 /// END: SCENE
@@ -36,3 +41,4 @@ export const CAMERA_SETTINGS = {
   zNear: 0.1,
   zFar: 100,
 };
+export const CAMERA_POSITION = vec3_Create(0, 1, 2);

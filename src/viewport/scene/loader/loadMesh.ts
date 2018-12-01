@@ -1,4 +1,4 @@
-import {GltfAsset} from 'gltf-loader-ts';
+import {GltfAsset, gltf} from 'gltf-loader-ts';
 import {Shader, Vao, VaoAttrInit, BYTES} from 'gl-utils';
 import {reinterpretRawBytes} from './_utils';
 import {Mesh} from '../index';
@@ -55,20 +55,23 @@ const createIndexBuffer = async (gl: Webgl, asset: GltfAsset, indicesAccesorId: 
 
 type GltfAttrToShaderAttrMap = {[gltfAttrKey: string]: string};
 
-export const loadMesh = async (
-  gl: Webgl, shader: Shader, asset: GltfAsset, meshIdx: number,
-  attrMap: GltfAttrToShaderAttrMap
-) => {
-  const meshDesc = asset.gltf.meshes[meshIdx];
+interface LoadMeshOpts {
+  gl: Webgl;
+  shader: Shader;
+  asset: GltfAsset;
+  attrMap: GltfAttrToShaderAttrMap;
+}
+
+export const loadMesh = async (primitive: gltf.MeshPrimitive, opts: LoadMeshOpts): Promise<Mesh> => {
+  const {attributes, indices} = primitive;
+  const {gl, asset, shader, attrMap} = opts;
 
   // each attribute refers to accessor
-  const mesh = meshDesc.primitives[0]; // might as well
-  const attributes = mesh.attributes;
   const attrInitOpts: VaoAttrInit[] = [];
 
   for (let gltfAttrName in attrMap) {
     if (!(gltfAttrName in attributes)) {
-      throw `Could not find ${meshDesc.name}.${gltfAttrName} attribute in glft file`;
+      throw `Could not find ${gltfAttrName} attribute in gltf file`;
     }
 
     const shaderAttrName = attrMap[gltfAttrName];
@@ -77,6 +80,6 @@ export const loadMesh = async (
   }
 
   const vao = new Vao(gl, shader, attrInitOpts);
-  const indexBuffer = await createIndexBuffer(gl, asset, mesh.indices);
-  return { vao, ...indexBuffer } as Mesh;
+  const indexBuffer = await createIndexBuffer(gl, asset, indices);
+  return { vao, ...indexBuffer };
 };

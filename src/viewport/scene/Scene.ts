@@ -1,3 +1,4 @@
+import {flatMap} from 'lodash';
 import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Shader, Vao, getMVP, Axis, hexToVec3} from 'gl-utils';
 import {Armature} from 'viewport/armature';
@@ -13,7 +14,8 @@ export interface Mesh {
 }
 
 export interface Object3d {
-  mesh: Mesh;
+  name: string;
+  meshes: Mesh[];
   bones: Armature;
   modelMatrix: mat4;
 }
@@ -58,7 +60,7 @@ export class Scene {
     public readonly glState: GlState,
     public readonly camera: CameraFPS,
     public readonly materialWithArmature: Shader,
-    public readonly lamp: Object3d,
+    public readonly objects: Object3d[],
     public readonly markerMeta: MarkerMeta,
     public readonly gizmoMeta: GizmoMeta,
   ) {
@@ -88,9 +90,14 @@ export class Scene {
     );
   }
 
-  getMarkers () {
+  private getObjectBoneMarkers() {
+    const getObjMarkers = (o: Object3d) => o.bones.map(b => b.marker);
+    return flatMap(this.objects, getObjMarkers);
+  }
+
+  getMarkers (): Marker[] {
     return [
-      ...this.lamp.bones.map(b => b.marker),
+      ...this.getObjectBoneMarkers(),
       ...this.gizmoMeta.markers,
       ...this.getDebugMarkers(),
     ];
@@ -98,15 +105,11 @@ export class Scene {
 
   getMarker (name: string | Axis) {
     if (typeof name === 'string') {
-      const bone = this.lamp.bones.find(b => b.name === name);
-      if (bone) {
-        return bone.marker;
-      }
+      const markers = this.getObjectBoneMarkers();
+      return markers.find(b => b.name === name);
     } else {
       return this.gizmoMeta.markers[name];
     }
-
-    return undefined;
   }
 
   updateDebugMarkers () {

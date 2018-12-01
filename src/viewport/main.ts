@@ -95,7 +95,7 @@ const shouldDrawViewportUI = (glState: GlState) => !glState.animationState.isPla
 
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
-  const {camera, lamp} = scene;
+  const {camera} = scene;
 
   updateIsPlayingState(time, glState);
   const frameEnv: FrameEnv = {
@@ -121,14 +121,17 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const [width, height] = glState.getViewport();
   gl.viewport(0.0, 0.0, width, height);
 
-  // lamp: bones + draw
+  // objects: bones + draw
   const interpolateParams = {
     glState, selectedObjectName,
     animTimings: frameEnv.timing,
   };
-  interpolate(interpolateParams, lamp.bones);
-  calculateBoneMatrices(lamp.bones);
-  drawObject3d(frameEnv, scene.lamp);
+  scene.objects.forEach(obj => {
+    interpolate(interpolateParams, obj.bones);
+    calculateBoneMatrices(obj.bones);
+    drawObject3d(frameEnv, obj);
+  });
+
 
   // gizmo
   tryChangeGizmo(glState, scene);
@@ -141,7 +144,9 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   }
 
   // markers
-  updateArmatureMarkers(scene, lamp);
+  scene.objects.forEach(obj => {
+    updateArmatureMarkers(scene, obj);
+  });
   scene.updateDebugMarkers();
   const {markerSize, showDebug} = uiBridge.getFromUI(
     appStateGetter('markerSize', 'showDebug')

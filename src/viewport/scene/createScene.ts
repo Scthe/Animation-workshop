@@ -1,31 +1,21 @@
-import {GltfAsset, GltfLoader} from 'gltf-loader-ts';
-import {create as mat4_Create} from 'gl-mat4';
+import {GltfLoader} from 'gltf-loader-ts';
 import {Shader, AxisList, Vao, VaoAttrInit} from 'gl-utils';
 
 import {CameraFPS} from 'viewport/camera-fps';
 import {AXIS_COLORS} from 'viewport/gizmo';
 import {GlState} from 'viewport/GlState';
 import {Marker, MarkerType} from 'viewport/marker';
-import {Scene, getNode, loadBones, loadMesh} from './index';
-import {isMeshNode} from 'viewport/scene/loader/_utils';
+import {Scene} from './index';
 import {generateMoveGizmo, generateRotateGizmo} from './_generateGizmoMeshes';
+import {loadObject} from './loader/loadObject';
 
 import {
-  GLTF_URL, LAMP_ROOT_NODE,
-  SHADERS, CAMERA_SETTINGS
+  GLTF_URL, SCENE_OBJECTS,
+  SHADERS, CAMERA_SETTINGS, CAMERA_POSITION
 } from './config';
 
 
 const MARKER_VAO_SIZE = 256; // see also MAX_MARKERS in marker.vert.glsl
-
-
-const getMeshNode = (asset: GltfAsset, rootNodeName: string) => {
-  const gltf = asset.gltf;
-  const rootNode = getNode(asset, rootNodeName);
-  if (!rootNode) { return undefined; }
-  const childNodes = rootNode.children.map((idx: number) => gltf.nodes[idx]);
-  return childNodes.find(isMeshNode);
-};
 
 const createInstancingVao = (gl: Webgl, shader: Shader, size: number) => {
   const data = new Float32Array(size);
@@ -71,27 +61,16 @@ export const createScene = async (glState: GlState) => {
   const asset = await loader.load(GLTF_URL);
   console.log('asset.gltf', asset.gltf);
 
-  // lamp
-  const meshNode = getMeshNode(asset, LAMP_ROOT_NODE);
-  if (!meshNode) {
-    const nodeNames = asset.gltf.nodes.map(n => n.name).join(', ');
-    throw `Could not find object node '${LAMP_ROOT_NODE}' in [${nodeNames}]`;
-  }
-  const lampBones = loadBones(asset, meshNode);
-  const lampMesh = await loadMesh(gl, materialWithArmature, asset, meshNode.mesh, {
-    'POSITION': 'a_Position',
-    'JOINTS_0': 'a_BoneIDs',
-    'WEIGHTS_0': 'a_Weights',
-  });
+  const camera = new CameraFPS(CAMERA_SETTINGS, glState.canvas, CAMERA_POSITION);
 
-  // camera
-  const camera = new CameraFPS(CAMERA_SETTINGS, glState.canvas);
+  const loadObjectOpts = { gl, shader: materialWithArmature, asset};
+  const objects = await Promise.all(SCENE_OBJECTS.map(loadObject(loadObjectOpts)));
 
   return new Scene(
     glState,
     camera,
     materialWithArmature,
-    {mesh: lampMesh, bones: lampBones, modelMatrix: mat4_Create()},
+    objects,
     createMarkerMeta(gl),
     createGizmoMeta(gl),
   );

@@ -27,11 +27,12 @@ interface CameraSettings {
 
 export class CameraFPS {
   private angles = [0, 0]; // angles like in polar coords
-  private position = vec3_Create(0, 0, 2);
+  private position: vec3;
   private rotateSpeed = 0;
 
-  constructor (public settings: CameraSettings, canvas: HTMLElement) {
+  constructor (public settings: CameraSettings, canvas: HTMLElement, pos: vec3) {
     canvas.addEventListener('wheel', this.onMouseWheel);
+    this.position = vec3_Create(pos[0], pos[1], pos[2]);
   }
 
   update (deltaTime: number, moveSpeed: number, rotateSpeed: number, keyState: boolean[]) {
