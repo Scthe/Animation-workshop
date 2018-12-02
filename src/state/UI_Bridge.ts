@@ -59,6 +59,13 @@ export class UIBridge {
     });
   }
 
+  setCurrentObject (objName: string) {
+    this.setOnUI((uiState: UIState) => {
+      const {appState} = uiState;
+      appState.setCurrentObject(objName);
+    });
+  }
+
   setKeyframe (transform: Transform) {
     const {selectedObjectName, currentFrame} = this.appState;
     this.timelineState.setKeyframeAt(selectedObjectName, currentFrame, transform);

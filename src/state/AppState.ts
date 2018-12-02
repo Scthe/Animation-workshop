@@ -1,6 +1,6 @@
 import {observable, computed} from 'mobx';
 import {GizmoType} from 'viewport/gizmo';
-import {getBoneConfig} from 'viewport/scene';
+import {getBoneConfig, getActionableGizmo, isAnyAxisAllowed} from 'viewport/scene';
 import {clamp} from 'gl-utils';
 
 // consts
@@ -79,6 +79,15 @@ export class AppState {
       isBone: true,
       constraints: cfg.constraints,
     };
+  }
+
+  setCurrentObject (objName: string) {
+    this.selectedObjectName = objName;
+    const cfg = getBoneConfig(objName);
+
+    if (!isAnyAxisAllowed(this.currentGizmo, cfg.constraints)) {
+      this.currentGizmo = cfg ? getActionableGizmo(cfg.constraints) : GizmoType.Move;
+    }
   }
 
 }

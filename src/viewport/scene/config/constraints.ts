@@ -1,5 +1,5 @@
 import {Axis, AxisList} from 'gl-utils';
-import {GizmoType} from 'viewport/gizmo';
+import {GizmoType, GIZMO_TYPE_LIST} from 'viewport/gizmo';
 import {some} from 'lodash';
 
 /// most of this file is opaque to 3rd party
@@ -42,4 +42,8 @@ export const isAxisAllowed = (axis: Axis, gizmo: GizmoType, constraints: Constra
 
 export const isAnyAxisAllowed = (gizmo: GizmoType, constraints: Constraints) => {
   return some(AxisList, axis => isAxisAllowed(axis, gizmo, constraints));
+};
+
+export const getActionableGizmo = (constraints: Constraints) => {
+  return GIZMO_TYPE_LIST.find(type => isAnyAxisAllowed(type, constraints));
 };

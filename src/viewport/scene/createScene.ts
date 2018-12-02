@@ -7,11 +7,11 @@ import {GlState} from 'viewport/GlState';
 import {Marker, MarkerType} from 'viewport/marker';
 import {Scene} from './index';
 import {generateMoveGizmo, generateRotateGizmo} from './_generateGizmoMeshes';
-import {loadObject} from './loader/loadObject';
+import {loadObject, LoadObjectOpts} from './loader/loadObject';
 
 import {
-  GLTF_URL, SCENE_OBJECTS,
-  SHADERS, CAMERA_SETTINGS, CAMERA_POSITION
+  SCENE_FILES, SHADERS,
+  CAMERA_SETTINGS, CAMERA_POSITION
 } from './config';
 
 
@@ -52,19 +52,34 @@ const createGizmoMeta = (gl: Webgl) => {
   };
 };
 
+interface FileDescriptor {
+  object: string;
+  filePath: string;
+}
+
+const readObjectFile = (loadObjectOpts: LoadObjectOpts) => async (fileDesc: FileDescriptor) => {
+  const {object, filePath} = fileDesc;
+  const loader = new GltfLoader();
+  const asset = await loader.load(filePath);
+  console.log('asset.gltf', asset.gltf);
+
+  const loadOpts = {
+    ...loadObjectOpts,
+    asset,
+  };
+  return loadObject(object, loadOpts);
+};
 
 export const createScene = async (glState: GlState) => {
   const {gl} = glState;
   const materialWithArmature = new Shader(gl, SHADERS.LAMP_VERT, SHADERS.LAMP_FRAG);
 
-  const loader = new GltfLoader();
-  const asset = await loader.load(GLTF_URL);
-  console.log('asset.gltf', asset.gltf);
-
   const camera = new CameraFPS(CAMERA_SETTINGS, glState.canvas, CAMERA_POSITION);
 
-  const loadObjectOpts = { gl, shader: materialWithArmature, asset};
-  const objects = await Promise.all(SCENE_OBJECTS.map(loadObject(loadObjectOpts)));
+  const loadObjectOpts = { gl, shader: materialWithArmature, asset: undefined as any };
+  const objects = await Promise.all(
+    SCENE_FILES.map(readObjectFile(loadObjectOpts))
+  );
 
   return new Scene(
     glState,

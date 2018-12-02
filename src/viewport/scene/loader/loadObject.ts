@@ -11,7 +11,7 @@ const SKINNED_MESH_ATTRS = {
   'WEIGHTS_0': 'a_Weights',
 };
 
-interface LoadObjectOpts {
+export interface LoadObjectOpts {
   gl: Webgl;
   shader: Shader;
   asset: GltfAsset;
@@ -25,7 +25,7 @@ const getObjNode = (asset: GltfAsset, objName: string) => {
   return nodes[0];
 };
 
-export const loadObject = (opts: LoadObjectOpts) => async (objName: string): Promise<Object3d> => {
+export const loadObject = async (objName: string, opts: LoadObjectOpts): Promise<Object3d> => {
   const gltf = opts.asset.gltf;
   const node = getObjNode(opts.asset, objName);
 
