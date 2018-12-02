@@ -2,7 +2,7 @@ import {generatePlane, createGpuShape, DrawParameters, Shader, setUniforms, Cull
 import {fromValues as vec3_Create} from 'gl-vec3';
 import {create as mat4_Create, scale} from 'gl-mat4';
 import {GlState} from './GlState';
-import {Scene, SHADERS} from './scene';
+import {Scene, Mesh, SHADERS} from './scene';
 import {drawMesh} from './drawObject3d';
 
 const SHADER_ATTR_NAME = 'a_Position';
@@ -21,7 +21,7 @@ const GRID_MODEL_MATRIX = (() => {
 })();
 
 // I'm lazy
-let tmpPlaneMesh: any;
+let tmpPlaneMesh: Mesh;
 let tmpPlaneShader: Shader;
 
 export const createGridMesh = (gl: Webgl) => {
@@ -32,7 +32,10 @@ export const createGridMesh = (gl: Webgl) => {
   tmpPlaneShader = new Shader(gl, SHADERS.GRID_VERT, SHADERS.GRID_FRAG);
 
   const shape = generatePlane({ width: 2, height: 2});
-  tmpPlaneMesh = createGpuShape(gl, shape, tmpPlaneShader, SHADER_ATTR_NAME);
+  tmpPlaneMesh = {
+    ...createGpuShape(gl, shape, tmpPlaneShader, SHADER_ATTR_NAME),
+    material: undefined as any,
+  };
 };
 
 export const drawGridMesh = (gl: Webgl, glState: GlState, scene: Scene) => {
@@ -56,10 +59,10 @@ export const drawGridMesh = (gl: Webgl, glState: GlState, scene: Scene) => {
   };
 
   setGridUniforms(DENSITY_MAJOR, COLOR_MAJOR);
-  drawMesh(gl)(tmpPlaneMesh);
+  drawMesh(gl, tmpPlaneShader)(tmpPlaneMesh);
 
   setGridUniforms(DENSITY_MINOR, COLOR_MINOR);
-  drawMesh(gl)(tmpPlaneMesh);
+  drawMesh(gl, tmpPlaneShader)(tmpPlaneMesh);
 
   gl.disable(gl.BLEND);
 };

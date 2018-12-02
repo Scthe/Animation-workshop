@@ -1,16 +1,22 @@
 import {flatMap} from 'lodash';
+import {vec3} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
-import {Shader, Vao, getMVP, Axis, hexToVec3} from 'gl-utils';
+import {Shader, Vao, getMVP, getMV, Axis, hexToVec3} from 'gl-utils';
 import {Armature} from 'viewport/armature';
 import {CameraFPS} from 'viewport/camera-fps';
 import {GlState} from 'viewport/GlState';
 import {Marker, MarkerType} from 'viewport/marker';
+
+export interface Material {
+  baseColor: vec3;
+}
 
 export interface Mesh {
   vao: Vao;
   indexGlType: GLenum; // e.g. gl.UNSIGNED_SHORT
   indexBuffer: WebGLBuffer;
   triangleCnt: number;
+  material: Material;
 }
 
 export interface Object3d {
@@ -87,6 +93,13 @@ export class Scene {
       modelMatrix,
       this.camera.getViewMatrix(),
       this.camera.getProjectionMatrix(width, height)
+    );
+  }
+
+  getMV (modelMatrix: mat4) {
+    return getMV (
+      modelMatrix,
+      this.camera.getViewMatrix()
     );
   }
 

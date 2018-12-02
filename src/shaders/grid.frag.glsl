@@ -1,9 +1,8 @@
 #extension GL_OES_standard_derivatives : enable
+precision mediump float;
 
 // based on:
 // http://madebyevan.com/shaders/grid/
-
-precision mediump float;
 
 uniform float g_gridDensity;
 uniform vec3 g_color;

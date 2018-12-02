@@ -19,7 +19,10 @@ export const generateMoveGizmo = (gl: Webgl, shader: Shader) => {
   });
   shape2.vertices = shape2.vertices.map(addHeight(0.8));
 
-  return createGpuShape(gl, combineShapes(shape, shape2), shader, SHADER_ATTR_NAME);
+  return {
+    ...createGpuShape(gl, combineShapes(shape, shape2), shader, SHADER_ATTR_NAME),
+    material: undefined as any,
+  };
 };
 
 export const generateRotateGizmo = (gl: Webgl, shader: Shader) => {
@@ -29,5 +32,8 @@ export const generateRotateGizmo = (gl: Webgl, shader: Shader) => {
     segments: 64,
     crosscutSegments: 5,
   });
-  return createGpuShape(gl, shape, shader, SHADER_ATTR_NAME);
+  return {
+    ...createGpuShape(gl, shape, shader, SHADER_ATTR_NAME),
+    material: undefined as any,
+  };
 };
