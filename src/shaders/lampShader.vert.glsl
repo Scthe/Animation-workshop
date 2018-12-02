@@ -8,24 +8,25 @@ attribute vec3 a_Position;
 attribute vec4 a_BoneIDs;
 attribute vec4 a_Weights; // always (1,0,0,0), cause only 1 bone influences ATM
 
+uniform mat4 g_MV;
 uniform mat4 g_MVP;
 uniform mat4 g_BoneTransforms[MAX_BONE_COUNT];
 
-varying vec3 vColor;
+varying vec3 vPosition;
 
 void main() {
-   vColor = vec3(0.0, 0.0, 0.2) + (vec3(a_BoneIDs.x) / 3.0);
-
    vec4 localPos = vec4(0.0);
-   vec4 localNormal = vec4(0.0);
+   // vec4 localNormal = vec4(0.0);
 
    for (int i = 0; i < MAX_WEIGHTS; i++) {
      int boneId = int(a_BoneIDs[i]);
      vec4 skinPos = g_BoneTransforms[boneId] * vec4(a_Position, 1.0);
      // vec4 worldNormal = g_BoneTransforms[boneId] * vec4(a_Normal, 1.0);
+
      localPos += skinPos * a_Weights[i];
      // localNormal += worldNormal * a_Weights[i];
    }
 
+   vPosition = (g_MV * localPos).xyz;
    gl_Position = g_MVP * localPos; // TODO divide by w
 }

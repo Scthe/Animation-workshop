@@ -39,10 +39,8 @@ const createBoneData = (node: gltf.Node) => {
 };
 
 
-// nodeName is name of node that contains 'skin' key
-export const loadBones = (asset: GltfAsset, node: gltf.Node) => {
+export const loadBones = (asset: GltfAsset, skin: gltf.Skin) => {
   const gltf = asset.gltf;
-  const skin = gltf.skins[node.skin];
 
   const getBoneIdxForNodeId = (nodeId: number) => {
     // search skin.joints for the same nodeId

@@ -9,6 +9,7 @@ import {Scene, createScene, BoneConfigEntry, getBoneConfig} from './scene';
 import {AnimTimings, createAnimTimings, interpolate} from './animation';
 import {uiBridge, appStateGetter} from 'state';
 import {initHandlers} from './handler';
+import {createGridMesh, drawGridMesh} from './grid';
 
 const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
@@ -16,6 +17,7 @@ const CAMERA_ROTATE_SPEED = 0.025 / 6;
 
 // TODO gizmo should always draw on top. use stencil?
 // TODO when looking behind, the markers are still visible
+// TODO after rotating, the move axis stays unaffected (as from bind matrix)
 
 
 //////////
@@ -95,7 +97,7 @@ const shouldDrawViewportUI = (glState: GlState) => !glState.animationState.isPla
 
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
-  const {camera, lamp} = scene;
+  const {camera} = scene;
 
   updateIsPlayingState(time, glState);
   const frameEnv: FrameEnv = {
@@ -121,14 +123,19 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const [width, height] = glState.getViewport();
   gl.viewport(0.0, 0.0, width, height);
 
-  // lamp: bones + draw
+  drawGridMesh(gl, glState, scene);
+
+  // objects: bones + draw
   const interpolateParams = {
     glState, selectedObjectName,
     animTimings: frameEnv.timing,
   };
-  interpolate(interpolateParams, lamp.bones);
-  calculateBoneMatrices(lamp.bones);
-  drawObject3d(frameEnv, scene.lamp);
+  scene.objects.forEach(obj => {
+    interpolate(interpolateParams, obj.bones);
+    calculateBoneMatrices(obj.bones);
+    drawObject3d(frameEnv, obj);
+  });
+
 
   // gizmo
   tryChangeGizmo(glState, scene);
@@ -141,7 +148,9 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   }
 
   // markers
-  updateArmatureMarkers(scene, lamp);
+  scene.objects.forEach(obj => {
+    updateArmatureMarkers(scene, obj);
+  });
   scene.updateDebugMarkers();
   const {markerSize, showDebug} = uiBridge.getFromUI(
     appStateGetter('markerSize', 'showDebug')
@@ -162,9 +171,10 @@ export const init = async (canvas: HTMLCanvasElement) => {
   glState = new GlState();
   await glState.init(canvas);
 
-  glState.gl.clearColor(0.5, 0.5, 0.5, 1.0);
+  glState.gl.clearColor(0.333, 0.313, 0.337, 1.0);
   glState.gl.clearDepth(1.0);
 
+  createGridMesh(glState.gl);
   scene = await createScene(glState);
 
   initHandlers(canvas, glState, scene);

@@ -4,7 +4,7 @@ import {GizmoType} from 'viewport/gizmo';
 import {Marker, MarkerType} from 'viewport/marker';
 import {getSelectedObject} from 'viewport/main';
 import {Bone} from 'viewport/armature';
-import {uiBridge, appStateSetter} from 'state';
+import {uiBridge} from 'state';
 import {resetTransform} from 'gl-utils';
 
 import {MouseHandler, MouseDragEvent} from './MouseHandler';
@@ -32,7 +32,7 @@ const onMarkerClicked = (glState: GlState) => (marker: Marker) => {
     // when new object was selected
     case MarkerType.Bone:
       draggingStatus.draggedAxis = undefined;
-      uiBridge.setOnUI(appStateSetter('selectedObjectName', marker.name));
+      uiBridge.setCurrentObject(marker.name);
       break;
 
     // when starting dragging gizmo to move/rotate bone

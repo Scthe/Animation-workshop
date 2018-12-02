@@ -12,7 +12,7 @@ const compileShaderStage = (gl: Webgl, stage: ShaderStage, source: string) => {
   const isOk = gl.getShaderParameter(glId, gl.COMPILE_STATUS);
 
   if (!isOk) {
-    console.error('Vertex shader compile error:', gl.getShaderInfoLog(glId));
+    console.error(`${ShaderStage[stage]} compile error:`, gl.getShaderInfoLog(glId));
     gl.deleteShader(glId);
     return undefined;
   } else {
