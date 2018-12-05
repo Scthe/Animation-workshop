@@ -18,6 +18,7 @@ const CAMERA_ROTATE_SPEED = 0.025 / 6;
 // TODO gizmo should always draw on top. use stencil?
 // TODO when looking behind, the markers are still visible
 // TODO after rotating, the move axis stays unaffected (as from bind matrix)
+// TODO show/hide markers on UI (icon: eye)
 
 
 //////////
@@ -79,6 +80,9 @@ const tryChangeGizmo = (glState: GlState, scene: Scene) => {
   );
   if (draggingStatus.draggedGizmo !== currentGizmo) {
     draggingStatus.draggedGizmo = currentGizmo;
+    // move gizmo assigns specific radius to gizmo.
+    // rotate gizmo uses default radius.
+    // reset here and will be later updated if needed
     scene.gizmoMeta.markers.forEach(m => m.radius = undefined);
   }
 };
@@ -151,12 +155,11 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   scene.objects.forEach(obj => {
     updateArmatureMarkers(scene, obj);
   });
-  scene.updateDebugMarkers();
   const {markerSize, showDebug} = uiBridge.getFromUI(
     appStateGetter('markerSize', 'showDebug')
   );
   if (shouldDrawViewportUI(glState)) {
-    drawMarkers(frameEnv, markerSize / 10.0, showDebug); // just go with it..
+    drawMarkers(frameEnv, markerSize, showDebug);
   }
 };
 

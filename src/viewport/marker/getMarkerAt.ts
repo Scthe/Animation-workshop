@@ -1,19 +1,33 @@
 import {vec2} from 'gl-vec2';
-import {NDCtoPixels, getDist2} from 'gl-utils';
 import {Marker} from './index';
+import {Scene} from 'viewport/scene';
+import {generateRayFromCamera, sphereIntersect} from 'gl-utils/raycast';
+import {uiBridge, appStateGetter} from 'state';
 
 
-const getMarkerPositionPx = (viewport: number[], marker: Marker) => {
-  return NDCtoPixels(marker.$positionNDC, viewport[0], viewport[1], true);
-};
+export const getMarkerAt = (viewport: number[], scene: Scene, pixel: vec2): Marker => {
+  const markers = scene.getMarkers();
 
-export const getMarkerAt = (viewport: number[], markers: Marker[], pixel: vec2) => {
+  const {markerSize} = uiBridge.getFromUI(
+    appStateGetter('markerSize')
+  );
+
+  const cameraRay = generateRayFromCamera({
+    viewport: {width: viewport[0], height: viewport[1]},
+    viewProjMat: scene.getVP(),
+  }, pixel);
+
   const wasClicked = (marker: Marker) => {
-    const markerPosPx = getMarkerPositionPx(viewport, marker);
-    const dist2 = getDist2(markerPosPx, pixel);
-    const r = marker.radius;
-    return marker.clickable && dist2 < (r * r);
+    if (!marker.clickable) {
+      return false;
+    }
+
+    return sphereIntersect(cameraRay, {
+      origin: marker.$position3d,
+      radius: marker.getRadius(markerSize),
+    });
   };
 
-  return markers.find(wasClicked);
+  const clickedMarkers = markers.filter(wasClicked);
+  return clickedMarkers[0];
 };

@@ -25,11 +25,10 @@ const getMarkerPosFromBone = (armature: Armature, bone: Bone) => {
 
 export const updateArmatureMarkers = (scene: Scene, object: Object3d) => {
   const {modelMatrix, bones} = object;
-  const mvp = scene.getMVP(modelMatrix);
 
   bones.forEach((bone: Bone) => {
     const marker = scene.getMarker(bone.name);
     const pos = getMarkerPosFromBone(bones, bone);
-    marker.updatePosition(pos, modelMatrix, mvp);
+    marker.$position3d = transformPointByMat4(pos, modelMatrix, true);
   });
 };

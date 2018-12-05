@@ -30,8 +30,9 @@ export class Bone {
     public readonly children: number[],
     public readonly data: BoneData,
   ) {
-    this.marker = new Marker(MarkerType.Bone);
-    this.marker.owner = this;
+    this.marker = new Marker(MarkerType.Bone, {
+      owner: this,
+    });
     this.$_frameCache = {
       finalBoneMatrix: mat4_Create(),
       globalTransform: mat4_Create(),

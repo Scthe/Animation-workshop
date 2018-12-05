@@ -1,6 +1,6 @@
 import {vec2} from 'gl-vec2';
 import {vec3} from 'gl-vec3';
-import {mat4, create as mat4_Create} from 'gl-mat4';
+import {mat4} from 'gl-mat4';
 
 import {subtractNorm, Axis} from 'gl-utils';
 import {
@@ -40,7 +40,7 @@ export interface GizmoHandleDragEvent {
 export const generateViewportRay = (scene: Scene, viewport: Viewport, mousePosPx: vec2) => {
   const cameraDesc = {
     viewport,
-    viewProjMat: scene.getMVP(mat4_Create()),
+    viewProjMat: scene.getVP(),
   };
 
   return generateRayFromCamera(cameraDesc, mousePosPx);
@@ -65,6 +65,6 @@ const DEBUG_RAY_SPACING = 0.2;
 export const setMarkersAlongRay = (vpMat: mat4, markers: Marker[], ray: Ray) => {
   markers.forEach((m: Marker, i: number) => {
     const rayOffset = i * DEBUG_RAY_SPACING;
-    m.__$position3d = getPointFromRay(ray, rayOffset);
+    m.$position3d = getPointFromRay(ray, rayOffset);
   });
 };

@@ -3,7 +3,6 @@ import {
   vec3, create as vec3_0,
   subtract, scale, length, mul,
 } from 'gl-vec3';
-import {create as mat4_Create} from 'gl-mat4';
 
 import {getAxisVector} from 'gl-utils';
 import {
@@ -63,11 +62,11 @@ export const applyGizmoMove = (event: GizmoHandleDragEvent): vec3 => {
   mul(offset, offset, GLTF_PLS.MOVE_BONE_AXIS_MODS); // blender exporter fixing
 
   // debug
-  const vp = scene.getMVP(mat4_Create());
+  const vp = scene.getVP();
   setMarkersAlongRay(vp, scene.debugMarkers.axis, moveAxisWorldSpace);
-  scene.debugMarkers.dragStart.__$position3d = p0;
-  scene.debugMarkers.dragNowOnPlane.__$position3d = pNow_onPlane;
-  scene.debugMarkers.dragNow.__$position3d = pNow;
+  scene.debugMarkers.dragStart.$position3d = p0;
+  scene.debugMarkers.dragNowOnPlane.$position3d = pNow_onPlane;
+  scene.debugMarkers.dragNow.$position3d = pNow;
 
   //
   return offset;
