@@ -34,6 +34,8 @@ export class AppState {
   @observable _previewRange = [0, MAX_FRAMES];
   @observable currentFrame = 0;
   @observable isPlaying = false; // playing animation should disable UI
+  // misc
+  @observable showMarkers = true;
 
   @computed
   get frameCount () { return MAX_FRAMES; }

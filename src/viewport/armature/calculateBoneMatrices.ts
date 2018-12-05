@@ -52,9 +52,9 @@ const calculateBone = (bones: Armature, boneId: number, parentTransform: mat4) =
   const {globalTransform, finalBoneMatrix} = bone.getFrameCache(); // aliases
 
   // transform for current frame (interpolated keyframes + gizmo dragging)
-  const {animationTransform} = bone.getFrameCache();
-  const animationTransformMat = calculateAnimTransformMat(bone, animationTransform);
+  const animationTransformMat = calculateAnimTransformMat(bone, bone.$frameTransform);
 
+  // final matrix multiply
   multiply(globalTransform, parentTransform, animationTransformMat);
   multiply(finalBoneMatrix, globalTransform, bone.data.inverseBindMatrix);
 

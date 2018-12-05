@@ -11,6 +11,7 @@ import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
 import {isAnyAxisAllowed} from 'viewport/scene';
 import {getKeyframeBefore, getKeyframeAfter} from 'viewport/animation';
+import * as Key from '../../../keymap';
 
 
 /*const TRANSFORM_SPACES = [
@@ -19,12 +20,13 @@ import {getKeyframeBefore, getKeyframeAfter} from 'viewport/animation';
 ];*/
 
 const KEYMAP = [
-  { key: 'f', action: 'onPrevFrame', continous: true, },
-  { key: 'g', action: 'onNextFrame', continous: true, },
-  { key: 'v', action: 'onPlay', continous: false, },
-  { key: 'q', action: 'onMove', continous: false, },
-  { key: 'e', action: 'onRotate', continous: false, },
-  { key: 'r', action: 'onScale', continous: false, },
+  { key: Key.PREV_FRAME,   action: 'onPrevFrame', continous: true, },
+  { key: Key.NEXT_FRAME,   action: 'onNextFrame', continous: true, },
+  { key: Key.PLAY,         action: 'onPlay', continous: false, },
+  { key: Key.GIZMO_MOVE,   action: 'onMove', continous: false, },
+  { key: Key.GIZMO_ROTATE, action: 'onRotate', continous: false, },
+  { key: Key.GIZMO_SCALE,  action: 'onScale', continous: false, },
+  { key: Key.MARKER_HIDE,  action: 'onMarkerHide', continous: false, },
 ];
 
 
@@ -152,6 +154,14 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
         />
         */}
 
+        {/* MARKERS HIDE */}
+        <ButtonGroup className={Styles.ButtonSpacing}>
+          <Tooltip text='Toggle markers [H]' className={Styles.Tooltip} />
+          <Button onClick={this.onMarkerHide} theme={ButtonTheme.Beige} active={appState.showMarkers}>
+            <FaIcon svg={require('fa/faDotCircle')} />
+          </Button>
+        </ButtonGroup>
+
       </div>
     );
   }
@@ -267,5 +277,11 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     const {appState} = this.props;
     appState.isUseLocalSpace = a.value === 'Local';
   }*/
+
+  /* MARKERS HIDE */
+  private onMarkerHide = () => {
+    const {appState} = this.props;
+    appState.showMarkers = !appState.showMarkers;
+  }
 
 }

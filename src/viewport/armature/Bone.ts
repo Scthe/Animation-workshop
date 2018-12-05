@@ -61,8 +61,15 @@ export class Bone {
   }
 
   /** Returns bone matrix for this frame */
-  getFrameMatrix () {
+  get $frameMatrix () {
     return this.$_frameCache.finalBoneMatrix;
+  }
+
+  /** Returns animation transform for this frame
+    * (interpolated from keyframes and current gizmo drag)
+    */
+  get $frameTransform() {
+    return this.$_frameCache.animationTransform;
   }
 
   getFrameCache () {

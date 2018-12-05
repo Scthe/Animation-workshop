@@ -8,17 +8,17 @@ $button-group-border-radius: 5px;
 
   // to lazy to expose
   & button {
-    &:first-child {
+    &:first-of-type {
       border-top-left-radius: $button-group-border-radius;
       border-bottom-left-radius: $button-group-border-radius;
     }
 
-    &:last-child {
+    &:last-of-type {
       border-top-right-radius: $button-group-border-radius;
       border-bottom-right-radius: $button-group-border-radius;
     }
 
-    &:not(:last-child) {
+    &:not(:last-of-type) {
       border-right-style: none;
     }
   }

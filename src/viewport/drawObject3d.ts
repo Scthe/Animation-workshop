@@ -12,7 +12,7 @@ const setPerObjectUniforms = (frameEnv: FrameEnv, shader: Shader, object: Object
   }, true);
 
   object.bones.forEach((bone: Bone, i: number) => {
-    const boneMat = bone.getFrameMatrix();
+    const boneMat = bone.$frameMatrix;
     const name = `g_BoneTransforms[${i}]`;
     const location = gl.getUniformLocation(shader.glId, name);
     gl.uniformMatrix4fv(location, false, boneMat);

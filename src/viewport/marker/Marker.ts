@@ -13,6 +13,12 @@ import * as MarkerConst from './constants';
 type MarkerOwner = Bone | Axis;
 
 export enum MarkerType { Bone, Gizmo, Debug }
+export const MarkerTypeList = [ // sorted by click priority
+  MarkerType.Bone,
+  MarkerType.Gizmo,
+  MarkerType.Debug
+];
+
 
 // changes per frame
 export interface MarkerPosition {

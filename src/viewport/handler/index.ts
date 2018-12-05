@@ -86,8 +86,7 @@ const onMarkerDragged = (glState: GlState, scene: Scene) => (mouseEvent: MouseDr
 const applyDraggingDisplacementToKeyframe = (scene: Scene) => {
   const {selectedMarker} = getSelectedObject(scene);
   const bone = selectedMarker.owner as Bone;
-  const {animationTransform} = bone.getFrameCache();
-  uiBridge.setKeyframe(animationTransform);
+  uiBridge.setKeyframe(bone.$frameTransform);
 };
 
 const onMarkerUnclicked = (glState: GlState, scene: Scene) => () => {

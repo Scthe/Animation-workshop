@@ -1,9 +1,16 @@
 import {vec2} from 'gl-vec2';
-import {Marker} from './index';
+import {vec3, squaredDistance} from 'gl-vec3';
+import {Marker, MarkerTypeList} from './index';
 import {Scene} from 'viewport/scene';
 import {generateRayFromCamera, sphereIntersect} from 'gl-utils/raycast';
 import {uiBridge, appStateGetter} from 'state';
 
+const isHigherPrecedence = (cameraPos: vec3) => (old: Marker, newM: Marker) => {
+  if (old.type === newM.type) {
+    return squaredDistance(newM.$position3d, cameraPos) < squaredDistance(old.$position3d, cameraPos);
+  }
+  return MarkerTypeList.indexOf(newM.type) < MarkerTypeList.indexOf(old.type);
+};
 
 export const getMarkerAt = (viewport: number[], scene: Scene, pixel: vec2): Marker => {
   const markers = scene.getMarkers();
@@ -29,5 +36,9 @@ export const getMarkerAt = (viewport: number[], scene: Scene, pixel: vec2): Mark
   };
 
   const clickedMarkers = markers.filter(wasClicked);
-  return clickedMarkers[0];
+  const isHigherPrecedence_ = isHigherPrecedence(scene.camera.getPosition());
+
+  return clickedMarkers.reduce((acc: Marker, m: Marker) => {
+    return isHigherPrecedence_(acc, m) ? m : acc;
+  }, clickedMarkers[0]);
 };

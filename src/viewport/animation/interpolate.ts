@@ -33,7 +33,7 @@ const getDraggingDisplacement = (params: InterpolateParams, bone: Bone) => {
 
 const updateAnimTransform = (params: InterpolateParams) => (bone: Bone) => {
   const {animTimings} = params;
-  const {animationTransform} = bone.getFrameCache();
+  const animationTransform = bone.$frameTransform;
 
   interpolateTimeline(animTimings, animationTransform, bone);
 
