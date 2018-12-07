@@ -1,10 +1,10 @@
-import {observable} from 'mobx';
+import {observable, action} from 'mobx';
 import {Timeline, createKeyframe} from 'viewport/animation';
 import {Transform} from 'gl-utils';
 import {sortBy} from 'lodash';
 
 
-type TimelineMap = {[key: string]: Timeline};
+export type TimelineMap = {[key: string]: Timeline};
 type BoneName = string;
 
 
@@ -13,7 +13,11 @@ const removeKeyframeAt = (timeline: Timeline, frameId: number) =>
 
 export class TimelineState {
   // all animation data
-  @observable timelines: TimelineMap = {};
+  @observable timelines: TimelineMap;
+
+  constructor (initVal: TimelineMap) {
+    this.timelines = initVal;
+  }
 
   getTimeline (boneName: BoneName) {
     if (!this.timelines[boneName]) {
@@ -30,6 +34,7 @@ export class TimelineState {
     return !!this.getKeyframeAt(boneName, frameId);
   }
 
+  @action
   setKeyframeAt (boneName: BoneName, frameId: number, transform: Transform) {
     const timeline = this.getTimeline(boneName);
     const newTimeline: Timeline = [

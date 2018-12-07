@@ -1,4 +1,4 @@
-import {observable, computed} from 'mobx';
+import {observable, computed, action} from 'mobx';
 import {GizmoType} from 'viewport/gizmo';
 import {getBoneConfig, getActionableGizmo, isAnyAxisAllowed} from 'viewport/scene';
 import {clamp} from 'gl-utils';
@@ -83,6 +83,7 @@ export class AppState {
     };
   }
 
+  @action
   setCurrentObject (objName: string) {
     this.selectedObjectName = objName;
     const cfg = getBoneConfig(objName);
