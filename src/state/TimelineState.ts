@@ -1,7 +1,7 @@
-import {observable, action} from 'mobx';
+import {observable, action, computed} from 'mobx';
 import {Timeline, createKeyframe} from 'viewport/animation';
 import {Transform} from 'gl-utils';
-import {sortBy, cloneDeep} from 'lodash';
+import {sortBy, cloneDeep, uniq, flatten} from 'lodash';
 
 export const TIMELINE_DEFAULT = {};
 Object.freeze(TIMELINE_DEFAULT);
@@ -19,6 +19,15 @@ export class TimelineState {
 
   constructor (initVal: TimelineMap) {
     this.timelines = cloneDeep(initVal);
+  }
+
+  @computed
+  get framesWithKeyframe () {
+    const getKeyframeIds = (t: Timeline) => t.map(kf => kf.frameId);
+    const keyframeIdsMap = Object.keys(this.timelines).map(boneName =>
+      getKeyframeIds(this.timelines[boneName])
+    );
+    return sortBy(uniq(flatten(keyframeIdsMap)));
   }
 
   getTimeline (boneName: BoneName) {

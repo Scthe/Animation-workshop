@@ -2,8 +2,8 @@ import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
 import {toJS} from 'mobx';
 import {download, processTextFileUpload, createRef} from 'ui/utils';
-const Styles = require('./sections.scss');
-import {Button, ButtonTheme} from 'ui/components';
+const Styles = require('./ImportExport.scss');
+import {Button, ButtonTheme, Modal} from 'ui/components';
 import {TimelineState} from 'state';
 import {serialize, deserialize} from 'state/storage';
 
@@ -14,7 +14,7 @@ interface ImportExportProps {
 }
 
 interface ImportExportState {
-  // isResetModalOpen: boolean;
+  isResetModalOpen: boolean;
 }
 
 @inject('timelineState')
@@ -24,10 +24,12 @@ export class ImportExport extends Component<ImportExportProps, ImportExportState
   private fileInputRef = createRef();
 
   state = {
-    // isResetModalOpen: false,
+    isResetModalOpen: false,
   };
 
   public render () {
+    const {isResetModalOpen} = this.state;
+
     return (
       <div>
         <input
@@ -55,12 +57,32 @@ export class ImportExport extends Component<ImportExportProps, ImportExportState
         </Button>
 
         <Button
-          onClick={this.onReset}
+          onClick={this.openResetModal}
           theme={ButtonTheme.Beige}
           className={Styles.InSectionBtn}
         >
           Reset scene
         </Button>
+
+        {/* confirm reset modal */}
+        <Modal
+          open={isResetModalOpen}
+          buttons={[
+            {
+              onClick: this.closeResetModal,
+              children: 'Cancel',
+            },
+            {
+              onClick: this.onResetConfirmed,
+              theme: ButtonTheme.Blue,
+              children: 'Yes, reset the scene',
+            }
+          ]}
+        >
+          <p className={Styles.ModalText}>
+            Are You sure You want to reset the current scene?
+          </p>
+        </Modal>
       </div>
     );
   }
@@ -123,10 +145,13 @@ export class ImportExport extends Component<ImportExportProps, ImportExportState
     }
   }
 
-  private onReset = () => {
-    // TODO add confirmation
+  private openResetModal = () => this.setState({ isResetModalOpen: true});
+  private closeResetModal = () => this.setState({ isResetModalOpen: false});
+
+  private onResetConfirmed = () => {
     const {timelineState} = this.props;
     timelineState.reset();
+    this.closeResetModal();
   }
 
 }

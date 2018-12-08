@@ -86,7 +86,7 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
         </Section>
 
         {/* Viewport */}
-        <Section title='Viewport' icon={require('fa/faEye')}>
+        <Section title='Viewport' icon={require('fa/faEye')} initFolded={true}>
           {/* camera */}
           <Tooltip text='Camera movement speed with [WSAD]' {...tooltipProps} />
           <Slider
@@ -127,7 +127,7 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
         </Section>
 
         {/* Import / Export */}
-        <Section title='Import / Export' icon={require('fa/faSave')}>
+        <Section title='Import / Export' icon={require('fa/faSave')} initFolded={true}>
           <ImportExport />
         </Section>
 

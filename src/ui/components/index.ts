@@ -5,6 +5,7 @@ export * from './Dropdown';
 export * from './FaIcon';
 export * from './Icon';
 export * from './Input';
+export * from './Modal';
 export * from './Section';
 export * from './Slider';
 export * from './Tabs';
