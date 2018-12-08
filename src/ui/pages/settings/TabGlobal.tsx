@@ -12,6 +12,7 @@ import {
   MAX_MARKER_SIZE, MAX_GIZMO_SIZE,
   MAX_CAMERA_MOVE_SPEED, MAX_CAMERA_ROTATE_SPEED,
 } from 'state';
+import {ImportExport} from './sections/ImportExport';
 
 
 const QUAT_INTERPOLATIONS = [
@@ -63,7 +64,7 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
           <Button
             onClick={this.resetPreviewRange}
             theme={ButtonTheme.Beige}
-            className={Styles.ResetPreviewRangeBtn}
+            className={Styles.InSectionBtn}
           >
             Reset preview range
           </Button>
@@ -123,6 +124,11 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
           <Checkbox id='debug-markers' value={appState.showDebug} onChecked={this.onDebugMarkers}>
             Show debug markers
           </Checkbox>
+        </Section>
+
+        {/* Import / Export */}
+        <Section title='Import / Export' icon={require('fa/faSave')}>
+          <ImportExport />
         </Section>
 
       </div>

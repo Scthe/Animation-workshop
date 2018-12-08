@@ -19,7 +19,7 @@ const STORAGE_KEY = 'TimelineState';
 export const appState = new AppState();
 export const timelineState = (() => {
   const item = STORAGE.get(STORAGE_KEY);
-  console.log(`loaded...`, item);
+  // console.log(`loaded...`, item);
   const initVal = deserialize(item);
   return new TimelineState(initVal);
 })();

@@ -1,8 +1,10 @@
 import {observable, action} from 'mobx';
 import {Timeline, createKeyframe} from 'viewport/animation';
 import {Transform} from 'gl-utils';
-import {sortBy} from 'lodash';
+import {sortBy, cloneDeep} from 'lodash';
 
+export const TIMELINE_DEFAULT = {};
+Object.freeze(TIMELINE_DEFAULT);
 
 export type TimelineMap = {[key: string]: Timeline};
 type BoneName = string;
@@ -16,7 +18,7 @@ export class TimelineState {
   @observable timelines: TimelineMap;
 
   constructor (initVal: TimelineMap) {
-    this.timelines = initVal;
+    this.timelines = cloneDeep(initVal);
   }
 
   getTimeline (boneName: BoneName) {
@@ -52,6 +54,10 @@ export class TimelineState {
   getKeyframeAt (boneName: BoneName, frameId: number) {
     const timeline = this.getTimeline(boneName);
     return timeline.find(keyframe => keyframe.frameId === frameId);
+  }
+
+  reset (newState: TimelineMap = TIMELINE_DEFAULT) {
+    this.timelines = cloneDeep(newState);
   }
 
 }

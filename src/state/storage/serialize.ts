@@ -1,6 +1,6 @@
 import {Transform, createInitTransform} from 'gl-utils';
 import {Keyframe, Timeline} from 'viewport/animation';
-import {TimelineMap} from '../TimelineState';
+import {TimelineMap, TIMELINE_DEFAULT} from '../TimelineState';
 
 const tryOr = <T>(f: () => T, alt: T): T => {
   let v: T = alt;
@@ -56,12 +56,9 @@ const deserializeTimeline = (stl: SerializedTimeline): Timeline => {
   return result;
 };
 
-
-const DESERIALIZE_DEFAULT = {};
-
 const deserializeImpl = (timelines: SerializedTimelineMap): TimelineMap => {
   if (!timelines) {
-    return DESERIALIZE_DEFAULT;
+    return TIMELINE_DEFAULT;
   }
 
   const result: TimelineMap = {};
@@ -77,11 +74,11 @@ const deserializeImpl = (timelines: SerializedTimelineMap): TimelineMap => {
 
 export const deserialize = (jsonStr: string): TimelineMap => tryOr(() => {
   if (!jsonStr) {
-    return DESERIALIZE_DEFAULT;
+    return TIMELINE_DEFAULT;
   }
   const json = JSON.parse(jsonStr);
   return deserializeImpl(json.timelines);
-}, DESERIALIZE_DEFAULT);
+}, TIMELINE_DEFAULT);
 
 export const serialize = (jsonObj: object) =>
   tryOr(() => JSON.stringify(jsonObj), undefined);
