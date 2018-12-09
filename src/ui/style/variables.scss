@@ -21,3 +21,5 @@ $section-border-top: lighten($panel-border, 50%);
 $section-header-bg: lighten($panel-border, 70%);
 $panel-inactive-overlay: rgba(black, 0.55);
 $modal-overlay: rgba(black, 0.3);
+$purplecoat-overlay: rgba(darken($blue, 10%), 0.85);
+$purplecoat-borders: darken($blue, 30%);

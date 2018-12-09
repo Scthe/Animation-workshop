@@ -23,6 +23,7 @@ const QUAT_INTERPOLATIONS = [
 interface TabGlobalProps {
   className?: string;
   appState?: AppState;
+  isActive: boolean;
 }
 
 

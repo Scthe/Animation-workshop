@@ -3,6 +3,8 @@ const Portal = require('preact-portal');
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./Tooltip.scss');
 
+const PARENT_ELEMENT = '#tooltip-container';
+
 export enum TooltipPosition { Top, Bottom, Left, Right }
 
 interface TooltipProps {
@@ -51,7 +53,7 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
 
     return (
       <div ref={this.meRef} className={Styles.TooltipWrapper}>
-        <Portal into='#tooltip-container'>
+        <Portal into={PARENT_ELEMENT}>
           <span
             className={this.getClasses(targetEl)}
             style={this.getCoordinates(targetEl)}

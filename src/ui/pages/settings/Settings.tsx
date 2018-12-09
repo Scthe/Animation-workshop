@@ -3,7 +3,7 @@ import {observer, inject} from 'mobx-preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Settings.scss');
 import {AppState} from 'state';
-import {Tabs} from 'ui/components';
+import {Tabs, Purplecoat} from 'ui/components';
 import {TabGlobal} from './TabGlobal';
 import {TabObject} from './TabObject';
 
@@ -30,6 +30,15 @@ export class Settings extends Component<SettingsProps, any> {
         <Tabs tabs={TABS}>
           {this.renderBody}
         </Tabs>
+
+        <Purplecoat>
+          <h2>Settings - object</h2>
+          <p>Data about curent frame</p>
+          <p>(transformation at current point in time)</p>
+
+          <h2>Settings - global</h2>
+          <p>General app settings</p>
+        </Purplecoat>
       </div>
     );
   }
@@ -60,6 +69,7 @@ export class Settings extends Component<SettingsProps, any> {
             getActiveClass(!isGlobalActive),
             Styles.TabObject
           )}
+          isActive={!isGlobalActive}
         />
         <TabGlobal
           className={classnames(
@@ -67,6 +77,7 @@ export class Settings extends Component<SettingsProps, any> {
             getActiveClass(isGlobalActive),
             Styles.TabGlobal
           )}
+          isActive={isGlobalActive}
         />
       </div>
     );

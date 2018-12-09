@@ -41,6 +41,7 @@ interface TabObjectProps {
   className?: string;
   appState?: AppState;
   timelineState?: TimelineState;
+  isActive: boolean;
 }
 
 

@@ -5,7 +5,7 @@ const Styles = require('./TimelineButtonRow.scss');
 import {
   Button, ButtonTheme, ButtonGroup,
   Input, InputValidate, FaIcon,
-  Tooltip
+  Tooltip, Purplecoat, togglePurplecoat
 } from 'ui/components';
 import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
@@ -162,6 +162,16 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
           </Button>
         </ButtonGroup>
 
+        <ButtonGroup className={Styles.ButtonSpacing}>
+          <Button onClick={this.onHelpShow} theme={ButtonTheme.Beige}>
+            <FaIcon svg={require('fa/faQuestion')} />
+          </Button>
+        </ButtonGroup>
+
+        <Purplecoat>
+          <h1>Toolbar</h1>
+        </Purplecoat>
+
       </div>
     );
   }
@@ -289,6 +299,10 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   private onMarkerHide = () => {
     const {appState} = this.props;
     appState.showMarkers = !appState.showMarkers;
+  }
+
+  private onHelpShow = () => {
+    togglePurplecoat(true);
   }
 
 }

@@ -6,6 +6,7 @@ const Styles = require('./TimelineAxis.scss');
 import {AppState, TimelineState} from 'state';
 import {Tick, createTickPosition, TickLabel} from './TimelineTick';
 import {ANIM_FPS, animationSecondsToFrame} from 'viewport/animation';
+import {Purplecoat} from 'ui/components';
 
 const CLASSES_TICK = classnames(Styles.Tick, Styles.TickTime);
 const CLASSES_KEYFRAME = classnames(Styles.Tick, Styles.TickKeyframe);
@@ -66,6 +67,12 @@ export class TimelineAxis extends Component<TimelineAxisProps, TimelineAxisState
 
         {this.getPreviewShadows().map((style: any, idx: number) =>
           <div key={idx} className={Styles.PreviewRange} style={style} />)}
+
+        <Purplecoat>
+          <h1>Timeline axis</h1>
+          <p>Click to move through time</p>
+        </Purplecoat>
+
       </div>
     );
   }
