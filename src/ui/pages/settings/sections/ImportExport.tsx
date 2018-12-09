@@ -3,14 +3,16 @@ import {observer, inject} from 'mobx-preact';
 import {toJS} from 'mobx';
 import {download, processTextFileUpload, createRef} from 'ui/utils';
 const Styles = require('./ImportExport.scss');
-import {Button, ButtonTheme, Modal} from 'ui/components';
+import {Button, ButtonTheme, Modal, withAlerts, AlertType} from 'ui/components';
 import {TimelineState} from 'state';
 import {serialize, deserialize} from 'state/storage';
 
 const FILE_EXTENSION = '.anim.json';
+const ALERT_TIMEOUT = 3000;
 
 interface ImportExportProps {
   timelineState?: TimelineState;
+  showAlert?: Function;
 }
 
 interface ImportExportState {
@@ -19,6 +21,7 @@ interface ImportExportState {
 
 @inject('timelineState')
 @observer
+@withAlerts
 export class ImportExport extends Component<ImportExportProps, ImportExportState> {
 
   private fileInputRef = createRef();
@@ -96,7 +99,7 @@ export class ImportExport extends Component<ImportExportProps, ImportExportState
   }
 
   private onImportFileChanged = async (e: Event) => {
-    const {timelineState} = this.props;
+    const {timelineState, showAlert} = this.props;
 
     try {
       const fileText = await processTextFileUpload(e);
@@ -109,9 +112,17 @@ export class ImportExport extends Component<ImportExportProps, ImportExportState
       }
 
       timelineState.reset(newVal);
+      showAlert({
+        msg: 'File imported',
+        type: AlertType.Success,
+        timeout: ALERT_TIMEOUT,
+      });
     } catch (e) {
-      // TODO notification
-      console.error(e);
+      showAlert({
+        msg: e,
+        type: AlertType.Error,
+        timeout: ALERT_TIMEOUT,
+      });
     }
   }
 
@@ -129,19 +140,27 @@ export class ImportExport extends Component<ImportExportProps, ImportExportState
   }
 
   private onExport = () => {
-    const {timelineState} = this.props;
+    const {timelineState, showAlert} = this.props;
 
     try {
       const json = toJS(timelineState);
       const item = serialize(json);
-      if (item) {
-        download(this.generateFilename(), item);
-      } else {
+      if (!item) {
         throw 'Could not serialize into a file';
       }
+
+      download(this.generateFilename(), item);
+      showAlert({
+        msg: 'File ready for download',
+        type: AlertType.Success,
+        timeout: ALERT_TIMEOUT,
+      });
     } catch (e) {
-      // TODO notification
-      console.error(e);
+      showAlert({
+        msg: e,
+        type: AlertType.Error,
+        timeout: ALERT_TIMEOUT,
+      });
     }
   }
 
@@ -149,9 +168,15 @@ export class ImportExport extends Component<ImportExportProps, ImportExportState
   private closeResetModal = () => this.setState({ isResetModalOpen: false});
 
   private onResetConfirmed = () => {
-    const {timelineState} = this.props;
+    const {timelineState, showAlert} = this.props;
     timelineState.reset();
     this.closeResetModal();
+
+    showAlert({
+      msg: 'Scene reset success',
+      type: AlertType.Success,
+      timeout: ALERT_TIMEOUT,
+    });
   }
 
 }

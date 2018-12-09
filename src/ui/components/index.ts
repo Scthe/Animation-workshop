@@ -1,4 +1,5 @@
-export * from './Button';
+export * from './Alert';
+export {Button, ButtonTheme} from './Button';
 export * from './ButtonGroup';
 export * from './Checkbox';
 export * from './Dropdown';

@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {Provider, observer, inject} from 'mobx-preact';
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./App.scss');
-import {Button, FaIcon} from 'ui/components';
+import {Button, FaIcon, AlertContainer} from 'ui/components';
 import {appState, timelineState} from 'state';
 import {Timeline} from './pages/timeline';
 import {Settings} from './pages/settings';
@@ -95,6 +95,7 @@ export class App extends Component<any, AppState> {
           <Settings className={Styles.Settings} />
           <Timeline className={Styles.Timeline} ref={this.timelineRef} />
           <FullscreenButton />
+          <AlertContainer />
         </Provider>
 
       </div>
