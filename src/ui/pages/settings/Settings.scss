@@ -12,8 +12,11 @@ $far-away-x: 150%;
   border-top-left-radius: 10px;
 }
 
-.IsPlaying:after {
-  @include with-full-overlay;
+.IsPlaying {
+  position: relative;
+  &:after {
+    @include with-full-overlay;
+  }
 }
 
 .SettingsBody {

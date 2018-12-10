@@ -25,9 +25,14 @@ interface SettingsProps {
 export class Settings extends Component<SettingsProps, any> {
 
   public render() {
+    const {appState} = this.props;
+    const tabsClass = classnames(
+      {[Styles.IsPlaying]: appState.isPlaying},
+    );
+
     return (
       <div className={this.getClasses()}>
-        <Tabs tabs={TABS}>
+        <Tabs tabs={TABS} className={tabsClass}>
           {this.renderBody}
         </Tabs>
 
@@ -44,11 +49,10 @@ export class Settings extends Component<SettingsProps, any> {
   }
 
   private getClasses () {
-    const {className, appState} = this.props;
+    const {className} = this.props;
     return classnames(
       Styles.Settings,
       className,
-      {[Styles.IsPlaying]: appState.isPlaying},
     );
   }
 
