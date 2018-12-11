@@ -21,6 +21,8 @@ interface InputProps {
   append?: any;
   validate?: InputValidate;
   rawProps?: any;
+  // preact internal
+  ref?: any;
 }
 
 // NOTE: making it uncontrolled makes it easier to add

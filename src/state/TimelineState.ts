@@ -38,7 +38,7 @@ export class TimelineState {
   }
 
   private setTimeline (boneName: BoneName, timeline: Timeline) {
-    this.timelines[boneName] = timeline;
+    this.timelines[boneName] = sortBy(timeline, ['frameId']);
   }
 
   hasKeyframeAt (boneName: BoneName, frameId: number) {
@@ -52,7 +52,7 @@ export class TimelineState {
       ...removeKeyframeAt(timeline, frameId),
       createKeyframe(frameId, transform),
     ];
-    this.setTimeline(boneName, sortBy(newTimeline, ['frameId']));
+    this.setTimeline(boneName, newTimeline);
   }
 
   deleteKeyframe (boneName: BoneName, frameId: number) {
@@ -63,6 +63,23 @@ export class TimelineState {
   getKeyframeAt (boneName: BoneName, frameId: number) {
     const timeline = this.getTimeline(boneName);
     return timeline.find(keyframe => keyframe.frameId === frameId);
+  }
+
+  moveKeyframeAt (boneName: BoneName, frameId: number, newFrameId: number) {
+    const keyframe = this.getKeyframeAt(boneName, frameId);
+    if (!keyframe) {
+      return; // no keyframe to move
+    }
+
+    const newKeyframe = {
+      frameId: newFrameId,
+      transform: keyframe.transform,
+    };
+
+    this.setTimeline(boneName, [
+      ...removeKeyframeAt(this.getTimeline(boneName), frameId),
+      newKeyframe,
+    ]);
   }
 
   reset (newState: TimelineMap = TIMELINE_DEFAULT) {

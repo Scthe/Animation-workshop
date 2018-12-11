@@ -7,6 +7,7 @@ import {
   Input, InputValidate, FaIcon,
   Tooltip, Purplecoat, togglePurplecoat
 } from 'ui/components';
+import {MoveKeyframeModal} from './MoveKeyframeModal';
 import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
 import {isAnyAxisAllowed} from 'viewport/scene';
@@ -42,6 +43,10 @@ interface TimelineButtonRowProps {
 @observer
 export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
+  state = {
+    isMoveKeyframeModalOpen: false,
+  };
+
   public componentDidMount () {
     window.addEventListener('keyup', this.globalShortcutKeyHandler);
     window.addEventListener('keypress', this.globalShortcutKeyHandler);
@@ -53,11 +58,12 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   }
 
   public render() {
-    const {appState} = this.props;
+    const {appState, timelineState} = this.props;
     // const tfxSpace = (appState.isUseLocalSpace
       // ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
 
     const obj = appState.currentObjectData;
+    const hasKeyframe = obj && timelineState.hasKeyframeAt(obj.name, appState.currentFrame);
 
     const getGizmoProps = (type: GizmoType) => ({
       theme: ButtonTheme.Blue,
@@ -118,6 +124,12 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
             <FaIcon svg={require('fa/faKey')} />
           </Button>
 
+          <Tooltip text='Move keyframe' className={Styles.Tooltip} />
+          <Button onClick={this.openMoveKeyframeModal} theme={ButtonTheme.Yellow} disabled={!hasKeyframe}>
+            <FaIcon svg={require('fa/faArrowsAltH')} />
+            <FaIcon svg={require('fa/faKey')} />
+          </Button>
+
           <Tooltip text='Remove data at current keyframe' className={Styles.Tooltip} />
           <Button onClick={this.onKeyframeDelete} theme={ButtonTheme.Yellow}>
             <FaIcon svg={require('fa/faBan')} />
@@ -162,6 +174,7 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
           </Button>
         </ButtonGroup>
 
+        {/* SHOW HELP */}
         <ButtonGroup className={Styles.ButtonSpacing}>
           <Button onClick={this.onHelpShow} theme={ButtonTheme.Beige}>
             <FaIcon svg={require('fa/faQuestion')} />
@@ -171,6 +184,16 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
         <Purplecoat>
           <h1>Toolbar</h1>
         </Purplecoat>
+
+        {this.state.isMoveKeyframeModalOpen && (
+          <MoveKeyframeModal
+            isOpen={true}
+            initFrame={appState.currentFrame + 1}
+            onClose={this.closeMoveKeyframeModal}
+            onKeyframeMove={this.onMoveKeyframeConfirmed}
+          />
+        )}
+
 
       </div>
     );
@@ -259,6 +282,26 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     if (nextKeyframe) {
       appState.gotoFrame(nextKeyframe.frameId);
     }
+  }
+
+  private openMoveKeyframeModal = () => {
+    this.setState({ isMoveKeyframeModalOpen: true, });
+  }
+
+  private closeMoveKeyframeModal = () => {
+    this.setState({ isMoveKeyframeModalOpen: false, });
+  }
+
+  private onMoveKeyframeConfirmed = (nextFrameId: number) => {
+    const {appState, timelineState} = this.props;
+    nextFrameId = appState.clampFrame(nextFrameId - 1);
+
+    timelineState.moveKeyframeAt(
+      appState.selectedObjectName,
+      appState.currentFrame, nextFrameId
+    );
+
+    this.closeMoveKeyframeModal();
   }
 
   private onKeyframeDelete = () => {
