@@ -1,10 +1,8 @@
 import {vec2} from 'gl-vec2';
 import {
   vec3, create as vec3_0,
-  subtract, scale, length, mul,
+  subtract, scale, length
 } from 'gl-vec3';
-
-import {getAxisVector} from 'gl-utils';
 import {
   Ray,
   createPlaneAroundAxisAndTowardCamera,
@@ -15,12 +13,12 @@ import {
 } from 'gl-utils/raycast';
 
 import {Scene} from 'viewport/scene';
+import {Bone} from 'viewport/armature';
 import {
   GizmoHandleDragEvent, Viewport,
-  setMarkersAlongRay, getDirToMarkerForAxis, generateViewportRay
+  setMarkersAlongRay, generateViewportRay
 } from './utils';
-
-import * as GLTF_PLS from 'viewport/gltfExporterFixes';
+import {getWorldAxis, getLocalAxis} from 'viewport/gizmo/tfxSpace';
 
 
 const projectClickOntoPlane = (scene: Scene, viewport: Viewport, plane: Plane, posPx: vec2) => {
@@ -40,12 +38,14 @@ const calculateMoveOffset = (moveAxisWorldSpace: Ray, firstClick: vec3, mouseNow
 export const applyGizmoMove = (event: GizmoHandleDragEvent): vec3 => {
   const {mouseEvent, axis, selectedMarker, scene: {camera}, scene, viewport} = event;
   const objPosition = selectedMarker.$position3d;
-  const moveAxisLocalSpace = getAxisVector(axis);
+  const bone = selectedMarker.owner as Bone;
+
+  const moveAxisLocalSpace = getLocalAxis(bone, axis);
 
   // create plane to project clicked 3d points onto
   const moveAxisWorldSpace = { // in world space
     origin: objPosition,
-    dir: getDirToMarkerForAxis(scene, objPosition, axis),
+    dir: getWorldAxis(bone, axis),
   } as Ray;
   const plane = createPlaneAroundAxisAndTowardCamera(moveAxisWorldSpace, camera.getPosition());
 
@@ -59,7 +59,6 @@ export const applyGizmoMove = (event: GizmoHandleDragEvent): vec3 => {
   // finalize calcs
   const moveOffset = calculateMoveOffset(moveAxisWorldSpace, p0, pNow);
   const offset = scale(vec3_0(), moveAxisLocalSpace, moveOffset);
-  mul(offset, offset, GLTF_PLS.MOVE_BONE_AXIS_MODS); // blender exporter fixing
 
   // debug
   const vp = scene.getVP();

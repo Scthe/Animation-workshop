@@ -1,8 +1,7 @@
 import {vec2} from 'gl-vec2';
-import {vec3} from 'gl-vec3';
 import {mat4} from 'gl-mat4';
 
-import {subtractNorm, Axis} from 'gl-utils';
+import {Axis} from 'gl-utils';
 import {
   Ray,
   generateRayFromCamera,
@@ -44,16 +43,6 @@ export const generateViewportRay = (scene: Scene, viewport: Viewport, mousePosPx
   };
 
   return generateRayFromCamera(cameraDesc, mousePosPx);
-};
-
-const getMarkerPositionWS = (scene: Scene, axis: Axis) => {
-  const gizmoMarker = scene.gizmoMeta.markers[axis];
-  return gizmoMarker.$position3d;
-};
-
-export const getDirToMarkerForAxis = (scene: Scene, objPos: vec3,  axis: Axis) => {
-  const gizmoPosition = getMarkerPositionWS(scene, axis);
-  return subtractNorm(gizmoPosition, objPos);
 };
 
 

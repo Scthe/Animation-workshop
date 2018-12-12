@@ -13,6 +13,7 @@ import {FrameEnv} from 'viewport/main';
 import {Marker, MarkerType} from 'viewport/marker';
 import {GizmoType, AXIS_COLORS, GIZMO_MOVE_TIP, GIZMO_MOVE_RADIUS} from './index';
 import {isAxisAllowed} from 'viewport/scene';
+import {getGizmoDrawModelMatrix} from './tfxSpace';
 
 import {calcDraggableHandlePos as calcDraggableHandlePos_Rot} from './rotate/calcDraggableHandlePos';
 // yep, 20 lines of imports.
@@ -75,14 +76,14 @@ const getModelMatrix = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts) => 
   // to (0,0,0). Bind matrix does reverse, so it takes gizmo at (0,0,0)
   // and moves it to bind WS position (e.g. shoulder position)
   const bone = opts.origin.owner as Bone;
-  const boneMatrix = multiply(mat4_Create(), bone.$frameMatrix, bone.data.bindMatrix);
+  const boneMatrix = getGizmoDrawModelMatrix(bone);
 
   // combine
   const m = multiply(mat4_Create(), boneMatrix, axisRotationMatrix);
   return multiply(mat4_Create(), m, scaleMatrix);
 };
 
-const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, mvp: mat4, modelMatrix: mat4) => {
+const updateMarker = (axis: Axis, frameEnv: FrameEnv, opts: GizmoDrawOpts, modelMatrix: mat4) => {
   const {scene} = frameEnv;
   const marker = scene.getMarker(axis);
 
@@ -152,6 +153,6 @@ export const drawGizmo = (frameEnv: FrameEnv, opts: GizmoDrawOpts) => {
     }, true);
     gl.drawElements(gl.TRIANGLES, triangleCnt * 3, indexGlType, 0);
 
-    updateMarker(axis, frameEnv, opts, mvp, modelMatrix);
+    updateMarker(axis, frameEnv, opts, modelMatrix);
   });
 };
