@@ -1,11 +1,11 @@
-import {flatMap} from 'lodash';
+import flatMap from 'lodash-es/flatMap';
 import {vec3} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Shader, Vao, getMVP, getMV, Axis, hexToVec3} from 'gl-utils';
 import {Armature} from 'viewport/armature';
 import {CameraFPS} from 'viewport/camera-fps';
 import {GlState} from 'viewport/GlState';
-import {Marker, MarkerType} from 'viewport/marker';
+import {Marker, MarkerType, MarkerRadiusType} from 'viewport/marker';
 
 export interface Material {
   baseColor: vec3;
@@ -71,7 +71,7 @@ export class Scene {
     public readonly gizmoMeta: GizmoMeta,
   ) {
     const hd = this.debugMarkers;
-    const opts = ({ radius: 10, visible: true, clickable: false});
+    const opts = ({ radius: 'small' as MarkerRadiusType, clickable: false});
     hd.dragStart      = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#318c8f'), });
     hd.dragNow        = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#69d3d6'), });
     hd.dragNowOnPlane = new Marker(MarkerType.Debug, {...opts, color: hexToVec3('#40c170'), });
@@ -79,8 +79,7 @@ export class Scene {
     hd.axis = [] as Marker[];
     for (let i = 0; i < DEBUG_AXIS_MARKERS_CNT; i++) {
       hd.axis.push(new Marker(MarkerType.Debug, {
-        radius: 2,
-        visible: true,
+        radius: 'tiny' as MarkerRadiusType,
         clickable: false,
       }));
     }
@@ -94,6 +93,10 @@ export class Scene {
       this.camera.getViewMatrix(),
       this.camera.getProjectionMatrix(width, height)
     );
+  }
+
+  getVP () {
+    return this.getMVP(mat4_Create());
   }
 
   getMV (modelMatrix: mat4) {
@@ -123,13 +126,6 @@ export class Scene {
     } else {
       return this.gizmoMeta.markers[name];
     }
-  }
-
-  updateDebugMarkers () {
-    const ident = mat4_Create();
-    const vpMat = this.getMVP(ident);
-
-    this.getDebugMarkers().forEach(m => m.recalcNDC(vpMat));
   }
 
   private getDebugMarkers () {

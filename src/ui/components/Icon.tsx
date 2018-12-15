@@ -1,5 +1,5 @@
 import {h} from 'preact';
-import {omit} from 'lodash';
+import omit from 'lodash-es/omit';
 
 // based on https://github.com/efflam/preact-icon-base (MIT licence)
 // rewritten to simplify, make compatible with TS

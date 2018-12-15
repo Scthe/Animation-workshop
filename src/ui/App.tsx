@@ -2,7 +2,7 @@ import {h, Component} from 'preact';
 import {Provider, observer, inject} from 'mobx-preact';
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./App.scss');
-import {Button, FaIcon} from 'ui/components';
+import {Button, FaIcon, AlertContainer, Purplecoat} from 'ui/components';
 import {appState, timelineState} from 'state';
 import {Timeline} from './pages/timeline';
 import {Settings} from './pages/settings';
@@ -22,6 +22,8 @@ import {init} from 'viewport/main'; // NOTE: order of this matters!
 //       thing may happen. Anything unexpected happens
 //       to <canvas> and app may crash. (Though probably
 //       just context lost)
+
+const VIEWPORT_CANVAS_ID = 'anim-canvas';
 
 const initViewport = (canvas: HTMLCanvasElement) => {
   init(canvas)
@@ -88,13 +90,28 @@ export class App extends Component<any, AppState> {
       <div className={this.getClasses()}>
 
         <div className={Styles.CanvasWrapper}>
-          <canvas id='anim-canvas' className={Styles.AnimCanvas} ref={this.canvasRef} />
+          <canvas id={VIEWPORT_CANVAS_ID} className={Styles.AnimCanvas} ref={this.canvasRef} />
         </div>
 
         <Provider appState={appState} timelineState={timelineState}>
           <Settings className={Styles.Settings} />
           <Timeline className={Styles.Timeline} ref={this.timelineRef} />
           <FullscreenButton />
+          <AlertContainer />
+
+          <Purplecoat forId={VIEWPORT_CANVAS_ID} className={Styles.ViewportPurplecoat}>
+            <h1>Viewport</h1>
+
+            <h2>Controls</h2>
+            <p>Use [W][S][A][D][Z][SPACE] to control the camera.</p>
+            <p>Click left mouse button on purple dot to select an object. Use manipulators (gizmos) by dragging arrow's end (move) or circle marker (rotate).</p>
+            <p>Drag with left mouse button in unoccupied area to rotate camera.</p>
+
+            <h2>Transformations</h2>
+            <p>After each operation a new keyframe is stored at current frame. Use TIMELINE AXIS to switch current frame. Frames that are between keyframes will be automatically interpolated.</p>
+            <p>Scene is saved after each change, so You can reload the page if You want.</p>
+          </Purplecoat>
+
         </Provider>
 
       </div>

@@ -12,7 +12,7 @@ $brown: #3c2e21;
 $white: #fcfcf7;
 
 // colors
-$viewport-color: rgb(128, 128, 128);
+$viewport-color: #555056; // must match viewport clear color
 $body-bg: $white;
 $panel-border: $brown;
 $text-color: #222;
@@ -20,3 +20,6 @@ $keyframe-color: $yellow;
 $section-border-top: lighten($panel-border, 50%);
 $section-header-bg: lighten($panel-border, 70%);
 $panel-inactive-overlay: rgba(black, 0.55);
+$modal-overlay: rgba(black, 0.3);
+$purplecoat-overlay: rgba(darken($blue, 10%), 0.85);
+$purplecoat-borders: darken($blue, 30%);

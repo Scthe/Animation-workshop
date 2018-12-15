@@ -3,7 +3,7 @@ import {observer, inject} from 'mobx-preact';
 import {classnames} from 'ui/utils';
 const Styles = require('./Settings.scss');
 import {AppState} from 'state';
-import {Tabs} from 'ui/components';
+import {Tabs, Purplecoat} from 'ui/components';
 import {TabGlobal} from './TabGlobal';
 import {TabObject} from './TabObject';
 
@@ -25,21 +25,34 @@ interface SettingsProps {
 export class Settings extends Component<SettingsProps, any> {
 
   public render() {
+    const {appState} = this.props;
+    const tabsClass = classnames(
+      {[Styles.IsPlaying]: appState.isPlaying},
+    );
+
     return (
       <div className={this.getClasses()}>
-        <Tabs tabs={TABS}>
+        <Tabs tabs={TABS} className={tabsClass}>
           {this.renderBody}
         </Tabs>
+
+        <Purplecoat>
+          <h2>Settings - object</h2>
+          <p>Data about curent frame</p>
+          <p>(transformation at current point in time)</p>
+
+          <h2>Settings - global</h2>
+          <p>General app settings</p>
+        </Purplecoat>
       </div>
     );
   }
 
   private getClasses () {
-    const {className, appState} = this.props;
+    const {className} = this.props;
     return classnames(
       Styles.Settings,
       className,
-      {[Styles.IsPlaying]: appState.isPlaying},
     );
   }
 
@@ -60,6 +73,7 @@ export class Settings extends Component<SettingsProps, any> {
             getActiveClass(!isGlobalActive),
             Styles.TabObject
           )}
+          isActive={!isGlobalActive}
         />
         <TabGlobal
           className={classnames(
@@ -67,6 +81,7 @@ export class Settings extends Component<SettingsProps, any> {
             getActiveClass(isGlobalActive),
             Styles.TabGlobal
           )}
+          isActive={isGlobalActive}
         />
       </div>
     );

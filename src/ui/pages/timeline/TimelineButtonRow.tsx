@@ -5,12 +5,14 @@ const Styles = require('./TimelineButtonRow.scss');
 import {
   Button, ButtonTheme, ButtonGroup,
   Input, InputValidate, FaIcon,
-  Tooltip
+  Tooltip, Purplecoat, togglePurplecoat
 } from 'ui/components';
+import {MoveKeyframeModal} from './MoveKeyframeModal';
 import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
 import {isAnyAxisAllowed} from 'viewport/scene';
 import {getKeyframeBefore, getKeyframeAfter} from 'viewport/animation';
+import * as Key from '../../../keymap';
 
 
 /*const TRANSFORM_SPACES = [
@@ -19,12 +21,13 @@ import {getKeyframeBefore, getKeyframeAfter} from 'viewport/animation';
 ];*/
 
 const KEYMAP = [
-  { key: 'f', action: 'onPrevFrame', continous: true, },
-  { key: 'g', action: 'onNextFrame', continous: true, },
-  { key: 'v', action: 'onPlay', continous: false, },
-  { key: 'q', action: 'onMove', continous: false, },
-  { key: 'e', action: 'onRotate', continous: false, },
-  { key: 'r', action: 'onScale', continous: false, },
+  { key: Key.PREV_FRAME,   action: 'onPrevFrame', continous: true, },
+  { key: Key.NEXT_FRAME,   action: 'onNextFrame', continous: true, },
+  { key: Key.PLAY,         action: 'onPlay', continous: false, },
+  { key: Key.GIZMO_MOVE,   action: 'onMove', continous: false, },
+  { key: Key.GIZMO_ROTATE, action: 'onRotate', continous: false, },
+  { key: Key.GIZMO_SCALE,  action: 'onScale', continous: false, },
+  { key: Key.MARKER_HIDE,  action: 'onMarkerHide', continous: false, },
 ];
 
 
@@ -40,6 +43,10 @@ interface TimelineButtonRowProps {
 @observer
 export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
 
+  state = {
+    isMoveKeyframeModalOpen: false,
+  };
+
   public componentDidMount () {
     window.addEventListener('keyup', this.globalShortcutKeyHandler);
     window.addEventListener('keypress', this.globalShortcutKeyHandler);
@@ -51,11 +58,12 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   }
 
   public render() {
-    const {appState} = this.props;
+    const {appState, timelineState} = this.props;
     // const tfxSpace = (appState.isUseLocalSpace
       // ? TRANSFORM_SPACES[1].name : TRANSFORM_SPACES[0].name);
 
     const obj = appState.currentObjectData;
+    const hasKeyframe = obj && timelineState.hasKeyframeAt(obj.name, appState.currentFrame);
 
     const getGizmoProps = (type: GizmoType) => ({
       theme: ButtonTheme.Blue,
@@ -116,6 +124,12 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
             <FaIcon svg={require('fa/faKey')} />
           </Button>
 
+          <Tooltip text='Move keyframe' className={Styles.Tooltip} />
+          <Button onClick={this.openMoveKeyframeModal} theme={ButtonTheme.Yellow} disabled={!hasKeyframe}>
+            <FaIcon svg={require('fa/faArrowsAltH')} />
+            <FaIcon svg={require('fa/faKey')} />
+          </Button>
+
           <Tooltip text='Remove data at current keyframe' className={Styles.Tooltip} />
           <Button onClick={this.onKeyframeDelete} theme={ButtonTheme.Yellow}>
             <FaIcon svg={require('fa/faBan')} />
@@ -151,6 +165,35 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
           className={Styles.TransformSpacesDropdown}
         />
         */}
+
+        {/* MARKERS HIDE */}
+        <ButtonGroup className={Styles.ButtonSpacing}>
+          <Tooltip text='Toggle markers [H]' className={Styles.Tooltip} />
+          <Button onClick={this.onMarkerHide} theme={ButtonTheme.Beige} active={appState.showMarkers}>
+            <FaIcon svg={require('fa/faDotCircle')} />
+          </Button>
+        </ButtonGroup>
+
+        {/* SHOW HELP */}
+        <ButtonGroup className={Styles.ButtonSpacing}>
+          <Button onClick={this.onHelpShow} theme={ButtonTheme.Beige}>
+            <FaIcon svg={require('fa/faQuestion')} />
+          </Button>
+        </ButtonGroup>
+
+        <Purplecoat>
+          <h1>Toolbar</h1>
+        </Purplecoat>
+
+        {this.state.isMoveKeyframeModalOpen && (
+          <MoveKeyframeModal
+            isOpen={true}
+            initFrame={appState.currentFrame + 1}
+            onClose={this.closeMoveKeyframeModal}
+            onKeyframeMove={this.onMoveKeyframeConfirmed}
+          />
+        )}
+
 
       </div>
     );
@@ -212,10 +255,17 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   }
 
   /* KEYFRAME MANIPULATION */
+  private getKeyframes () {
+    const {timelineState} = this.props;
+    return timelineState.framesWithKeyframe.map(frameId => ({
+      frameId, transform: null as any,
+    }));
+  }
+
   private onPrevKeyframe = () => {
-    const {timelineState, appState} = this.props;
+    const {appState} = this.props;
     const prevKeyframe = getKeyframeBefore(
-      timelineState.getTimeline(appState.selectedObjectName), appState.currentFrame
+      this.getKeyframes(), appState.currentFrame
     );
 
     if (prevKeyframe) {
@@ -224,14 +274,34 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
   }
 
   private onNextKeyframe = () => {
-    const {timelineState, appState} = this.props;
+    const {appState} = this.props;
     const nextKeyframe = getKeyframeAfter(
-      timelineState.getTimeline(appState.selectedObjectName), appState.currentFrame
+      this.getKeyframes(), appState.currentFrame
     );
 
     if (nextKeyframe) {
       appState.gotoFrame(nextKeyframe.frameId);
     }
+  }
+
+  private openMoveKeyframeModal = () => {
+    this.setState({ isMoveKeyframeModalOpen: true, });
+  }
+
+  private closeMoveKeyframeModal = () => {
+    this.setState({ isMoveKeyframeModalOpen: false, });
+  }
+
+  private onMoveKeyframeConfirmed = (nextFrameId: number) => {
+    const {appState, timelineState} = this.props;
+    nextFrameId = appState.clampFrame(nextFrameId - 1);
+
+    timelineState.moveKeyframeAt(
+      appState.selectedObjectName,
+      appState.currentFrame, nextFrameId
+    );
+
+    this.closeMoveKeyframeModal();
   }
 
   private onKeyframeDelete = () => {
@@ -267,5 +337,15 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     const {appState} = this.props;
     appState.isUseLocalSpace = a.value === 'Local';
   }*/
+
+  /* MARKERS HIDE */
+  private onMarkerHide = () => {
+    const {appState} = this.props;
+    appState.showMarkers = !appState.showMarkers;
+  }
+
+  private onHelpShow = () => {
+    togglePurplecoat(true);
+  }
 
 }

@@ -5,6 +5,7 @@ $tick-full-size: 61px;
 $tick-current-frame: $red;
 $tick-time: $brown;
 $tick-keyframe: $keyframe-color;
+$tick-keyframe-not-active: rgba($keyframe-color, 0.5);
 $tick-z-index: 250;
 $preview-z-index: 200;
 $preview-bg: rgba($brown, 0.25);
@@ -17,6 +18,12 @@ $preview-border: rgba($brown, 0.4);
   border-top: 1px solid $panel-border;
   position: relative;
   @extend %unselectable;
+}
+
+@mixin KeyframeBase ($color) {
+  border-color: $color;
+  border-width: 2px;
+  height: $tick-full-size - 6px;
 }
 
 .Tick {
@@ -35,9 +42,12 @@ $preview-border: rgba($brown, 0.4);
   }
 
   &.TickKeyframe {
-    border-color: $tick-keyframe;
-    border-width: 2px;
-    height: $tick-full-size - 6px;
+    @include KeyframeBase($tick-keyframe);
+  }
+
+  &.TickInActiveKeyframe {
+    @include KeyframeBase($tick-keyframe-not-active);
+    border-left-style: dashed;
   }
 
   &.TickCurrentFrame {

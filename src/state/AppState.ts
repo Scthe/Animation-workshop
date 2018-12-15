@@ -1,4 +1,4 @@
-import {observable, computed} from 'mobx';
+import {observable, computed, action} from 'mobx';
 import {GizmoType} from 'viewport/gizmo';
 import {getBoneConfig, getActionableGizmo, isAnyAxisAllowed} from 'viewport/scene';
 import {clamp} from 'gl-utils';
@@ -34,6 +34,8 @@ export class AppState {
   @observable _previewRange = [0, MAX_FRAMES];
   @observable currentFrame = 0;
   @observable isPlaying = false; // playing animation should disable UI
+  // misc
+  @observable showMarkers = true;
 
   @computed
   get frameCount () { return MAX_FRAMES; }
@@ -81,6 +83,7 @@ export class AppState {
     };
   }
 
+  @action
   setCurrentObject (objName: string) {
     this.selectedObjectName = objName;
     const cfg = getBoneConfig(objName);

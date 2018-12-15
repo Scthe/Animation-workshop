@@ -12,7 +12,7 @@ import {DISALLOW_ALL, allowOnly} from './constraints';
 const LAMP_ARMATURE = 'LampArmature';
 const BALL_ARMATURE = 'BallArmature';
 
-const CONSTRIANTS_LAMP_NECK = createConstraints({
+const CONSTRAINTS_LAMP_NECK = createConstraints({
   position: DISALLOW_ALL,
   rotation: allowOnly(Axis.AxisX),
 });
@@ -33,19 +33,19 @@ export const BONE_CONFIG: BoneConfigEntry[] = [
   {
     ...DEFAULT_CFG_VALUES,
     name: `${LAMP_ARMATURE}_bLower`,
-    constraints: CONSTRIANTS_LAMP_NECK,
+    constraints: CONSTRAINTS_LAMP_NECK,
   },
 
   {
     ...DEFAULT_CFG_VALUES,
     name: `${LAMP_ARMATURE}_bUpper`,
-    constraints: CONSTRIANTS_LAMP_NECK,
+    constraints: CONSTRAINTS_LAMP_NECK,
   },
 
   {
     ...DEFAULT_CFG_VALUES,
     name: `${LAMP_ARMATURE}_bHead`,
-    constraints: CONSTRIANTS_LAMP_NECK,
+    constraints: CONSTRAINTS_LAMP_NECK,
   },
 
   // ball:

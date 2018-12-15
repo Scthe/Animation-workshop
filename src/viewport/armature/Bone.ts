@@ -1,5 +1,5 @@
 import {mat4, create as mat4_Create, copy} from 'gl-mat4';
-import {includes} from 'lodash';
+import includes from 'lodash-es/includes';
 import {Armature} from './index';
 import {Marker, MarkerType} from 'viewport/marker';
 import {Transform, createInitTransform} from 'gl-utils';
@@ -30,8 +30,9 @@ export class Bone {
     public readonly children: number[],
     public readonly data: BoneData,
   ) {
-    this.marker = new Marker(MarkerType.Bone);
-    this.marker.owner = this;
+    this.marker = new Marker(MarkerType.Bone, {
+      owner: this,
+    });
     this.$_frameCache = {
       finalBoneMatrix: mat4_Create(),
       globalTransform: mat4_Create(),
@@ -60,8 +61,15 @@ export class Bone {
   }
 
   /** Returns bone matrix for this frame */
-  getFrameMatrix () {
+  get $frameMatrix () {
     return this.$_frameCache.finalBoneMatrix;
+  }
+
+  /** Returns animation transform for this frame
+    * (interpolated from keyframes and current gizmo drag)
+    */
+  get $frameTransform() {
+    return this.$_frameCache.animationTransform;
   }
 
   getFrameCache () {

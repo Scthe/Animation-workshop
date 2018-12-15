@@ -12,6 +12,7 @@ import {
   MAX_MARKER_SIZE, MAX_GIZMO_SIZE,
   MAX_CAMERA_MOVE_SPEED, MAX_CAMERA_ROTATE_SPEED,
 } from 'state';
+import {ImportExport} from './sections/ImportExport';
 
 
 const QUAT_INTERPOLATIONS = [
@@ -22,6 +23,7 @@ const QUAT_INTERPOLATIONS = [
 interface TabGlobalProps {
   className?: string;
   appState?: AppState;
+  isActive: boolean;
 }
 
 
@@ -63,7 +65,7 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
           <Button
             onClick={this.resetPreviewRange}
             theme={ButtonTheme.Beige}
-            className={Styles.ResetPreviewRangeBtn}
+            className={Styles.InSectionBtn}
           >
             Reset preview range
           </Button>
@@ -85,7 +87,7 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
         </Section>
 
         {/* Viewport */}
-        <Section title='Viewport' icon={require('fa/faEye')}>
+        <Section title='Viewport' icon={require('fa/faEye')} initFolded={true}>
           {/* camera */}
           <Tooltip text='Camera movement speed with [WSAD]' {...tooltipProps} />
           <Slider
@@ -123,6 +125,11 @@ export class TabGlobal extends Component<TabGlobalProps, any> {
           <Checkbox id='debug-markers' value={appState.showDebug} onChecked={this.onDebugMarkers}>
             Show debug markers
           </Checkbox>
+        </Section>
+
+        {/* Import / Export */}
+        <Section title='Import / Export' icon={require('fa/faSave')} initFolded={true}>
+          <ImportExport />
         </Section>
 
       </div>

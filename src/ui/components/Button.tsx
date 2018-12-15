@@ -17,7 +17,7 @@ const getThemeClass = (theme: ButtonTheme) => {
 };
 
 
-interface ButtonProps {
+export interface ButtonProps {
   className?: string;
   children: any;
   onClick: Function;

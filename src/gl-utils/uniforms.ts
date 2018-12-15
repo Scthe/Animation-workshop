@@ -1,4 +1,4 @@
-import {keys} from 'lodash';
+import keys from 'lodash-es/keys';
 import {Shader} from './Shader';
 
 // https://github.com/greggman/twgl.js/blob/master/src/programs.js#L316

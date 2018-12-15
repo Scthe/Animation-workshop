@@ -32,3 +32,11 @@
   background-color: $panel-inactive-overlay;
   z-index: 5000;
 }
+
+@mixin center-hv {
+  display: flex;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

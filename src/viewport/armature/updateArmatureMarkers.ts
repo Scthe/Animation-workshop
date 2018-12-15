@@ -4,7 +4,7 @@ import {Scene, Object3d} from 'viewport/scene';
 
 
 const getMarkerPosFromBone = (armature: Armature, bone: Bone) => {
-  const boneMat = bone.getFrameMatrix();
+  const boneMat = bone.$frameMatrix;
   const parentBindMat = bone.getParentBindMatrix(armature);
 
   // bone.translation is bone offset relative to parent.
@@ -25,11 +25,10 @@ const getMarkerPosFromBone = (armature: Armature, bone: Bone) => {
 
 export const updateArmatureMarkers = (scene: Scene, object: Object3d) => {
   const {modelMatrix, bones} = object;
-  const mvp = scene.getMVP(modelMatrix);
 
   bones.forEach((bone: Bone) => {
     const marker = scene.getMarker(bone.name);
     const pos = getMarkerPosFromBone(bones, bone);
-    marker.updatePosition(pos, modelMatrix, mvp);
+    marker.$position3d = transformPointByMat4(pos, modelMatrix, true);
   });
 };

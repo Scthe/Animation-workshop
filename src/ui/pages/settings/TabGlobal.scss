@@ -1,6 +1,6 @@
 @import "ui/style/base.scss";
+@import "./sections/sections.scss";
 
-$v-spacing: 10px;
 
 .QuatInterpolation {
   margin-bottom: $v-spacing;
@@ -9,11 +9,4 @@ $v-spacing: 10px;
 .QuatInterpolationDropdown {
   display: inline-block;
   margin-left: 10px;
-}
-
-.ResetPreviewRangeBtn {
-  margin-bottom: $v-spacing;
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
 }

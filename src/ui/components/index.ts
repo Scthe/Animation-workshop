@@ -1,10 +1,13 @@
-export * from './Button';
+export * from './Alert';
+export {Button, ButtonTheme} from './Button';
 export * from './ButtonGroup';
 export * from './Checkbox';
 export * from './Dropdown';
 export * from './FaIcon';
 export * from './Icon';
 export * from './Input';
+export * from './Modal';
+export * from './Purplecoat';
 export * from './Section';
 export * from './Slider';
 export * from './Tabs';

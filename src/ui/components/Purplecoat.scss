@@ -1,0 +1,35 @@
+@import "ui/style/base.scss";
+
+$text-font-size: 0.8em;
+$container-padding: 0px;
+
+.PurplecoatWrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0px; // will be overriden by inline style
+  height: 0px; // will be overriden by inline style
+  z-index: 3000;
+  padding: $container-padding;
+  cursor: pointer;
+  border: 2px solid $purplecoat-borders;
+}
+
+.PurplecoatInner {
+  @include center-hv;
+  background: $purplecoat-overlay;
+  color: $beige;
+  border-radius: $container-padding;
+}
+
+.PurplecoatText {
+  font-size: $text-font-size;
+  text-align: center;
+
+  h1, p {
+    margin: 0;
+  }
+  h1 {
+    text-transform: uppercase;
+  }
+}

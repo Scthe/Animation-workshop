@@ -9,13 +9,8 @@ import {
 import {vec3, fromValues as vec3_Create} from 'gl-vec3';
 import {transformPointByMat4, toRadians} from 'gl-utils';
 import {MouseDragEvent} from './handler';
+import * as Key from '../keymap';
 
-const KEY_FORWARD = 'W'.charCodeAt(0);
-const KEY_BACK    = 'S'.charCodeAt(0);
-const KEY_LEFT    = 'A'.charCodeAt(0);
-const KEY_RIGHT   = 'D'.charCodeAt(0);
-const KEY_DOWN    = 'Z'.charCodeAt(0);
-const KEY_UP      = 32; // Space, moves up
 
 const WHEEL_SENSITIVITY = 0.3;
 
@@ -49,13 +44,15 @@ export class CameraFPS {
   }
 
   private calculateMovementDirectionFromKeys (keyState: boolean[], speed: number) {
+    const isPressed = (key: string) => keyState[key.charCodeAt(0)];
+
     let moveDir = vec3_Create(0, 0, 0);
-    if (keyState[KEY_FORWARD]) { moveDir[2] -= speed; } // z-axis
-    if (keyState[KEY_BACK])    { moveDir[2] += speed; }
-    if (keyState[KEY_LEFT])    { moveDir[0] -= speed; } // x-axis
-    if (keyState[KEY_RIGHT])   { moveDir[0] += speed; }
-    if (keyState[KEY_UP])      { moveDir[1] += speed; } // y-axis
-    if (keyState[KEY_DOWN])    { moveDir[1] -= speed; }
+    if (isPressed(Key.CAMERA_FORWARD)) { moveDir[2] -= speed; } // z-axis
+    if (isPressed(Key.CAMERA_BACK))    { moveDir[2] += speed; }
+    if (isPressed(Key.CAMERA_LEFT))    { moveDir[0] -= speed; } // x-axis
+    if (isPressed(Key.CAMERA_RIGHT))   { moveDir[0] += speed; }
+    if (isPressed(Key.CAMERA_UP))      { moveDir[1] += speed; } // y-axis
+    if (isPressed(Key.CAMERA_DOWN))    { moveDir[1] -= speed; }
     return moveDir;
   }
 

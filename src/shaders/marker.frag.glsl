@@ -1,14 +1,11 @@
 precision mediump float;
 
 varying vec3 vColor;
-varying vec2 vMarkerCenterPx;
-varying float vMarkerRadius;
+varying vec2 vCornerIntercardinal;
 
 void main () {
-  vec2 markerCenterDelta = gl_FragCoord.xy - vMarkerCenterPx;
-  float toCenterDist = dot(markerCenterDelta, markerCenterDelta);
-
-  if (toCenterDist > vMarkerRadius * vMarkerRadius) {
+  float toCenterDist = dot(vCornerIntercardinal, vCornerIntercardinal);
+  if (toCenterDist > 1.0) {
     discard;
   }
 

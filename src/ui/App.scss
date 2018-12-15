@@ -74,3 +74,8 @@ $fullscreen-btn-color: $white;
   height: $timeline-height;
   transition: transform $fullscreen-transition-len;
 }
+
+.ViewportPurplecoat {
+  max-width: 400px;
+  p { line-height: 1.5em; }
+}

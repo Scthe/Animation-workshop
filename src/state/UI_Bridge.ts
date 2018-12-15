@@ -1,4 +1,4 @@
-import {pick} from 'lodash';
+import pick from 'lodash-es/pick';
 import {AppState, TimelineState} from 'state';
 import {Transform} from 'gl-utils';
 

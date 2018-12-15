@@ -1,0 +1,11 @@
+@import "ui/style/base.scss";
+
+$position-top: 30px;
+$position-left: 5px;
+
+.AlertContainer {
+  position: fixed;
+  z-index: 9000;
+  top: $position-top;
+  left: $position-left;
+}

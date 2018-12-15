@@ -80,7 +80,7 @@ export class MouseHandler {
     this.lastPosition = click_XY;
 
     const {glState, scene} = this;
-    const clickedMarker = getMarkerAt(glState.getViewport(), scene.getMarkers(), click_XY);
+    const clickedMarker = getMarkerAt(glState.getViewport(), scene, click_XY);
 
     if (clickedMarker) {
       this.clickedState = ClickedState.Marker;

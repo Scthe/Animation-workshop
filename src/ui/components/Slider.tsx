@@ -34,11 +34,17 @@ export class Slider extends Component<SliderProps, SliderState> {
     el.addEventListener('mouseup', this.onMouseUp);
     el.addEventListener('mousemove', this.onMouseMove);
     el.addEventListener('mouseout', this.onMouseUp);
-    this.updateThumb({});
+    this.updateThumb();
   }
 
   public render () {
     const {name, label, min, max, value} = this.props;
+    const {isDragging} = this.state;
+
+    const thumbClasses = classnames(
+      Styles.SliderPopup,
+      {[Styles.active]: isDragging},
+    );
 
     return (
       <div className={this.getClasses()}>
@@ -53,7 +59,7 @@ export class Slider extends Component<SliderProps, SliderState> {
             ref={this.inputRef}
             className={Styles.SliderInput}
           />
-          <span className={Styles.SliderPopup} ref={this.thumbRef}>
+          <span className={thumbClasses} ref={this.thumbRef}>
             <span className={Styles.SliderPopupValue} ref={this.thumbValueRef}>
               {this.getCurrentValue()}
             </span>
@@ -73,17 +79,11 @@ export class Slider extends Component<SliderProps, SliderState> {
 
   private onMouseDown = (e: any) => {
     this.setState({ isDragging: true, });
-    this.updateThumb(e);
-
-    const thumb = this.thumbRef.current;
-    thumb.classList.add(Styles.active);
+    this.updateThumb();
   }
 
   private onMouseUp = (e: any) => {
     this.setState({ isDragging: false, });
-
-    const thumb = this.thumbRef.current;
-    thumb.classList.remove(Styles.active);
 
     const {onSelected} = this.props;
     if (onSelected) {
@@ -96,18 +96,14 @@ export class Slider extends Component<SliderProps, SliderState> {
     const {isDragging} = this.state;
 
     if (isDragging) {
-      this.updateThumb(e);
+      this.updateThumb();
       if (onChange) {
         onChange(this.getCurrentValue());
       }
     }
   }
 
-  private updateThumb(e: any) {
-    const thumbEl = this.thumbRef.current;
-    const wrapperEl = this.wrapperRef.current;
-    const {min, max} = this.props;
-
+  private updateThumb() {
     // update text
     const thumbValueEl = this.thumbValueRef.current;
     const currentValue = this.getCurrentValue();
@@ -115,13 +111,27 @@ export class Slider extends Component<SliderProps, SliderState> {
 
     // update position
     // NOTE: this does not cause React redraw, we have to manually
-    // update elements
-    const rect = wrapperEl.getBoundingClientRect();
+    const thumbEl = this.thumbRef.current;
+    thumbEl.style.left = `${this.getThumbOffsetLeft()}px`;
+  }
+
+  private getBoundingRect() {
+    const wrapperEl = this.wrapperRef.current;
+    return wrapperEl ? wrapperEl.getBoundingClientRect() : null;
+  }
+
+  private getThumbOffsetLeft() {
+    const {min, max} = this.props;
+    const currentValue = this.getCurrentValue();
+
+    const rect = this.getBoundingRect();
+    if (!rect) {
+      return 0;
+    }
+
     const progress = (currentValue - min) / (max - min);
     const width = rect.width - 20; // ?!
-    let left = progress * width;
-    left = clamp(left, 0, width);
-    thumbEl.style.left = left;
+    return clamp(progress * width, 0, width);
   }
 
   private getCurrentValue () {

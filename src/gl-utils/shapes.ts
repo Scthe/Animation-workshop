@@ -1,6 +1,6 @@
 import {vec3, fromValues as vec3_Create} from 'gl-vec3';
 import {Shader, Vao, VaoAttrInit} from './index';
-import {flatten} from 'lodash';
+import flatten from 'lodash-es/flatten';
 
 // alias for nicer semantic
 const vert = (x: number, y: number, z: number) => vec3_Create(x, y, z) as Vertex;

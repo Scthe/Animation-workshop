@@ -1,7 +1,7 @@
 import {vec2, fromValues as vec2_Create} from 'gl-vec2';
 import {
   vec3, create as vec3_0, fromValues as vec3_Create,
-  scale, add, subtract, dot
+  scale, add, subtract, dot, distance
 } from 'gl-vec3';
 import {mat4, create as mat4_Create, invert} from 'gl-mat4';
 import {subtractNorm, transformPointByMat4} from 'gl-utils';
@@ -63,3 +63,16 @@ export const getDirectionModifier = (ray: Ray, p0: vec3, p1: vec3) => {
   const v2 = subtractNorm(p1, p0);
   return dot(ray.dir, v2) >= 0 ? 1 : -1;
 };
+
+const pointToRayDistance = (p: vec3, ray: Ray): number => {
+  const projected = projectPointOntoRay(p, ray);
+  return distance(p, projected);
+};
+
+interface Sphere {
+  origin: vec3;
+  radius: number;
+}
+
+export const sphereIntersect = (ray: Ray, sphere: Sphere) =>
+  pointToRayDistance(sphere.origin, ray) <= sphere.radius;

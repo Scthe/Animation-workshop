@@ -1,6 +1,7 @@
 import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
-import {get, set} from 'lodash';
+import get from 'lodash-es/get';
+import set from 'lodash-es/set';
 import {classnames} from 'ui/utils';
 const Styles = require('./TabObject.scss');
 
@@ -41,6 +42,7 @@ interface TabObjectProps {
   className?: string;
   appState?: AppState;
   timelineState?: TimelineState;
+  isActive: boolean;
 }
 
 

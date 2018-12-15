@@ -1,33 +1,34 @@
 import {DrawParameters, DepthTest, CullingMode, setUniforms} from 'gl-utils';
-import {Marker, MarkerType, SELECTED_BONE_COLOR} from './index';
+import {Marker, MarkerType} from './index';
 import {FrameEnv} from 'viewport/main';
 
-const getMarkerColor = (frameEnv: FrameEnv, marker: Marker) => {
-  const selectedMarker = frameEnv.selectedMarker;
-  return selectedMarker && selectedMarker.name === marker.name ? SELECTED_BONE_COLOR : marker.color;
-};
 
 const setMarkerUniforms = (frameEnv: FrameEnv, markers: Marker[], scale: number) => {
-  const {glState: {gl}, scene: {markerMeta}} = frameEnv;
+  const {
+    glState: {gl},
+    scene: {markerMeta, camera},
+    selectedMarker
+  } = frameEnv;
   const {shader} = markerMeta;
 
-  // has to be separate expr., cause setUniforms does not check types.
-  // Otherwise, it would have been legal to return {width, height} as object
-  const [width, height] = frameEnv.glState.getViewport();
   setUniforms(gl, shader, {
-    'g_Viewport': [width, height],
+    'g_VP': frameEnv.scene.getVP(),
+    'g_V': camera.getViewMatrix(),
   }, true);
+
+  const isSelected = (marker: Marker) => selectedMarker && marker.name === selectedMarker.name;
 
   markers.forEach((marker, i) => {
     const posName = `g_MarkerPositions[${i}]`;
-    gl.uniform2fv(gl.getUniformLocation(shader.glId, posName), marker.$positionNDC);
+    gl.uniform3fv(gl.getUniformLocation(shader.glId, posName), marker.$position3d);
 
     const colName = `g_MarkerColors[${i}]`;
-    gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), getMarkerColor(frameEnv, marker));
+    const color = marker.getColor(isSelected(marker));
+    gl.uniform3fv(gl.getUniformLocation(shader.glId, colName), color);
 
     const radName = `g_MarkerRadius[${i}]`; // col/pos are vec3, this is [single number]
-    const mScale = marker.type === MarkerType.Bone ? scale : 1.0;
-    gl.uniform1fv(gl.getUniformLocation(shader.glId, radName), [marker.radius * mScale]);
+    const radius = marker.getRadius(scale);
+    gl.uniform1fv(gl.getUniformLocation(shader.glId, radName), [radius]);
   });
 };
 

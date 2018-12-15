@@ -1,4 +1,4 @@
-import {requestAnimFrame, handleResize} from 'gl-utils';
+import {requestAnimFrame, handleResize, hexToVec3} from 'gl-utils';
 
 import {GlState} from './GlState';
 import {drawObject3d} from './drawObject3d';
@@ -15,8 +15,6 @@ const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
 
 
-// TODO gizmo should always draw on top. use stencil?
-// TODO when looking behind, the markers are still visible
 // TODO after rotating, the move axis stays unaffected (as from bind matrix)
 
 
@@ -79,6 +77,9 @@ const tryChangeGizmo = (glState: GlState, scene: Scene) => {
   );
   if (draggingStatus.draggedGizmo !== currentGizmo) {
     draggingStatus.draggedGizmo = currentGizmo;
+    // move gizmo assigns specific radius to gizmo.
+    // rotate gizmo uses default radius.
+    // reset here and will be later updated if needed
     scene.gizmoMeta.markers.forEach(m => m.radius = undefined);
   }
 };
@@ -93,7 +94,12 @@ export const getSelectedObject = (scene: Scene) => {
   };
 };
 
-const shouldDrawViewportUI = (glState: GlState) => !glState.animationState.isPlaying;
+const shouldDrawViewportUI = (glState: GlState) => {
+  const {showMarkers} = uiBridge.getFromUI(
+    appStateGetter('showMarkers')
+  );
+  return showMarkers && !glState.animationState.isPlaying;
+};
 
 const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   const {gl, pressedKeys} = glState;
@@ -151,12 +157,11 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
   scene.objects.forEach(obj => {
     updateArmatureMarkers(scene, obj);
   });
-  scene.updateDebugMarkers();
   const {markerSize, showDebug} = uiBridge.getFromUI(
     appStateGetter('markerSize', 'showDebug')
   );
   if (shouldDrawViewportUI(glState)) {
-    drawMarkers(frameEnv, markerSize / 10.0, showDebug); // just go with it..
+    drawMarkers(frameEnv, markerSize, showDebug);
   }
 };
 
@@ -167,11 +172,13 @@ const viewportUpdate = (time: number, glState: GlState, scene: Scene) => {
 let glState: GlState = undefined;
 let scene: Scene = undefined;
 
+const CLEAR_COLOR = hexToVec3('#555056'); // must match value in variables.scss
+
 export const init = async (canvas: HTMLCanvasElement) => {
   glState = new GlState();
   await glState.init(canvas);
 
-  glState.gl.clearColor(0.333, 0.313, 0.337, 1.0);
+  glState.gl.clearColor(CLEAR_COLOR[0], CLEAR_COLOR[1], CLEAR_COLOR[2], 1.0);
   glState.gl.clearDepth(1.0);
 
   createGridMesh(glState.gl);

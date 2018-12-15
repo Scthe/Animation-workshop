@@ -1,0 +1,10 @@
+@import "ui/style/base.scss";
+
+$v-spacing: 10px;
+
+.InSectionBtn {
+  margin-bottom: $v-spacing;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
