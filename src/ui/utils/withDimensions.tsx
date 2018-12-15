@@ -1,5 +1,5 @@
 import {h, Component, ComponentConstructor} from 'preact';
-import {get} from 'lodash';
+import get from 'lodash-es/get';
 import {createRef} from './index';
 
 interface WithDimensionsHOCState {

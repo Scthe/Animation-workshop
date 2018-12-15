@@ -1,4 +1,4 @@
-import {isEqual} from 'lodash';
+import isEqual from 'lodash-es/isEqual';
 import STATIC_GL from '../gimme_gl';
 import {Depth, DepthTest} from './Depth';
 import {StencilPerSide, StencilTest, StencilOperation, Stencil} from './Stencil';

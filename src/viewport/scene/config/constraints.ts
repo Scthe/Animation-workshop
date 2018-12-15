@@ -1,6 +1,6 @@
 import {Axis, AxisList} from 'gl-utils';
 import {GizmoType, GIZMO_TYPE_LIST} from 'viewport/gizmo';
-import {some} from 'lodash';
+import some from 'lodash-es/some';
 
 /// most of this file is opaque to 3rd party
 /// (with exception for config.ts that uses this stuff)

@@ -1,4 +1,4 @@
-import {debounce} from 'lodash';
+import debounce from 'lodash-es/debounce';
 import {AppState} from './AppState';
 import {TimelineState} from './TimelineState';
 import {UIBridge} from './UI_Bridge';

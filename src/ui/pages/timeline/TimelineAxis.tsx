@@ -1,6 +1,9 @@
 import {h, Component} from 'preact';
 import {observer, inject} from 'mobx-preact';
-import {differenceWith, isEqual, times} from 'lodash';
+import differenceWith from 'lodash-es/differenceWith';
+import isEqual from 'lodash-es/isEqual';
+import times from 'lodash-es/times';
+
 import {classnames, WithDimensions, Dimensions} from 'ui/utils';
 const Styles = require('./TimelineAxis.scss');
 import {AppState, TimelineState} from 'state';

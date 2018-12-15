@@ -1,4 +1,4 @@
-import {get} from 'lodash';
+import get from 'lodash-es/get';
 import {Transform, interpolateTransforms, InterpolateOpts} from 'gl-utils';
 import {
   Keyframe, Timeline,

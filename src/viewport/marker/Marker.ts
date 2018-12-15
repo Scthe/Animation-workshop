@@ -1,5 +1,5 @@
 import {vec3, create as vec3_Create, copy} from 'gl-vec3';
-import {get} from 'lodash';
+import get from 'lodash-es/get';
 import {Axis} from 'gl-utils';
 import {Bone} from 'viewport/armature';
 

@@ -1,4 +1,5 @@
-import {find, findLast} from 'lodash';
+import find from 'lodash-es/find';
+import findLast from 'lodash-es/findLast';
 import {Transform, copyTransform, createInitTransform} from 'gl-utils';
 
 export interface Keyframe {

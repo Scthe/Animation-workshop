@@ -1,7 +1,12 @@
+import sortBy from 'lodash-es/sortBy';
+import cloneDeep from 'lodash-es/cloneDeep';
+import uniq from 'lodash-es/uniq';
+import flatten from 'lodash-es/flatten';
+
 import {observable, action, computed} from 'mobx';
 import {Timeline, createKeyframe} from 'viewport/animation';
 import {Transform} from 'gl-utils';
-import {sortBy, cloneDeep, uniq, flatten} from 'lodash';
+
 
 export const TIMELINE_DEFAULT = {};
 Object.freeze(TIMELINE_DEFAULT);

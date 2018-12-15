@@ -2,7 +2,9 @@ import {h, Component} from 'preact';
 import {observable} from 'mobx';
 import {observer} from 'mobx-preact';
 const Portal = require('preact-portal');
-import {debounce, pick} from 'lodash';
+import debounce from 'lodash-es/debounce';
+import pick from 'lodash-es/pick';
+
 import {classnames, createRef} from 'ui/utils';
 const Styles = require('./Purplecoat.scss');
 

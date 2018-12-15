@@ -1,4 +1,4 @@
-import {entries} from 'lodash'; // Object.entries not visible in TS
+import entries from 'lodash-es/entries'; // Object.entries not visible in TS
 
 // based on https://github.com/sindresorhus/class-names (MIT)
 // but in TS

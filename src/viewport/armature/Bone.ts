@@ -1,5 +1,5 @@
 import {mat4, create as mat4_Create, copy} from 'gl-mat4';
-import {includes} from 'lodash';
+import includes from 'lodash-es/includes';
 import {Armature} from './index';
 import {Marker, MarkerType} from 'viewport/marker';
 import {Transform, createInitTransform} from 'gl-utils';

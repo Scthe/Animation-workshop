@@ -1,6 +1,6 @@
 import {h} from 'preact';
 import {Icon} from './Icon';
-import {pick} from 'lodash';
+import pick from 'lodash-es/pick';
 
 // not exported, defined here as minimal usable interface
 interface FaIconType {

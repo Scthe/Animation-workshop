@@ -1,5 +1,5 @@
 import {h, ComponentConstructor} from 'preact';
-import {debounce} from 'lodash';
+import debounce from 'lodash-es/debounce';
 import {showAlert, hideAlert} from './AlertStore';
 
 // will not register dependency on mobx

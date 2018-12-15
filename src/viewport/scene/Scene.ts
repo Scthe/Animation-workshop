@@ -1,4 +1,4 @@
-import {flatMap} from 'lodash';
+import flatMap from 'lodash-es/flatMap';
 import {vec3} from 'gl-vec3';
 import {mat4, create as mat4_Create} from 'gl-mat4';
 import {Shader, Vao, getMVP, getMV, Axis, hexToVec3} from 'gl-utils';
