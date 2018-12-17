@@ -13,7 +13,6 @@ $far-away-x: 150%;
 }
 
 .IsPlaying {
-  position: relative;
   &:after {
     @include with-full-overlay;
   }

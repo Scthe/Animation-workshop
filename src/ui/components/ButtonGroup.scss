@@ -7,7 +7,7 @@ $button-group-border-radius: 5px;
   display: inline-block;
 
   // to lazy to expose
-  & button {
+  & > button, & > a {
     &:first-of-type {
       border-top-left-radius: $button-group-border-radius;
       border-bottom-left-radius: $button-group-border-radius;

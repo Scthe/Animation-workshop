@@ -15,6 +15,9 @@ import {getKeyframeBefore, getKeyframeAfter} from 'viewport/animation';
 import * as Key from '../../../keymap';
 
 
+const GITHUB_LINK = 'https://github.com/Scthe/Animation-workshop';
+const GITHUB_ICON = require('assets/github.svg.json');
+
 /*const TRANSFORM_SPACES = [
   {name: 'Global', value: 'Global'},
   {name: 'Local', value: 'Local'},
@@ -180,6 +183,15 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
             <FaIcon svg={require('fa/faQuestion')} />
           </Button>
         </ButtonGroup>
+
+        {/* GITHUB */}
+        <ButtonGroup className={Styles.ButtonSpacing}>
+          <Tooltip text='Open GitHub' className={Styles.Tooltip} />
+          <Button to={GITHUB_LINK} theme={ButtonTheme.Beige} className={Styles.GithubButton}>
+            <FaIcon svg={GITHUB_ICON} />
+          </Button>
+        </ButtonGroup>
+
 
         <Purplecoat>
           <h1>Toolbar</h1>

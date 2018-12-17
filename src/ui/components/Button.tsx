@@ -16,26 +16,41 @@ const getThemeClass = (theme: ButtonTheme) => {
   }
 };
 
-
 export interface ButtonProps {
   className?: string;
   children: any;
-  onClick: Function;
+  onClick?: Function;
+  to?: string; // alternative as link
   theme?: ButtonTheme;
   disabled?: boolean;
   active?: boolean;
 }
 
-export const Button = (props: ButtonProps) => {
-  const {className, children, onClick, theme, disabled, active} = props;
+const isLink = (props: ButtonProps) => !!props.to;
 
-  const classes = classnames(
+const getClasses = (props: ButtonProps) => {
+  const {className, theme, disabled, active} = props;
+  return classnames(
     Styles.Button,
     className,
     getThemeClass(theme),
     {[Styles.Disabled]: disabled},
     {[Styles.Active]: active},
+    isLink(props) ? Styles.ButtonLink : Styles.ButtonAction,
   );
+};
+
+const renderAsLink = (props: ButtonProps) => {
+  const {children, to} = props;
+  return (
+    <a href={to} target='_blank' rel='noopener noreferrer' className={getClasses(props)}>
+      {children}
+    </a>
+  );
+};
+
+export const Button = (props: ButtonProps) => {
+  const {children, onClick, disabled} = props;
 
   const handler = (e: any) => {
     cancelEvent(e);
@@ -43,7 +58,7 @@ export const Button = (props: ButtonProps) => {
     if (!disabled && onClick) { onClick(e); }
   };
 
-  return (
-    <button onClick={handler} className={classes}>{children}</button>
+  return isLink(props) ? renderAsLink(props) : (
+    <button onClick={handler} className={getClasses(props)}>{children}</button>
   );
 };

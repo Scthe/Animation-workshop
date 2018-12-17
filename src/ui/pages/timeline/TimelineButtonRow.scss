@@ -24,12 +24,18 @@ $frameStatus-label-w: 70px;
   @extend %btn-spacer;
   display: inline-flex !important;
   position: relative;
-  top: 3px;
   margin-bottom: 0;
 
   // too lazy to expose, so just stupid selector
-  input { width: $frameStatus-input-w; padding-bottom: 4px; }
+  input { width: $frameStatus-input-w; padding-bottom: 6px; }
   p { width: $frameStatus-label-w; }
+}
+
+.GithubButton {
+  & svg {
+    position: relative;
+    top: -2px;
+  }
 }
 
 .ButtonSpacing {
