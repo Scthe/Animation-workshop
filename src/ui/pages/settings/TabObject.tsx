@@ -13,10 +13,6 @@ import {interpolateKeyframe} from 'viewport/animation';
 import {Axis, Transform, createInitTransform, copyTransform} from 'gl-utils';
 
 
-// TODO add material settings
-// TODO add light settings
-// TODO when overflow, make only subpanel scrollable, not whole <Settings>
-
 interface TransformInputProps {
   type?: GizmoType;
   axis: Axis;

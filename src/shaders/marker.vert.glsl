@@ -56,7 +56,7 @@ void main() {
   cornerWS += marker.billboardUp * marker.radius * deltaSign.y;
 
   // NOTE: important: leave as is, do not rewrite into vec4(_.xyz, 1.0)
-  gl_Position = g_VP * vec4(cornerWS, 1.0); // TODO divide by 'w'
+  gl_Position = g_VP * vec4(cornerWS, 1.0);
 
   vColor = marker.color;
   vCornerIntercardinal = deltaSign;

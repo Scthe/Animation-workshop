@@ -27,8 +27,6 @@ export interface GizmoDrawOpts {
   isDragging: boolean;
 }
 
-// TODO depending on the camera position, move the gizmo points into positive/negative direction
-
 const ANGLE_90_DGR = toRadians(90);
 
 const getMesh = (frameEnv: FrameEnv, type: GizmoType) => {

@@ -9,7 +9,7 @@ varying vec3 vColor;
 
 void main() {
    vec4 pos = vec4(a_Position * 1.0, 1.0);
-   gl_Position = g_MVP * pos; // TODO divide by w
+   gl_Position = g_MVP * pos;
 
    vColor = g_Color;
 }

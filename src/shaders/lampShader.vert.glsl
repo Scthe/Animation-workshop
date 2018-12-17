@@ -28,5 +28,5 @@ void main() {
    }
 
    vPosition = (g_MV * localPos).xyz;
-   gl_Position = g_MVP * localPos; // TODO divide by w
+   gl_Position = g_MVP * localPos;
 }

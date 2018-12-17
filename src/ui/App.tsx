@@ -9,13 +9,8 @@ import {Settings} from './pages/settings';
 import {init} from 'viewport/main'; // NOTE: order of this matters!
 
 
-// TODO add github btn
-// TODO optimize lodash in prod build
-// TODO save/load/reset
-
 // TODO put font in cache
 // TODO responsive, or at least disallow mobile
-// TODO use mini-css-extract-plugin to extract css to file?
 
 
 // NOTE: we do not want <canvas> in any HOC or whatever weird

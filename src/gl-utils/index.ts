@@ -135,35 +135,8 @@ export const getMV = (m: mat4, v: mat4) => {
   return multiply(mat4_Create(), v, m);
 };
 
-export const getDist2 = (a: vec2, b: vec2, doSqrt = false) => {
-  const delta = [a[0] - b[0], a[1] - b[1]];
-  const res = delta[0] * delta[0] + delta[1] * delta[1];
-  return doSqrt ? Math.sqrt(res) : res;
-};
-
 export const subtractNorm = (a: vec3, b: vec3) => normalize(vec3_0(), subtract(vec3_0(), a, b));
 
-/*
-export const getAxesFromRotMatrix = (rotMat: mat3) => {
-  // TODO or just multiply rot matrix by [0,1,0] etc?
-  const createAxis = (idxA: number, idxB: number, idxC: number) => {
-    const v = vec3_Create(rotMat[idxA], rotMat[idxB], rotMat[idxC]);
-    return normalize(vec3_0(), v);
-  };
-
-  const axes = [
-    createAxis(0, 1, 2),
-    createAxis(3, 4, 5),
-    createAxis(6, 7, 8),
-  ];
-  const axes2 = [
-    createAxis(0, 3, 6),
-    createAxis(1, 4, 7),
-    createAxis(2, 5, 8),
-  ];
-  return axes2;
-};
-*/
 
 // string utils
 export const numberToString = (a: number, precision: number = 3) => Number(a).toFixed(precision);

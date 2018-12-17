@@ -15,9 +15,6 @@ const CAMERA_MOVE_SPEED = 0.005; // depends on scale etc.
 const CAMERA_ROTATE_SPEED = 0.025 / 6;
 
 
-// TODO after rotating, the move axis stays unaffected (as from bind matrix)
-
-
 //////////
 /// Per frame update
 //////////
