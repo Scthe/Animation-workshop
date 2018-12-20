@@ -54,7 +54,7 @@ export const BONE_CONFIG: BoneConfigEntry[] = [
     name: `${BALL_ARMATURE}_bBall`,
     keyframe0: {
       ...POS_ROT_SCALE_0,
-      position: vec3_Create(-1.0, 0.0, 0),
+      position: vec3_Create(-1.0, 0.3, 0),
     },
   },
 

@@ -6,11 +6,15 @@ import {
 } from 'ui/components';
 
 
+export enum MoveKeyframeMode {
+  Closed, MoveKeyframe, DuplicateKeyframe
+}
+
 interface MoveKeyframeModalProps {
-  isOpen: boolean;
+  openMode: MoveKeyframeMode;
   initFrame: number;
   onClose: () => void;
-  onKeyframeMove: (nextFrameId: number) => void;
+  onKeyframeMove: (mode: MoveKeyframeMode, nextFrameId: number) => void;
 }
 
 
@@ -24,11 +28,12 @@ export class MoveKeyframeModal extends Component<MoveKeyframeModalProps, any> {
   }
 
   public render() {
-    const {isOpen, onClose, initFrame} = this.props;
+    const {openMode, onClose} = this.props;
+    const texts = this.getText();
 
     return (
       <Modal
-        open={isOpen}
+        open={openMode !== MoveKeyframeMode.Closed}
         buttons={[
           {
             onClick: onClose,
@@ -37,13 +42,11 @@ export class MoveKeyframeModal extends Component<MoveKeyframeModalProps, any> {
           {
             onClick: this.onMoveKeyframeConfirmed,
             theme: ButtonTheme.Blue,
-            children: 'Move the keyframe',
+            children: texts.okBtn,
           }
         ]}
       >
-        <p>
-          Move keyframe from {initFrame} to:
-        </p>
+        <p>{texts.content}</p>
         <Input
           name='move-frame'
           value={this.state.value}
@@ -59,10 +62,10 @@ export class MoveKeyframeModal extends Component<MoveKeyframeModalProps, any> {
   }
 
   private onMoveKeyframeConfirmed = () => {
-    const {onKeyframeMove} = this.props;
+    const {onKeyframeMove, openMode} = this.props;
     const val = parseFloat(this.state.value);
     if (!isNaN(val)) {
-      onKeyframeMove(val);
+      onKeyframeMove(openMode, val);
     }
   }
 
@@ -72,4 +75,17 @@ export class MoveKeyframeModal extends Component<MoveKeyframeModalProps, any> {
     });
   }
 
+  private getText () {
+    const {openMode, initFrame} = this.props;
+    const isDupl = openMode === MoveKeyframeMode.DuplicateKeyframe;
+
+    return {
+      okBtn: isDupl
+        ? 'Duplicate the keyframe'
+        : 'Move the keyframe',
+      content:  isDupl
+        ? `Duplicate ${initFrame} to frame:`
+        : `Move keyframe from ${initFrame} to:`,
+    };
+  }
 }

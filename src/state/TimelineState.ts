@@ -81,10 +81,19 @@ export class TimelineState {
       transform: keyframe.transform,
     };
 
-    this.setTimeline(boneName, [
+    this.setTimeline(boneName, [ // we could reuse deleteKeyframe/setKeyframeAt, but this is more transactional
       ...removeKeyframeAt(this.getTimeline(boneName), frameId),
       newKeyframe,
     ]);
+  }
+
+  duplicateKeyframeAt (boneName: BoneName, frameId: number, newFrameId: number) {
+    const keyframe = this.getKeyframeAt(boneName, frameId);
+    if (!keyframe) {
+      return; // no keyframe to move
+    }
+
+    this.setKeyframeAt(boneName, newFrameId, keyframe.transform);
   }
 
   reset (newState: TimelineMap = TIMELINE_DEFAULT) {

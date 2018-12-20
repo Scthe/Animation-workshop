@@ -7,7 +7,7 @@ import {
   Input, InputValidate, FaIcon,
   Tooltip, Purplecoat, togglePurplecoat
 } from 'ui/components';
-import {MoveKeyframeModal} from './MoveKeyframeModal';
+import {MoveKeyframeModal, MoveKeyframeMode} from './MoveKeyframeModal';
 import {AppState, TimelineState} from 'state';
 import {GizmoType} from 'viewport/gizmo';
 import {isAnyAxisAllowed} from 'viewport/scene';
@@ -40,14 +40,18 @@ interface TimelineButtonRowProps {
   timelineState?: TimelineState;
 }
 
+interface TimelineButtonRowState {
+  moveKeyframeModalMode: MoveKeyframeMode;
+}
+
 
 @inject('appState')
 @inject('timelineState')
 @observer
-export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
+export class TimelineButtonRow extends Component<TimelineButtonRowProps, TimelineButtonRowState> {
 
   state = {
-    isMoveKeyframeModalOpen: false,
+    moveKeyframeModalMode: MoveKeyframeMode.Closed,
   };
 
   public componentDidMount () {
@@ -133,8 +137,14 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
             <FaIcon svg={require('fa/faKey')} />
           </Button>
 
+          <Tooltip text='Duplicate keyframe' className={Styles.Tooltip} />
+          <Button onClick={this.openDuplicateKeyframeModal} theme={ButtonTheme.Yellow} disabled={!hasKeyframe}>
+            <FaIcon svg={require('fa/faCopy')} />
+            <FaIcon svg={require('fa/faKey')} />
+          </Button>
+
           <Tooltip text='Remove data at current keyframe' className={Styles.Tooltip} />
-          <Button onClick={this.onKeyframeDelete} theme={ButtonTheme.Yellow}>
+          <Button onClick={this.onKeyframeDelete} theme={ButtonTheme.Yellow} disabled={!hasKeyframe}>
             <FaIcon svg={require('fa/faBan')} />
             <FaIcon svg={require('fa/faKey')} />
           </Button>
@@ -197,15 +207,14 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
           <h1>Toolbar</h1>
         </Purplecoat>
 
-        {this.state.isMoveKeyframeModalOpen && (
+        {this.isMoveKeyframeModalOpen() && (
           <MoveKeyframeModal
-            isOpen={true}
+            openMode={this.state.moveKeyframeModalMode}
             initFrame={appState.currentFrame + 1}
             onClose={this.closeMoveKeyframeModal}
             onKeyframeMove={this.onMoveKeyframeConfirmed}
           />
         )}
-
 
       </div>
     );
@@ -296,22 +305,37 @@ export class TimelineButtonRow extends Component<TimelineButtonRowProps, any> {
     }
   }
 
+  private isMoveKeyframeModalOpen () {
+    return this.state.moveKeyframeModalMode !== MoveKeyframeMode.Closed;
+  }
+
   private openMoveKeyframeModal = () => {
-    this.setState({ isMoveKeyframeModalOpen: true, });
+    this.setState({ moveKeyframeModalMode: MoveKeyframeMode.MoveKeyframe, });
+  }
+
+  private openDuplicateKeyframeModal = () => {
+    this.setState({ moveKeyframeModalMode: MoveKeyframeMode.DuplicateKeyframe, });
   }
 
   private closeMoveKeyframeModal = () => {
-    this.setState({ isMoveKeyframeModalOpen: false, });
+    this.setState({ moveKeyframeModalMode: MoveKeyframeMode.Closed, });
   }
 
-  private onMoveKeyframeConfirmed = (nextFrameId: number) => {
+  private onMoveKeyframeConfirmed = (mode: MoveKeyframeMode, nextFrameId: number) => {
     const {appState, timelineState} = this.props;
     nextFrameId = appState.clampFrame(nextFrameId - 1);
 
-    timelineState.moveKeyframeAt(
-      appState.selectedObjectName,
-      appState.currentFrame, nextFrameId
-    );
+    if (mode === MoveKeyframeMode.MoveKeyframe) {
+      timelineState.moveKeyframeAt(
+        appState.selectedObjectName,
+        appState.currentFrame, nextFrameId
+      );
+    } else if (mode === MoveKeyframeMode.DuplicateKeyframe) {
+      timelineState.duplicateKeyframeAt(
+        appState.selectedObjectName,
+        appState.currentFrame, nextFrameId
+      );
+    }
 
     this.closeMoveKeyframeModal();
   }

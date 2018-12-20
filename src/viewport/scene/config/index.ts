@@ -20,11 +20,11 @@ export const SHADERS = {
 
 
 export const CAMERA_SETTINGS = {
-  fovDgr: 90,
+  fovDgr: 70,
   zNear: 0.1,
   zFar: 100,
 };
-export const CAMERA_POSITION = vec3_Create(0, 1, 2);
+export const CAMERA_POSITION = vec3_Create(0, 1.5, 4);
 
 
 //
