@@ -2,7 +2,7 @@ import {fromValues as vec3_Create} from 'gl-vec3';
 import {Axis, POS_ROT_SCALE_0} from 'gl-utils';
 
 import {BoneConfigEntry, DEFAULT_CFG_VALUES, createConstraints} from './boneConfig';
-import {DISALLOW_ALL, allowOnly} from './constraints';
+import {DISALLOW_ALL, ALLOW_ALL, allowOnly} from './constraints';
 
 // this file contains descriptor of scene.
 // tightly coupled to .glb file.
@@ -45,7 +45,10 @@ export const BONE_CONFIG: BoneConfigEntry[] = [
   {
     ...DEFAULT_CFG_VALUES,
     name: `${LAMP_ARMATURE}_bHead`,
-    constraints: CONSTRAINTS_LAMP_NECK,
+    constraints: createConstraints({
+      position: DISALLOW_ALL,
+      rotation: ALLOW_ALL,
+    }),
   },
 
   // ball:
